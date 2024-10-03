@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+name = "rsrss"
+version = "0.1.0"
+
+[dependencies]
+chrono = ">=0.4"
+chrono-tz = ">=0.10.0"
+log = "0.4.22"
+reqwest = ">=0.12"
+scraper = ">=0.20"
+tokio = {version = ">=1.4", features = ["full"]}
+urlencoding = ">=2.0"
