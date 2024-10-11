@@ -1,7 +1,10 @@
 use chrono::{DateTime, Local};
 use futures::Future;
+
 mod codezin;
 mod gigazin;
+mod stockmarknews;
+mod stockmarktechblog;
 
 pub trait InfoItem {
     fn title(&self) -> String;
@@ -10,6 +13,7 @@ pub trait InfoItem {
     fn timestamp(&self) -> DateTime<Local>;
 }
 
+#[derive(Debug)]
 pub struct WebArticle {
     pub title: String,
     pub url: String,

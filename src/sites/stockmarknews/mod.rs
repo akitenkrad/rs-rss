@@ -1,14 +1,14 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct Gigazin {}
+pub struct StockmarkNews {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for Gigazin {
+impl Site for StockmarkNews {
     async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://gigazine.net/news/rss_2.0/")
+        let body = reqwest::get("https://stockmark.co.jp/news/feed/")
             .await
             .unwrap()
             .text()
