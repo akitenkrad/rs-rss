@@ -39,6 +39,9 @@ pub trait Site {
     fn name(&self) -> String;
     fn get_articles(&self) -> impl Future<Output = Vec<WebArticle>> + Send;
     fn get_article_text(&self, url: &String) -> impl Future<Output = String> + Send;
+    fn user_agent(&self) -> String {
+        return format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+    }
     fn to_slack_message(&self, article: &WebArticle) -> String {
         return format!(
             "{}\n{}\n{}",
@@ -58,6 +61,7 @@ pub trait Site {
     }
 }
 
+mod ai_it_now;
 mod codezine;
 mod cookpad_techblog;
 mod cyberagent_techblog;
@@ -70,6 +74,11 @@ mod google_developers_blog;
 mod gree_techblog;
 mod gunosy_techblog;
 mod hatena_developer_blog;
+mod ipa_security_center;
+mod itmedia_at_it;
+mod itmedia_enterprise;
+mod itmedia_general;
+mod itmedia_marketing;
 mod line_techblog;
 mod mercari_engineering_blog;
 mod moneyforward_developers_blog;
@@ -77,7 +86,13 @@ mod nikkei_xtech;
 mod qiita_blog;
 mod retrieva_techblog;
 mod sakura_internet_techblog;
+mod sansan;
+mod security_next;
 mod stockmark_news;
 mod stockmark_techblog;
 mod supership;
 mod yahoo_japan_techblog;
+mod yahoo_news_it;
+mod yahoo_news_science;
+mod zenn_topic_nlp;
+mod zenn_trend;
