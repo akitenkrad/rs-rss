@@ -1,14 +1,18 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct Gigazin {}
+use scraper::Selector;
+pub struct Retrieva {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for Gigazin {
+impl Site for Retrieva {
+    fn name(&self) -> String {
+        return "Retrieva".to_string();
+    }
     async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://gigazine.net/news/rss_2.0/")
+        let body = reqwest::get("https://tech.retrieva.jp/rss")
             .await
             .unwrap()
             .text()
@@ -17,7 +21,6 @@ impl Site for Gigazin {
         let feeds = parsers::rss2::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
-            println!("{:?}", feed);
             articles.push(WebArticle {
                 title: feed.title,
                 url: feed.link,
@@ -28,5 +31,12 @@ impl Site for Gigazin {
             });
         }
         return articles;
+    }
+    async fn get_article_text(&self, url: &String) -> String {
+        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
+        let doc = scraper::Html::parse_document(&html);
+        let sel = Selector::parse("#content article div.entry-content").unwrap();
+        let text = doc.select(&sel).next().unwrap().text().collect();
+        return self.trim_text(&text);
     }
 }

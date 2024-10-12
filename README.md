@@ -31,7 +31,6 @@ impl Site for Gigazin {
         let feeds = parsers::rss2::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
-            println!("{:?}", feed);
             articles.push(WebArticle {
                 title: feed.title,
                 url: feed.link,

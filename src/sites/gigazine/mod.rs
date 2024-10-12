@@ -1,14 +1,17 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct StockmarkNews {}
+pub struct Gigazine {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for StockmarkNews {
+impl Site for Gigazine {
+    fn name(&self) -> String {
+        return "Gigazine".to_string();
+    }
     async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://stockmark.co.jp/news/feed/")
+        let body = reqwest::get("https://gigazine.net/news/rss_2.0/")
             .await
             .unwrap()
             .text()
@@ -17,7 +20,6 @@ impl Site for StockmarkNews {
         let feeds = parsers::rss2::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
-            println!("{:?}", feed);
             articles.push(WebArticle {
                 title: feed.title,
                 url: feed.link,
@@ -28,5 +30,13 @@ impl Site for StockmarkNews {
             });
         }
         return articles;
+    }
+    async fn get_article_text(&self, url: &String) -> String {
+        let body = reqwest::get(url).await.unwrap().text().await.unwrap();
+        let document = scraper::Html::parse_document(&body);
+        let selector = scraper::Selector::parse("#article div.cntimage").unwrap();
+        let article = document.select(&selector).next().unwrap();
+        let text = article.text().collect::<Vec<_>>().join("\n");
+        return self.trim_text(&text);
     }
 }

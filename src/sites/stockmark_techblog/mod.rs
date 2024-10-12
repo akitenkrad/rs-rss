@@ -7,6 +7,9 @@ pub struct StockmarkTechBlog {}
 mod tests;
 
 impl Site for StockmarkTechBlog {
+    fn name(&self) -> String {
+        return "Stockmark Tech Blog".to_string();
+    }
     async fn get_articles(&self) -> Vec<WebArticle> {
         let url = "https://stockmark-tech.hatenablog.com/";
         let html = reqwest::get(url).await.unwrap().text().await.unwrap();
@@ -58,5 +61,13 @@ impl Site for StockmarkTechBlog {
             articles.push(article);
         }
         return articles;
+    }
+    async fn get_article_text(&self, url: &String) -> String {
+        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
+        let doc = scraper::Html::parse_document(&html);
+        let selector = Selector::parse("#main div.entry-inner").unwrap();
+        let article = doc.select(&selector).next().unwrap();
+        let text = article.text().collect::<Vec<_>>().join("\n");
+        return self.trim_text(&text);
     }
 }

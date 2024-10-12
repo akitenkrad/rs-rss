@@ -1,10 +1,6 @@
 use chrono::{DateTime, Local};
 use futures::Future;
-
-mod codezin;
-mod gigazin;
-mod stockmarknews;
-mod stockmarktechblog;
+use regex::Regex;
 
 pub trait InfoItem {
     fn title(&self) -> String;
@@ -40,8 +36,10 @@ impl InfoItem for WebArticle {
 }
 
 pub trait Site {
+    fn name(&self) -> String;
     fn get_articles(&self) -> impl Future<Output = Vec<WebArticle>> + Send;
-    fn to_slack_message(&self, article: WebArticle) -> String {
+    fn get_article_text(&self, url: &String) -> impl Future<Output = String> + Send;
+    fn to_slack_message(&self, article: &WebArticle) -> String {
         return format!(
             "{}\n{}\n{}",
             article.title(),
@@ -49,4 +47,37 @@ pub trait Site {
             article.description()
         );
     }
+    fn trim_text(&self, text: &String) -> String {
+        // let ptn = r#"\.?[0-9a-zA-Z\-]+\s*[0-9a-zA-Z:;="'\s\(\)\{\}!\?/,]+"#;
+        // let re = Regex::new(ptn).unwrap();
+        // let trimmed_text = re.replace_all(text, "").to_string();
+
+        let re = Regex::new(r"\s\s+").unwrap();
+        let trimmed_text = re.replace_all(text, "\n").to_string();
+        return trimmed_text;
+    }
 }
+
+mod codezine;
+mod cookpad_techblog;
+mod cyberagent_techblog;
+mod cybozu_blog;
+mod dena_engineering_blog;
+mod gigazine;
+mod github_developers_blog;
+mod gizmodo;
+mod google_developers_blog;
+mod gree_techblog;
+mod gunosy_techblog;
+mod hatena_developer_blog;
+mod line_techblog;
+mod mercari_engineering_blog;
+mod moneyforward_developers_blog;
+mod nikkei_xtech;
+mod qiita_blog;
+mod retrieva_techblog;
+mod sakura_internet_techblog;
+mod stockmark_news;
+mod stockmark_techblog;
+mod supership;
+mod yahoo_japan_techblog;
