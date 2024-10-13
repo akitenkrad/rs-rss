@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::{DateTime, Local};
 use scraper::Selector;
 pub struct BusinessInsiderScience {}
@@ -10,22 +10,16 @@ impl Site for BusinessInsiderScience {
     fn name(&self) -> String {
         return "Business Insider Science".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let url = "https://www.businessinsider.jp/science/";
-        let client = reqwest::Client::new();
-        let html = client
-            .get(url)
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> super::Category {
+        return Category::News;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://www.businessinsider.jp/science/".to_string();
+        let body = self.request(&url).await;
         let mut articles: Vec<WebArticle> = Vec::new();
 
         // parse html
-        let doc = scraper::Html::parse_document(&html);
+        let doc = scraper::Html::parse_document(&body);
         let sel =
             Selector::parse("#mainContent div.p-cardList-content div.p-cardList-card").unwrap();
         for (_i, card) in doc.select(&sel).enumerate() {
@@ -72,14 +66,14 @@ impl Site for BusinessInsiderScience {
             };
             articles.push(article);
         }
-        return articles;
+        return Ok(articles);
     }
 
-    async fn get_article_text(&self, url: &String) -> String {
-        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
-        let doc = scraper::Html::parse_document(&html);
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
+        let doc = scraper::Html::parse_document(&body);
         let sel = Selector::parse("article div.p-post-content").unwrap();
         let text = doc.select(&sel).next().unwrap().text().collect();
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

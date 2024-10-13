@@ -2,6 +2,13 @@ use chrono::{DateTime, Local};
 use futures::Future;
 use regex::Regex;
 
+pub enum Category {
+    Blog,
+    Organization,
+    Security,
+    News,
+}
+
 pub trait InfoItem {
     fn title(&self) -> String;
     fn url(&self) -> String;
@@ -37,11 +44,10 @@ impl InfoItem for WebArticle {
 
 pub trait Site {
     fn name(&self) -> String;
-    fn get_articles(&self) -> impl Future<Output = Vec<WebArticle>> + Send;
-    fn get_article_text(&self, url: &String) -> impl Future<Output = String> + Send;
-    fn user_agent(&self) -> String {
-        return format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
-    }
+    fn category(&self) -> Category;
+    fn get_articles(&self) -> impl Future<Output = Result<Vec<WebArticle>, String>> + Send;
+    fn get_article_text(&self, url: &String)
+        -> impl Future<Output = Result<String, String>> + Send;
     fn to_slack_message(&self, article: &WebArticle) -> String {
         return format!(
             "{}\n{}\n{}",
@@ -58,6 +64,24 @@ pub trait Site {
         let re = Regex::new(r"\s\s+").unwrap();
         let trimmed_text = re.replace_all(text, "\n").to_string();
         return trimmed_text;
+    }
+    fn request(&self, url: &String) -> impl Future<Output = String> + Send {
+        async move {
+            let client = reqwest::Client::new();
+            let body = client
+                .get(url)
+                .header(
+                    reqwest::header::USER_AGENT,
+                    format!("{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION")),
+                )
+                .send()
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap();
+            return body;
+        }
     }
 }
 

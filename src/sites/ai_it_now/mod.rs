@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct AIItNow {}
@@ -10,17 +10,11 @@ impl Site for AIItNow {
     fn name(&self) -> String {
         return "AI IT Now".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let client = reqwest::Client::new();
-        let body = client
-            .get("https://ainow.ai/feed/")
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> super::Category {
+        return Category::News;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let body = self.request(&"https://ainow.ai/feed/".to_string()).await;
         let feeds = parsers::rss2::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -33,28 +27,19 @@ impl Site for AIItNow {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let client = reqwest::Client::new();
-        let body = client
-            .get(url)
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector =
             scraper::Selector::parse("body div.contents div.article_area div.entry-content")
                 .unwrap();
         if let Some(article) = document.select(&selector).next() {
             let text = article.text().collect::<Vec<_>>().join("\n");
-            return self.trim_text(&text);
+            return Ok(self.trim_text(&text));
         } else {
-            return "NO CONTENT".to_string();
+            return Err("NO CONTENT".to_string());
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct ITMediaEnterprise {}
@@ -10,17 +10,12 @@ impl Site for ITMediaEnterprise {
     fn name(&self) -> String {
         return "ITMedia Enterprise".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let client = reqwest::Client::new();
-        let body = client
-            .get("https://rss.itmedia.co.jp/rss/2.0/enterprise.xml")
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> Category {
+        return Category::News;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://rss.itmedia.co.jp/rss/2.0/enterprise.xml".to_string();
+        let body = self.request(&url).await;
         let feeds = parsers::rss2::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -33,19 +28,10 @@ impl Site for ITMediaEnterprise {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let client = reqwest::Client::new();
-        let body = client
-            .get(url)
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
         let mut text = String::new();
@@ -53,6 +39,6 @@ impl Site for ITMediaEnterprise {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
             text.push_str("\n");
         }
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

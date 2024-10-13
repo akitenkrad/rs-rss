@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 use scraper::Selector;
@@ -11,13 +11,12 @@ impl Site for CookpadTechBlog {
     fn name(&self) -> String {
         return "Cookpad Tech Blog".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://techlife.cookpad.com/feed")
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> super::Category {
+        return Category::Blog;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://techlife.cookpad.com/feed".to_string();
+        let body = self.request(&url).await;
         let feeds = parsers::atom::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -30,14 +29,14 @@ impl Site for CookpadTechBlog {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
 
-    async fn get_article_text(&self, url: &String) -> String {
-        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
-        let doc = scraper::Html::parse_document(&html);
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
+        let doc = scraper::Html::parse_document(&body);
         let sel = Selector::parse("#main article div.entry-content").unwrap();
         let text = doc.select(&sel).next().unwrap().text().collect();
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct HatenaBookmarkIT {}
@@ -10,17 +10,12 @@ impl Site for HatenaBookmarkIT {
     fn name(&self) -> String {
         return "Hatena Bookmark IT".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let client = reqwest::Client::new();
-        let body = client
-            .get("http://b.hatena.ne.jp/hotentry/it.rss")
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> Category {
+        return Category::News;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "http://b.hatena.ne.jp/hotentry/it.rss".to_string();
+        let body = self.request(&url).await;
         let feeds = parsers::rss1::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -33,25 +28,16 @@ impl Site for HatenaBookmarkIT {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let client = reqwest::Client::new();
-        let body = client
-            .get(url)
-            .header(reqwest::header::USER_AGENT, self.user_agent())
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector = scraper::Selector::parse("p").unwrap();
         let mut text = String::new();
         for p in document.select(&selector) {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
         }
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

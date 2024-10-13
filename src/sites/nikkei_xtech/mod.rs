@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct NikkeiXTech {}
@@ -10,13 +10,12 @@ impl Site for NikkeiXTech {
     fn name(&self) -> String {
         return "Nikkei XTech".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://xtech.nikkei.com/rss/index.rdf")
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> Category {
+        return Category::News;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://xtech.nikkei.com/rss/index.rdf".to_string();
+        let body = self.request(&url).await;
         let feeds = parsers::rss1::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -29,15 +28,15 @@ impl Site for NikkeiXTech {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let body = reqwest::get(url).await.unwrap().text().await.unwrap();
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector =
             scraper::Selector::parse("main article div.p-article div.p-article_body").unwrap();
         let article = document.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct GoogleDevelopersBlog {}
@@ -10,13 +10,12 @@ impl Site for GoogleDevelopersBlog {
     fn name(&self) -> String {
         return "Google Developers Blog".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let body = reqwest::get("https://developers-jp.googleblog.com/atom.xml")
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+    fn category(&self) -> Category {
+        return Category::Blog;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://developers-jp.googleblog.com/atom.xml".to_string();
+        let body = self.request(&url).await;
         let feeds = parsers::atom::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
@@ -29,15 +28,15 @@ impl Site for GoogleDevelopersBlog {
                     .into(),
             });
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let body = reqwest::get(url).await.unwrap().text().await.unwrap();
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector =
             scraper::Selector::parse("#main div.post div.post-body div.post-content").unwrap();
         let article = document.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

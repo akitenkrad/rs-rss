@@ -1,4 +1,4 @@
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use scraper::Selector;
 pub struct StockmarkTechBlog {}
@@ -10,13 +10,16 @@ impl Site for StockmarkTechBlog {
     fn name(&self) -> String {
         return "Stockmark Tech Blog".to_string();
     }
-    async fn get_articles(&self) -> Vec<WebArticle> {
-        let url = "https://stockmark-tech.hatenablog.com/";
-        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
+    fn category(&self) -> Category {
+        return Category::Blog;
+    }
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+        let url = "https://stockmark-tech.hatenablog.com/".to_string();
+        let body = self.request(&url).await;
         let mut articles: Vec<WebArticle> = Vec::new();
 
         // parse html
-        let doc = scraper::Html::parse_document(&html);
+        let doc = scraper::Html::parse_document(&body);
         let post_selector = Selector::parse("#main").unwrap();
         let posts = doc.select(&post_selector);
         for post in posts {
@@ -60,14 +63,14 @@ impl Site for StockmarkTechBlog {
             };
             articles.push(article);
         }
-        return articles;
+        return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> String {
-        let html = reqwest::get(url).await.unwrap().text().await.unwrap();
-        let doc = scraper::Html::parse_document(&html);
+    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+        let body = self.request(url).await;
+        let doc = scraper::Html::parse_document(&body);
         let selector = Selector::parse("#main div.entry-inner").unwrap();
         let article = doc.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
-        return self.trim_text(&text);
+        return Ok(self.trim_text(&text));
     }
 }

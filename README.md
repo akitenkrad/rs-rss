@@ -12,7 +12,7 @@ touch src/sites/<<TARGET SITE>>/tests.rs
 
 #### mod.rs template
 ```rust
-use crate::sites::{Site, WebArticle};
+use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct Gigazin {}
@@ -21,7 +21,7 @@ pub struct Gigazin {}
 mod tests;
 
 impl Site for Gigazin {
-    async fn get_articles(&self) -> Vec<WebArticle> {
+    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
         let body = reqwest::get("https://gigazine.net/news/rss_2.0/")
             .await
             .unwrap()
