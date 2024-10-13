@@ -6,6 +6,7 @@ pub struct DeNAEngineeringBlog {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for DeNAEngineeringBlog {
     fn name(&self) -> String {
         return "DeNA Engineering Blog".to_string();
@@ -23,6 +24,7 @@ impl Site for DeNAEngineeringBlog {
                 continue;
             }
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

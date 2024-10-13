@@ -6,6 +6,7 @@ pub struct Supership {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for Supership {
     fn name(&self) -> String {
         return "Supership".to_string();
@@ -58,6 +59,7 @@ impl Site for Supership {
                     }
                 };
             let article = WebArticle {
+                site: self.name(),
                 title: title_text,
                 url: url,
                 text: "".to_string(),

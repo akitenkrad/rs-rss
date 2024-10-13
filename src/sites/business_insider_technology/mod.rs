@@ -6,6 +6,7 @@ pub struct BusinessInsiderTechnology {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for BusinessInsiderTechnology {
     fn name(&self) -> String {
         return "Business Insider Technology".to_string();
@@ -59,6 +60,7 @@ impl Site for BusinessInsiderTechnology {
             };
 
             let article = WebArticle {
+                site: self.name(),
                 title: title_text,
                 url: "https://www.businessinsider.jp".to_string() + &url,
                 text: "".to_string(),

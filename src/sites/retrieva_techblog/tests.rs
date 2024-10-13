@@ -2,7 +2,7 @@ use super::*;
 
 #[test]
 fn test_retrieva() {
-    let site = Retrieva {};
+    let site = RetrievaTechBlog {};
     let articles = tokio_test::block_on(site.get_articles());
     if let Ok(articles) = articles {
         assert!(articles.len() > 0);

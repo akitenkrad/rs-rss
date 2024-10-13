@@ -6,6 +6,7 @@ pub struct CodeZine {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for CodeZine {
     fn name(&self) -> String {
         return "CodeZine".to_string();
@@ -46,6 +47,7 @@ impl Site for CodeZine {
                 };
 
                 let article = WebArticle {
+                    site: self.name(),
                     title: tilte_text,
                     url: "https://codezine.jp".to_string() + &url,
                     text: "".to_string(),

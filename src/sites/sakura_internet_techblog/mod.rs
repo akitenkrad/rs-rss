@@ -6,6 +6,7 @@ pub struct SakuraInternetTechBlog {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for SakuraInternetTechBlog {
     fn name(&self) -> String {
         return "CyberAgent Tech Blog".to_string();
@@ -20,6 +21,7 @@ impl Site for SakuraInternetTechBlog {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

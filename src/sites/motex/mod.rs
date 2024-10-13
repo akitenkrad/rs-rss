@@ -6,6 +6,7 @@ pub struct MoTex {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for MoTex {
     fn name(&self) -> String {
         return "MOTEX".to_string();
@@ -20,6 +21,7 @@ impl Site for MoTex {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

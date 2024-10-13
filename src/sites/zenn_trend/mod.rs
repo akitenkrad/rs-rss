@@ -6,6 +6,7 @@ pub struct ZennTrend {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for ZennTrend {
     fn name(&self) -> String {
         return "Zenn Trend".to_string();
@@ -20,6 +21,7 @@ impl Site for ZennTrend {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),
@@ -33,9 +35,7 @@ impl Site for ZennTrend {
     async fn get_article_text(&self, url: &String) -> Result<String, String> {
         let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
-        let selector =
-            scraper::Selector::parse("article section div.BodyContent_anchorToHeadings__uGxNv")
-                .unwrap();
+        let selector = scraper::Selector::parse("article section").unwrap();
         let article = document.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
         return Ok(self.trim_text(&text));

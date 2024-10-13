@@ -6,6 +6,7 @@ pub struct SophosNews {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for SophosNews {
     fn name(&self) -> String {
         return "Sophos News".to_string();
@@ -20,6 +21,7 @@ impl Site for SophosNews {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

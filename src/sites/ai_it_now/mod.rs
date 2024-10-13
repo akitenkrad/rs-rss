@@ -6,6 +6,7 @@ pub struct AIItNow {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for AIItNow {
     fn name(&self) -> String {
         return "AI IT Now".to_string();
@@ -19,6 +20,7 @@ impl Site for AIItNow {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

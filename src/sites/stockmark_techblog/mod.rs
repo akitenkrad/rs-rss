@@ -6,6 +6,7 @@ pub struct StockmarkTechBlog {}
 #[cfg(test)]
 mod tests;
 
+#[async_trait::async_trait]
 impl Site for StockmarkTechBlog {
     fn name(&self) -> String {
         return "Stockmark Tech Blog".to_string();
@@ -31,6 +32,7 @@ impl Site for StockmarkTechBlog {
                 Selector::parse("div.archive-entry-header div.archive-date").unwrap();
 
             let article = WebArticle {
+                site: self.name(),
                 title: post
                     .select(&title_selector)
                     .next()

@@ -2,17 +2,18 @@ use crate::sites::{Category, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 use scraper::Selector;
-pub struct Retrieva {}
+pub struct RetrievaTechBlog {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for Retrieva {
+#[async_trait::async_trait]
+impl Site for RetrievaTechBlog {
     fn name(&self) -> String {
         return "Retrieva".to_string();
     }
     fn category(&self) -> Category {
-        return Category::Organization;
+        return Category::Blog;
     }
     async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
         let url = "https://tech.retrieva.jp/rss".to_string();
@@ -21,6 +22,7 @@ impl Site for Retrieva {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
+                site: self.name(),
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),

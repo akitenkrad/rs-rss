@@ -32,7 +32,8 @@ impl Site for Gigazin {
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
-                title: feed.title,
+                site: self.name(),
+title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),
                 timestamp: DateTime::parse_from_rfc2822(&feed.publish_date.unwrap())
