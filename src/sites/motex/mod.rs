@@ -1,19 +1,19 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct ITMediaAtIt {}
+pub struct MoTex {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for ITMediaAtIt {
+impl Site for MoTex {
     fn name(&self) -> String {
-        return "ITMedia @IT".to_string();
+        return "MOTEX".to_string();
     }
     async fn get_articles(&self) -> Vec<WebArticle> {
         let client = reqwest::Client::new();
         let body = client
-            .get("https://rss.itmedia.co.jp/rss/2.0/ait.xml")
+            .get("https://www.motex.co.jp/news/feed/")
             .header(reqwest::header::USER_AGENT, self.user_agent())
             .send()
             .await
@@ -47,7 +47,7 @@ impl Site for ITMediaAtIt {
             .await
             .unwrap();
         let document = scraper::Html::parse_document(&body);
-        let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
+        let selector = scraper::Selector::parse("#r-contents div._body div.paragraph").unwrap();
         let mut text = String::new();
         for p in document.select(&selector) {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));

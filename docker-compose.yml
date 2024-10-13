@@ -1,0 +1,18 @@
+services:
+  rust:
+    container_name: 'rust.rsrss'
+    image: akitenkrad/rust:latest
+    user: root
+    tty: true
+    volumes:
+      - ./:/workplace
+      - data:/data
+      - /Users/akitenkrad/.ssh:/root/.ssh
+    environment:
+      TZ: Asia/Tokyo
+    working_dir: /workplace
+    platform: linux/amd64
+volumes:
+  data:
+    name: data
+    external: true

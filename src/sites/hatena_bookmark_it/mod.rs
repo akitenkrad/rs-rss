@@ -1,19 +1,19 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct ITMediaAtIt {}
+pub struct HatenaBookmarkIT {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for ITMediaAtIt {
+impl Site for HatenaBookmarkIT {
     fn name(&self) -> String {
-        return "ITMedia @IT".to_string();
+        return "Hatena Bookmark IT".to_string();
     }
     async fn get_articles(&self) -> Vec<WebArticle> {
         let client = reqwest::Client::new();
         let body = client
-            .get("https://rss.itmedia.co.jp/rss/2.0/ait.xml")
+            .get("http://b.hatena.ne.jp/hotentry/it.rss")
             .header(reqwest::header::USER_AGENT, self.user_agent())
             .send()
             .await
@@ -21,14 +21,14 @@ impl Site for ITMediaAtIt {
             .text()
             .await
             .unwrap();
-        let feeds = parsers::rss2::parse(&body).unwrap();
+        let feeds = parsers::rss1::parse(&body).unwrap();
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),
-                timestamp: DateTime::parse_from_rfc2822(&feed.publish_date.unwrap())
+                timestamp: DateTime::parse_from_rfc3339(&feed.date.unwrap())
                     .unwrap()
                     .into(),
             });
@@ -47,11 +47,10 @@ impl Site for ITMediaAtIt {
             .await
             .unwrap();
         let document = scraper::Html::parse_document(&body);
-        let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
+        let selector = scraper::Selector::parse("p").unwrap();
         let mut text = String::new();
         for p in document.select(&selector) {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
-            text.push_str("\n");
         }
         return self.trim_text(&text);
     }

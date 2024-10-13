@@ -1,19 +1,19 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct ITMediaAtIt {}
+pub struct CrowdStrikeBlog {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for ITMediaAtIt {
+impl Site for CrowdStrikeBlog {
     fn name(&self) -> String {
-        return "ITMedia @IT".to_string();
+        return "CrowdStrike Blog".to_string();
     }
     async fn get_articles(&self) -> Vec<WebArticle> {
         let client = reqwest::Client::new();
         let body = client
-            .get("https://rss.itmedia.co.jp/rss/2.0/ait.xml")
+            .get("https://www.crowdstrike.com/en-us/blog/feed")
             .header(reqwest::header::USER_AGENT, self.user_agent())
             .send()
             .await
@@ -28,9 +28,12 @@ impl Site for ITMediaAtIt {
                 title: feed.title,
                 url: feed.link,
                 text: feed.description.unwrap_or("".to_string()),
-                timestamp: DateTime::parse_from_rfc2822(&feed.publish_date.unwrap())
-                    .unwrap()
-                    .into(),
+                timestamp: DateTime::parse_from_str(
+                    &feed.publish_date.unwrap(),
+                    "%b %d, %Y %H:%M:%S%z",
+                )
+                .unwrap()
+                .into(),
             });
         }
         return articles;
@@ -47,7 +50,7 @@ impl Site for ITMediaAtIt {
             .await
             .unwrap();
         let document = scraper::Html::parse_document(&body);
-        let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
+        let selector = scraper::Selector::parse("div.root div.cmp-container-wp div.text").unwrap();
         let mut text = String::new();
         for p in document.select(&selector) {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));

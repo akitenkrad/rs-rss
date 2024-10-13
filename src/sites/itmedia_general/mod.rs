@@ -51,6 +51,7 @@ impl Site for ITMediaGeneral {
         let mut text = String::new();
         for p in document.select(&selector) {
             text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
+            text.push_str("\n");
         }
         return self.trim_text(&text);
     }

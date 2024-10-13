@@ -1,19 +1,19 @@
 use crate::sites::{Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
-pub struct ITMediaAtIt {}
+pub struct AWSSecurityBlog {}
 
 #[cfg(test)]
 mod tests;
 
-impl Site for ITMediaAtIt {
+impl Site for AWSSecurityBlog {
     fn name(&self) -> String {
-        return "ITMedia @IT".to_string();
+        return "AWS Security Blog".to_string();
     }
     async fn get_articles(&self) -> Vec<WebArticle> {
         let client = reqwest::Client::new();
         let body = client
-            .get("https://rss.itmedia.co.jp/rss/2.0/ait.xml")
+            .get("https://aws.amazon.com/blogs/security/feed/")
             .header(reqwest::header::USER_AGENT, self.user_agent())
             .send()
             .await
@@ -47,12 +47,14 @@ impl Site for ITMediaAtIt {
             .await
             .unwrap();
         let document = scraper::Html::parse_document(&body);
-        let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
-        let mut text = String::new();
-        for p in document.select(&selector) {
-            text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
-            text.push_str("\n");
-        }
+        let selector = scraper::Selector::parse("article section.blog-post-content").unwrap();
+        let text = document
+            .select(&selector)
+            .next()
+            .unwrap()
+            .text()
+            .collect::<Vec<_>>()
+            .join("\n");
         return self.trim_text(&text);
     }
 }
