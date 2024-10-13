@@ -137,3 +137,4 @@ pub mod yahoo_news_science;
 pub mod zen_mu_tech;
 pub mod zenn_topic;
 pub mod zenn_trend;
+pub mod rust_blog;

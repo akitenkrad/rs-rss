@@ -43,6 +43,7 @@ fn get_articles_from_eath_site() -> Vec<WebArticle> {
         Box::new(nikkei_xtech::NikkeiXTech {}),
         Box::new(qiita_blog::QiitaBlog {}),
         Box::new(retrieva_techblog::RetrievaTechBlog {}),
+        Box::new(rust_blog::RustBlog {}),
         Box::new(sakura_internet_techblog::SakuraInternetTechBlog {}),
         Box::new(sansan::Sansan {}),
         Box::new(security_next::SecurityNext {}),
