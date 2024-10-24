@@ -17,7 +17,11 @@ impl Site for DeNAEngineeringBlog {
     async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
         let url = "https://engineering.dena.com/index.xml".to_string();
         let body = self.request(&url).await;
-        let feeds = parsers::rss2::parse(&body).unwrap();
+        let feeds = if let Ok(r) = parsers::rss2::parse(&body) {
+            r
+        } else {
+            return Err("Failed to parse RSS".to_string());
+        };
         let mut articles = Vec::new();
         for feed in feeds {
             if !feed.link.starts_with("https://engineering.dena.com/blog") {

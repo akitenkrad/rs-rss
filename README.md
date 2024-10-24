@@ -11,6 +11,7 @@ touch src/sites/<<TARGET SITE>>/tests.rs
 ```
 
 #### mod.rs template
+
 ```rust
 use crate::sites::{Category, Html, Text, Site, WebArticle};
 use chrono::DateTime;
@@ -28,7 +29,11 @@ impl Site for Gigazin {
             .text()
             .await
             .unwrap();
-        let feeds = parsers::rss2::parse(&body).unwrap();
+        let feeds = if let Ok(r) = parsers::rss2::parse(&body) {
+            r
+        } else {
+            return Err("Failed to parse RSS".to_string());
+        };
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
@@ -73,7 +78,9 @@ mod <<TARGET SITE>>
 ```
 
 ### 3. Implement get_articles()
+
 ### 4. Run test
+
 ```bash
 cargo test
 ```

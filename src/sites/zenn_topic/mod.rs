@@ -19,7 +19,11 @@ impl Site for ZennTopic {
     async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
         let url = format!("https://zenn.dev/topics/{}/feed", self.topic);
         let body = self.request(&url).await;
-        let feeds = parsers::rss2::parse(&body).unwrap();
+        let feeds = if let Ok(r) = parsers::rss2::parse(&body) {
+            r
+        } else {
+            return Err("Failed to parse RSS".to_string());
+        };
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {

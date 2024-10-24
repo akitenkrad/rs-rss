@@ -16,7 +16,11 @@ impl Site for AIItNow {
     }
     async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
         let body = self.request(&"https://ainow.ai/feed/".to_string()).await;
-        let feeds = parsers::rss2::parse(&body).unwrap();
+        let feeds = if let Ok(r) = parsers::rss2::parse(&body) {
+            r
+        } else {
+            return Err("Failed to parse RSS".to_string());
+        };
         let mut articles = Vec::new();
         for feed in feeds {
             articles.push(WebArticle {
