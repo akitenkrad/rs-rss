@@ -1,4 +1,4 @@
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Site, Text, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct GoogleDevelopersBlog {}
@@ -24,7 +24,7 @@ impl Site for GoogleDevelopersBlog {
                 site: self.name(),
                 title: feed.title,
                 url: feed.link,
-                text: feed.description.unwrap_or("".to_string()),
+                description: feed.description.unwrap_or("".to_string()),
                 timestamp: DateTime::parse_from_rfc3339(&feed.publish_date.unwrap())
                     .unwrap()
                     .into(),
@@ -32,13 +32,14 @@ impl Site for GoogleDevelopersBlog {
         }
         return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector =
             scraper::Selector::parse("#main div.post div.post-body div.post-content").unwrap();
         let article = document.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
-        return Ok(self.trim_text(&text));
+        let html = article.html().to_string();
+        return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }

@@ -1,4 +1,4 @@
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Site, Text, WebArticle};
 use chrono::DateTime;
 use scraper::Selector;
 pub struct StockmarkTechBlog {}
@@ -47,7 +47,7 @@ impl Site for StockmarkTechBlog {
                     .attr("href")
                     .unwrap()
                     .to_string(),
-                text: post.select(&desc_selector).next().unwrap().text().collect(),
+                description: post.select(&desc_selector).next().unwrap().text().collect(),
                 timestamp: DateTime::parse_from_str(
                     &format!(
                         "{} 00:00:00+0900",
@@ -67,12 +67,13 @@ impl Site for StockmarkTechBlog {
         }
         return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let doc = scraper::Html::parse_document(&body);
         let selector = Selector::parse("#main div.entry-inner").unwrap();
         let article = doc.select(&selector).next().unwrap();
         let text = article.text().collect::<Vec<_>>().join("\n");
-        return Ok(self.trim_text(&text));
+        let html = article.html().to_string();
+        return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }

@@ -1,6 +1,9 @@
 use chrono::{DateTime, Local};
 use regex::Regex;
 
+type Html = String;
+type Text = String;
+
 pub enum Category {
     Blog,
     Organization,
@@ -15,28 +18,15 @@ pub trait InfoItem {
     fn timestamp(&self) -> DateTime<Local>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WebArticle {
     pub site: String,
     pub title: String,
     pub url: String,
-    pub text: String,
+    pub description: String,
     pub timestamp: DateTime<Local>,
 }
 
-impl WebArticle {
-    pub fn to_slack_message(&self, no: usize) -> String {
-        return format!("No.{COUNT}  -  {NAME}\n{TITLE}\n{DEVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\nURL: {LINK}\nPUBLISHED: {AT}",
-            COUNT=no, 
-            NAME=self.site,
-            TITLE=self.title,
-            DEVIDER="-".repeat(50),
-            SCORE=0,
-            KEYWORDS="",
-            LINK=self.url,
-            AT=self.timestamp().format("%Y-%m-%d").to_string());
-    }
-}
 impl InfoItem for WebArticle {
     fn title(&self) -> String {
         return self.title.clone();
@@ -47,7 +37,7 @@ impl InfoItem for WebArticle {
     }
 
     fn description(&self) -> String {
-        return self.text.clone();
+        return self.description.clone();
     }
 
     fn timestamp(&self) -> DateTime<Local> {
@@ -60,7 +50,7 @@ pub trait Site {
     fn name(&self) -> String;
     fn category(&self) -> Category;
     async fn get_articles(&self) -> Result<Vec<WebArticle>, String>;
-    async fn get_article_text(&self, url: &String) -> Result<String, String>;
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String>;
     fn trim_text(&self, text: &String) -> String {
         // let ptn = r#"\.?[0-9a-zA-Z\-]+\s*[0-9a-zA-Z:;="'\s\(\)\{\}!\?/,]+"#;
         // let re = Regex::new(ptn).unwrap();
@@ -121,6 +111,7 @@ pub mod motex;
 pub mod nikkei_xtech;
 pub mod qiita_blog;
 pub mod retrieva_techblog;
+pub mod rust_blog;
 pub mod sakura_internet_techblog;
 pub mod sansan;
 pub mod security_next;
@@ -137,4 +128,3 @@ pub mod yahoo_news_science;
 pub mod zen_mu_tech;
 pub mod zenn_topic;
 pub mod zenn_trend;
-pub mod rust_blog;

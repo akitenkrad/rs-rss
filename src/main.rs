@@ -8,7 +8,7 @@ use slack::notify_slack;
 pub mod sites;
 pub mod slack;
 
-fn get_articles_from_eath_site() -> Vec<WebArticle> {
+async fn get_articles_from_eath_site() -> Vec<WebArticle> {
     let sites: Vec<Box<dyn Site>> = vec![
         Box::new(ai_it_now::AIItNow {}),
         Box::new(aws_security_blog::AWSSecurityBlog {}),
@@ -67,9 +67,7 @@ fn get_articles_from_eath_site() -> Vec<WebArticle> {
     ];
     let mut articles = Vec::new();
     for site in sites {
-        let result = tokio::runtime::Runtime::new()
-            .unwrap()
-            .block_on(site.get_articles());
+        let result = site.get_articles().await;
         match result {
             Ok(articles_) => {
                 articles.extend(articles_);
@@ -84,6 +82,6 @@ fn get_articles_from_eath_site() -> Vec<WebArticle> {
 
 #[tokio::main]
 async fn main() {
-    let articles = get_articles_from_eath_site();
-    notify_slack(articles).await;
+    let articles = get_articles_from_eath_site().await;
+    let _ = notify_slack(articles, true).await;
 }

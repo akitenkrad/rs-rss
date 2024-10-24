@@ -4,9 +4,11 @@ name = "rsrss"
 version = "0.1.0"
 
 [dependencies]
+keywords = { git = "https://github.com/akitenkrad/keywords", branch="main" }
 async-trait = "0.1.83"
 chrono = ">=0.4"
 chrono-tz = ">=0.10.0"
+dotenv = "0.15.0"
 feed-parser = "1.0.1"
 futures = "0.3.31"
 log = "0.4.22"
@@ -19,3 +21,4 @@ serde_json = "1.0.128"
 tokio = { version = ">=1.4", features = ["full"] }
 tokio-test = "0.4.4"
 urlencoding = ">=2.0"
+indicatif = "0.17.8"

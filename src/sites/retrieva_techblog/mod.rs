@@ -1,4 +1,4 @@
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Site, Text, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 use scraper::Selector;
@@ -25,7 +25,7 @@ impl Site for RetrievaTechBlog {
                 site: self.name(),
                 title: feed.title,
                 url: feed.link,
-                text: feed.description.unwrap_or("".to_string()),
+                description: feed.description.unwrap_or("".to_string()),
                 timestamp: DateTime::parse_from_rfc2822(&feed.publish_date.unwrap())
                     .unwrap()
                     .into(),
@@ -33,11 +33,12 @@ impl Site for RetrievaTechBlog {
         }
         return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let doc = scraper::Html::parse_document(&body);
         let sel = Selector::parse("#content article div.entry-content").unwrap();
         let text = doc.select(&sel).next().unwrap().text().collect();
-        return Ok(self.trim_text(&text));
+        let html = doc.select(&sel).next().unwrap().html().to_string();
+        return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }

@@ -1,4 +1,4 @@
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Site, Text, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct JPCert {}
@@ -25,7 +25,7 @@ impl Site for JPCert {
                 site: self.name(),
                 title: feed.title,
                 url: feed.link,
-                text: feed.description.unwrap_or("".to_string()),
+                description: feed.description.unwrap_or("".to_string()),
                 timestamp: DateTime::parse_from_rfc2822(&feed.publish_date.unwrap())
                     .unwrap()
                     .into(),
@@ -33,7 +33,7 @@ impl Site for JPCert {
         }
         return Ok(articles);
     }
-    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
         let selector = scraper::Selector::parse("article div.p-article__content").unwrap();
@@ -44,6 +44,12 @@ impl Site for JPCert {
             .text()
             .collect::<Vec<_>>()
             .join("\n");
-        return Ok(self.trim_text(&text));
+        let html = document
+            .select(&selector)
+            .next()
+            .unwrap()
+            .html()
+            .to_string();
+        return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }

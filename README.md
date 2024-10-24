@@ -12,7 +12,7 @@ touch src/sites/<<TARGET SITE>>/tests.rs
 
 #### mod.rs template
 ```rust
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Text, Site, WebArticle};
 use chrono::DateTime;
 use feed_parser::parsers;
 pub struct Gigazin {}

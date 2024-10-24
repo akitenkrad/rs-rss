@@ -1,4 +1,4 @@
-use crate::sites::{Category, Site, WebArticle};
+use crate::sites::{Category, Html, Site, Text, WebArticle};
 use chrono::DateTime;
 use scraper::Selector;
 pub struct Supership {}
@@ -62,7 +62,7 @@ impl Site for Supership {
                 site: self.name(),
                 title: title_text,
                 url: url,
-                text: "".to_string(),
+                description: "".to_string(),
                 timestamp: publish_date.into(),
             };
             articles.push(article);
@@ -70,11 +70,12 @@ impl Site for Supership {
         return Ok(articles);
     }
 
-    async fn get_article_text(&self, url: &String) -> Result<String, String> {
+    async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let doc = scraper::Html::parse_document(&body);
         let sel = Selector::parse("main article div.c-grid__block--content").unwrap();
         let text = doc.select(&sel).next().unwrap().text().collect();
-        return Ok(self.trim_text(&text));
+        let html = doc.select(&sel).next().unwrap().html().to_string();
+        return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }
