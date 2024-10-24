@@ -22,9 +22,9 @@ pub async fn notify_slack(
     let mut target_articles: Vec<(WebArticle, usize, Value)> = Vec::new();
 
     let mut index = 1;
+    let bar = ProgressBar::new(articles.len() as u64);
     for article in articles.iter() {
         if skip_outdated_articles && article.timestamp < now - chrono::Duration::days(1) {
-            println!("Skip an old article: {}", article.title);
             continue;
         }
 
@@ -62,7 +62,9 @@ pub async fn notify_slack(
             extracted_keywords.iter().map(|kwd| kwd.score).sum::<u8>() as usize,
             payload,
         ));
+        bar.inc(1);
     }
+    bar.finish();
 
     target_articles.sort_by(|a, b| b.1.cmp(&a.1));
     let bar = ProgressBar::new(target_articles.len() as u64);
