@@ -11,9 +11,9 @@ phases:
   build:
     commands:
       - cargo +nightly test -- --format=json -Z unstable-options --report-time | junitify --out tests/
-  reports:
-    test_report:
-      files:
-        - '**/*.xml'
-      base_directory: 'tests'
-      file-format: JUNITXML
+reports:
+  test_report:
+    files:
+      - '**/*.xml'
+    base_directory: 'tests'
+    file-format: JUNITXML
