@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 name = "rsrss"
-version = "0.1.0"
+version = "1.0.0"
 
 [dependencies]
 keywords = { git = "https://github.com/akitenkrad/keywords", branch="main" }
@@ -13,7 +13,7 @@ feed-parser = "1.0.1"
 futures = "0.3.31"
 log = "0.4.22"
 quick-xml = { version = "0.36.2", features = ["serialize"] }
-regex = "1.11.0"
+regex = "1.11.1"
 reqwest = ">=0.12"
 scraper = ">=0.20"
 serde = "1.0.210"
