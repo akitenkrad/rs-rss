@@ -19,13 +19,17 @@ pub async fn notify_slack(
     let client = reqwest::Client::new();
     let slack_url = env::var("SLACK_WEBHOOK_URL").expect("SLACK_WEBHOOK_URL is not set");
     let kws = load_keywords();
-    let mut target_articles: Vec<(WebArticle, usize, Vec<Keyword>)> = Vec::new();
+    let mut target_articles: Vec<(WebArticle, isize, Vec<Keyword>)> = Vec::new();
 
     // collect articles and keywords
     {
         let bar = ProgressBar::new(articles.len() as u64);
         for article in articles.iter() {
             if skip_outdated_articles && article.timestamp < now - chrono::Duration::days(1) {
+                println!(
+                    "Skipped: {} (outdated: {:?})",
+                    article.title, article.timestamp
+                );
                 continue;
             }
 
@@ -36,12 +40,16 @@ pub async fn notify_slack(
                 kws.clone(),
                 Language::Japanese,
             ));
-            extracted_keywords.sort_by(|a, b| a.alias.cmp(&b.alias));
-            extracted_keywords.dedup_by(|a, b| a.alias == b.alias);
+
+            let score = extracted_keywords.iter().map(|kwd| kwd.score).sum::<i8>();
+            if score < 0 {
+                print!("Skipped: {} (score: {})\n", article.title, score);
+                continue;
+            }
 
             target_articles.push((
                 article.clone(),
-                extracted_keywords.iter().map(|kwd| kwd.score).sum::<u8>() as usize,
+                extracted_keywords.iter().map(|kwd| kwd.score).sum::<i8>() as isize,
                 extracted_keywords,
             ));
             bar.inc(1);
@@ -53,7 +61,9 @@ pub async fn notify_slack(
     {
         target_articles.sort_by(|a, b| b.1.cmp(&a.1));
         let bar = ProgressBar::new(target_articles.len() as u64);
-        for (index, (article, _, kws)) in target_articles.iter().enumerate() {
+        for (index, (article, score, mut kws)) in target_articles.into_iter().enumerate() {
+            kws.sort_by(|a, b| a.alias.cmp(&b.alias));
+            kws.dedup_by(|a, b| a.alias == b.alias);
             let payload = json!({
                 "attachments": [
                     {
@@ -65,7 +75,7 @@ pub async fn notify_slack(
                         "title_link": article.url,
                         "text": format!("{DIVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\n{DIVIDER}\n{TEXT}",
                             DIVIDER="-".repeat(75),
-                            SCORE=kws.iter().map(|kwd| kwd.score).sum::<u8>(),
+                            SCORE=score,
                             KEYWORDS=kws.iter().map(|kwd| kwd.alias.clone()).collect::<Vec<String>>().join(" / "),
                             TEXT=article.description
                         ),
