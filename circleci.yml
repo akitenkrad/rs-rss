@@ -15,7 +15,7 @@ jobs:
       - run: echo 'source $HOME/.cargo/env' >> "$BASH_ENV"
       - run: rustup install nightly
       - run: cargo install junitify
-      - run: cargo +nightly test -- --format=json -Z unstable-options --report-time | junitify --out $HOME/tests
+      - run: cargo +nightly test -- --nocapture --format=json -Z unstable-options --report-time | junitify --out $HOME/tests
       - store_test_results:
           path: $HOME/tests
 
@@ -35,4 +35,6 @@ workflows:
     jobs:
       - build
       - notify:
+          requires:
+            - build
           context: slack-secrets
