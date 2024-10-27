@@ -1,5 +1,7 @@
 # rsrss
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/X1fiE4koKU88Z9sKwWoPAH/CwXRRPaUf8UKhZHHUQqHNJ/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/X1fiE4koKU88Z9sKwWoPAH/CwXRRPaUf8UKhZHHUQqHNJ/tree/main)
+
 ## How to add new site
 
 ### 1. Create site directory
