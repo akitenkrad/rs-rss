@@ -1,11 +1,11 @@
 use super::*;
 
-#[test]
-fn test_zenn_topic() {
+#[tokio::test]
+async fn test_zenn_topic() {
     let site = ZennTopic {
         topic: "自然言語処理".to_string(),
     };
-    let articles = tokio_test::block_on(site.get_articles());
+    let articles = site.get_articles().await;
     if let Ok(articles) = articles {
         if articles.len() == 0 {
             println!("No articles found");
@@ -15,7 +15,7 @@ fn test_zenn_topic() {
 
         let article = articles.get(0).unwrap();
         println!("Article: {:?}", article);
-        let html_and_text = tokio_test::block_on(site.get_article_text(&article.url));
+        let html_and_text = site.get_article_text(&article.url).await;
         match html_and_text {
             Ok(html_and_text) => {
                 let (html, text) = html_and_text;

@@ -1,9 +1,9 @@
 use super::*;
 
-#[test]
-fn test_business_insider_technology() {
+#[tokio::test]
+async fn test_business_insider_technology() {
     let site = BusinessInsiderTechnology {};
-    let articles = tokio_test::block_on(site.get_articles());
+    let articles = site.get_articles().await;
     if let Ok(articles) = articles {
         if articles.len() == 0 {
             println!("No articles found");
@@ -13,7 +13,7 @@ fn test_business_insider_technology() {
 
         let article = articles.get(0).unwrap();
         println!("Article: {:?}", article);
-        let html_and_text = tokio_test::block_on(site.get_article_text(&article.url));
+        let html_and_text = site.get_article_text(&article.url).await;
         match html_and_text {
             Ok(html_and_text) => {
                 let (html, text) = html_and_text;

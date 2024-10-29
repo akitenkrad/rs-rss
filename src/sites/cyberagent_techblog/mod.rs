@@ -39,10 +39,18 @@ impl Site for CyberAgentTechBlog {
     async fn get_article_text(&self, url: &String) -> Result<(Html, Text), String> {
         let body = self.request(url).await;
         let document = scraper::Html::parse_document(&body);
+        let selector = scraper::Selector::parse("main div.notion-text").unwrap();
+        if let Some(article) = document.select(&selector).next() {
+            let text = article.text().collect::<Vec<_>>().join("\n");
+            let html = article.html().to_string();
+            return Ok((self.trim_text(&html), self.trim_text(&text)));
+        }
         let selector = scraper::Selector::parse("#main article div.entry-content").unwrap();
-        let article = document.select(&selector).next().unwrap();
-        let text = article.text().collect::<Vec<_>>().join("\n");
-        let html = article.html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        if let Some(article) = document.select(&selector).next() {
+            let text = article.text().collect::<Vec<_>>().join("\n");
+            let html = article.html().to_string();
+            return Ok((self.trim_text(&html), self.trim_text(&text)));
+        }
+        return Err("Failed to parse article".to_string());
     }
 }

@@ -20,6 +20,7 @@ pub async fn notify_slack(
     let slack_url = env::var("SLACK_WEBHOOK_URL").expect("SLACK_WEBHOOK_URL is not set");
     let kws = load_keywords();
     let mut target_articles: Vec<(WebArticle, isize, Vec<Keyword>)> = Vec::new();
+    let mut excluded_articles: Vec<(WebArticle, isize, Vec<Keyword>)> = Vec::new();
 
     // collect articles and keywords
     {
@@ -44,20 +45,57 @@ pub async fn notify_slack(
             let score = extracted_keywords.iter().map(|kwd| kwd.score).sum::<i8>();
             if score < 0 {
                 print!("Skipped: {} (score: {})\n", article.title, score);
-                continue;
+                excluded_articles.push((article.clone(), score as isize, extracted_keywords));
+            } else {
+                target_articles.push((article.clone(), score as isize, extracted_keywords));
             }
-
-            target_articles.push((
-                article.clone(),
-                extracted_keywords.iter().map(|kwd| kwd.score).sum::<i8>() as isize,
-                extracted_keywords,
-            ));
             bar.inc(1);
         }
         bar.finish();
     }
 
-    // send messages to Slack
+    // send excluded articles to Slack
+    {
+        excluded_articles.sort_by(|a, b| b.0.timestamp.cmp(&a.0.timestamp));
+        let bar = ProgressBar::new(excluded_articles.len() as u64);
+        for (index, (article, score, kws)) in excluded_articles.into_iter().enumerate() {
+            let payload = json!({
+                "attachments": [
+                    {
+                        "color": "#36a64f",
+                        "pretext": format!("No.{} - {} @{}", index + 1, article.site, article.timestamp.format("%Y.%m.%d")),
+                        "title": format!("{TITLE}",
+                            TITLE=article.title,
+                        ),
+                        "title_link": article.url,
+                        "text": format!("{DIVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\n{DIVIDER}\n{TEXT}",
+                            DIVIDER="-".repeat(75),
+                            SCORE=score,
+                            KEYWORDS=kws.iter().map(|kwd| kwd.alias.clone()).collect::<Vec<String>>().join(" / "),
+                            TEXT=article.description
+                        ),
+                    }
+                ]
+            });
+
+            let res = client
+                .post(&slack_url)
+                .header("Content-Type", "application/json")
+                .body(payload.to_string())
+                .send()
+                .await;
+
+            match res {
+                Ok(_) => {
+                    bar.inc(1);
+                }
+                Err(e) => eprintln!("Failed to send a message to Slack: {}", e),
+            }
+        }
+        bar.finish();
+    }
+
+    // send target articles to Slack
     {
         target_articles.sort_by(|a, b| b.1.cmp(&a.1));
         let bar = ProgressBar::new(target_articles.len() as u64);
