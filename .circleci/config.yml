@@ -17,7 +17,7 @@ jobs:
       - run: cargo install junitify
       - run: cargo +nightly test -- --format=json -Z unstable-options --report-time >> test.log && cat test.log | junitify --out $HOME/tests
       - store_test_results:
-          path: $HOME/tests
+          path: $HOME/tests/sites-0.xml
       - slack/notify:
           event: pass
           template: basic_success_1
