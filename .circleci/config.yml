@@ -15,9 +15,9 @@ jobs:
       - run: echo 'source $HOME/.cargo/env' >> "$BASH_ENV"
       - run: rustup install nightly
       - run: cargo install junitify
-      - run: cargo +nightly test -- --format=json -Z unstable-options --report-time >> test.log && cat test.log | junitify --out $HOME/tests
+      - run: cargo +nightly test -- --format=json -Z unstable-options --report-time | junitify --out tests
       - store_test_results:
-          path: $HOME/tests/sites-0.xml
+          path: tests
       - slack/notify:
           event: pass
           template: basic_success_1
