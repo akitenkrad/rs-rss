@@ -53,6 +53,9 @@ impl Site for SecurityNext {
             .map(|x| x.html())
             .collect::<Vec<_>>()
             .join("\n");
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let html_text = self.trim_text(&html);
+        let mut text = self.trim_text(&text);
+        text.push_str("\n\nSecurity Next\n");
+        return Ok((html_text, text));
     }
 }
