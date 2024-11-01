@@ -79,6 +79,7 @@ pub trait Site {
 }
 
 pub mod ai_it_now;
+pub mod ai_scholar;
 pub mod aws_security_blog;
 pub mod business_insider_science;
 pub mod business_insider_technology;
