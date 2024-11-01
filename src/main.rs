@@ -11,6 +11,7 @@ pub mod slack;
 async fn get_articles_from_eath_site() -> Vec<WebArticle> {
     let sites: Vec<Box<dyn Site>> = vec![
         Box::new(ai_it_now::AIItNow {}),
+        Box::new(ai_scholar::AIScholar {}),
         Box::new(aws_security_blog::AWSSecurityBlog {}),
         Box::new(business_insider_science::BusinessInsiderScience {}),
         Box::new(business_insider_technology::BusinessInsiderTechnology {}),
