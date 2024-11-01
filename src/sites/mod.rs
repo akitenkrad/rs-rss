@@ -78,6 +78,7 @@ pub trait Site {
     }
 }
 
+pub mod ai_db;
 pub mod ai_it_now;
 pub mod ai_news;
 pub mod ai_scholar;
