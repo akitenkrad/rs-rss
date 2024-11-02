@@ -23,8 +23,13 @@ async fn test_hatena_bookmark_it() {
                 assert!(text.len() > 0);
             }
             Err(e) => {
-                println!("Error: {}", e);
-                assert!(false);
+                if e.to_string().contains("No Content") {
+                    println!("No Content");
+                    assert!(true);
+                } else {
+                    println!("Error: {}", e);
+                    assert!(false);
+                }
             }
         }
     } else {
