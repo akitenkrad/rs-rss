@@ -10,8 +10,12 @@ pub mod slack;
 
 async fn get_articles_from_eath_site() -> Vec<WebArticle> {
     let sites: Vec<Box<dyn Site>> = vec![
+        Box::new(ai_db::AIDB {}),
         Box::new(ai_it_now::AIItNow {}),
+        Box::new(ai_news::AINews {}),
         Box::new(ai_scholar::AIScholar {}),
+        Box::new(aismiley::AISmiley {}),
+        Box::new(aizine::AIZine {}),
         Box::new(aws_security_blog::AWSSecurityBlog {}),
         Box::new(business_insider_science::BusinessInsiderScience {}),
         Box::new(business_insider_technology::BusinessInsiderTechnology {}),
@@ -38,6 +42,16 @@ async fn get_articles_from_eath_site() -> Vec<WebArticle> {
         Box::new(jpcert::JPCert {}),
         Box::new(line_techblog::LineTechBlog {}),
         Box::new(macafee_security_news::MacAfeeSecurityNews {}),
+        Box::new(medium::Medium::new(
+            "Artificial Intelligence",
+            "artificial-intelligence",
+        )),
+        Box::new(medium::Medium::new("AI", "ai")),
+        Box::new(medium::Medium::new("Machine Learning", "machine-learning")),
+        Box::new(medium::Medium::new("ChatGPT", "chatgpt")),
+        Box::new(medium::Medium::new("Data Science", "data-science")),
+        Box::new(medium::Medium::new("OpenAI", "openai")),
+        Box::new(medium::Medium::new("LLM", "llm")),
         Box::new(mercari_engineering_blog::MercariEngineeringBlog {}),
         Box::new(moneyforward_developers_blog::MoneyForwardDevelopersBlog {}),
         Box::new(motex::MoTex {}),

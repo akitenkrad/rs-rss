@@ -26,7 +26,7 @@ pub async fn notify_slack(
     {
         let bar = ProgressBar::new(articles.len() as u64);
         for article in articles.iter() {
-            if skip_outdated_articles && article.timestamp < now - chrono::Duration::days(1) {
+            if skip_outdated_articles && article.timestamp < now - chrono::Duration::hours(24) {
                 println!(
                     "Skipped: {} (outdated: {:?})",
                     article.title, article.timestamp
@@ -63,16 +63,16 @@ pub async fn notify_slack(
                 "attachments": [
                     {
                         "color": "#36a64f",
-                        "pretext": format!("No.{} - {} @{}", index + 1, article.site, article.timestamp.format("%Y.%m.%d")),
+                        "pretext": format!("No.{} - *{}* @{}", index + 1, article.site, article.timestamp.format("%Y.%m.%d %H:%M:%S")),
                         "title": format!("{TITLE}",
                             TITLE=article.title,
                         ),
                         "title_link": article.url,
-                        "text": format!("{DIVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\n{DIVIDER}\n{TEXT}",
+                        "text": format!("{DIVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\n{DIVIDER}\n>{TEXT}",
                             DIVIDER="-".repeat(75),
                             SCORE=score,
-                            KEYWORDS=kws.iter().map(|kwd| kwd.alias.clone()).collect::<Vec<String>>().join(" / "),
-                            TEXT=article.description
+                            KEYWORDS=kws.iter().map(|kwd| format!("{}({})", kwd.alias.clone(), kwd.score)).collect::<Vec<String>>().join(" / "),
+                            TEXT=article.description.replace("\n", "\n>")
                         ),
                     }
                 ]
