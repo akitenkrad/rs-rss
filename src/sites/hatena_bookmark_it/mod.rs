@@ -42,10 +42,9 @@ impl Site for HatenaBookmarkIT {
         }
         let html = document
             .select(&selector)
-            .next()
-            .unwrap()
-            .html()
-            .to_string();
+            .map(|x| x.html())
+            .collect::<Vec<_>>()
+            .join("\n");
         return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }
