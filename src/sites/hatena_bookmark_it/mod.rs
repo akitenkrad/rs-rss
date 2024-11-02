@@ -45,6 +45,9 @@ impl Site for HatenaBookmarkIT {
             .map(|x| x.html())
             .collect::<Vec<_>>()
             .join("\n");
+        if html.is_empty() || text.is_empty() {
+            return Err("No Content".to_string());
+        }
         return Ok((self.trim_text(&html), self.trim_text(&text)));
     }
 }
