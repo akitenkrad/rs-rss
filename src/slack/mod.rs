@@ -43,7 +43,7 @@ pub async fn notify_slack(
             ));
 
             let score = extracted_keywords.iter().map(|kwd| kwd.score).sum::<i8>();
-            if score < 0 {
+            if score <= 0 {
                 print!("Skipped: {} (score: {})\n", article.title, score);
                 excluded_articles.push((article.clone(), score as isize, extracted_keywords));
             } else {
