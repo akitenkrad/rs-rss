@@ -114,7 +114,7 @@ pub async fn notify_slack(
                         "text": format!("{DIVIDER}\nKEYWORDS: {SCORE}\n{KEYWORDS}\n{DIVIDER}\n{TEXT}",
                             DIVIDER="-".repeat(75),
                             SCORE=score,
-                            KEYWORDS=kws.iter().map(|kwd| kwd.alias.clone()).collect::<Vec<String>>().join(" / "),
+                            KEYWORDS=kws.iter().map(|kwd| format!("{}({})", kwd.alias.clone(), kwd.score)).collect::<Vec<String>>().join(" / "),
                             TEXT=article.description
                         ),
                     }
