@@ -150,6 +150,9 @@ async fn get_articles_from_eath_site() -> Vec<WebArticle> {
         pb.inc(1);
     }
     pb.finish_and_clear();
+
+    articles = articles.into_iter().filter(|article| article.html != "").collect();
+
     return articles;
 }
 

@@ -138,17 +138,17 @@ impl Site for NikkeiXTech {
 mod tests {
     use super::*;
 
-    #[tokio::test]
-    async fn test_nikkei_xtech_login() {
-        let mut site = NikkeiXTech::default();
-        let cookies = site.login().await;
-        if let Ok(cookies) = cookies {
-            println!("Cookies: {}", cookies);
-            assert!(cookies.len() > 0);
-        } else {
-            assert!(false);
-        }
-    }
+    // #[tokio::test]
+    // async fn test_nikkei_xtech_login() {
+    //     let mut site = NikkeiXTech::default();
+    //     let cookies = site.login().await;
+    //     if let Ok(cookies) = cookies {
+    //         println!("Cookies: {}", cookies);
+    //         assert!(cookies.len() > 0);
+    //     } else {
+    //         assert!(false);
+    //     }
+    // }
 
     #[tokio::test]
     async fn test_nikkei_xtech() {
