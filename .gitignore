@@ -21,3 +21,4 @@ Cargo.lock
 
 .env
 tests
+compose.yml

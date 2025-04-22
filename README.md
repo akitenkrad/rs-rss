@@ -17,14 +17,14 @@ touch src/sites/<<TARGET SITE>>/tests.rs
 ```rust
 use crate::sites::{Category, Html, Text, Site, WebArticle};
 use chrono::DateTime;
-use feed_parser::parsers;
+use feed_parser::parsers; use anyhow::{Error, Result};
 pub struct Gigazin {}
 
 #[cfg(test)]
 mod tests;
 
 impl Site for Gigazin {
-    async fn get_articles(&self) -> Result<Vec<WebArticle>, String> {
+    async fn get_articles(&self) -> Result<Vec<WebArticle>>{
         let body = reqwest::get("https://gigazine.net/news/rss_2.0/")
             .await
             .unwrap()
@@ -34,7 +34,7 @@ impl Site for Gigazin {
         let feeds = if let Ok(r) = parsers::rss2::parse(&body) {
             r
         } else {
-            return Err("Failed to parse RSS".to_string());
+            return Err(Error::msg("Failed to parse RSS"));
         };
         let mut articles = Vec::new();
         for feed in feeds {

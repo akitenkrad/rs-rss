@@ -4,21 +4,29 @@ name = "rsrss"
 version = "1.0.0"
 
 [dependencies]
-keywords = { git = "https://github.com/akitenkrad/keywords", branch="main" }
-async-trait = "0.1.83"
-chrono = ">=0.4"
-chrono-tz = ">=0.10.0"
+request = { version = "0.12.15", features = ["cookies"], package = "reqwest" }
+keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
+async-trait = "0.1.88"
+chrono = { version = "0.4.40", features = ["serde"] }
+chrono-tz = "0.10.3"
 dotenv = "0.15.0"
-feed-parser = "1.0.1"
+feed-parser = "1.0.11"
 futures = "0.3.31"
-log = "0.4.22"
-quick-xml = { version = "0.36.2", features = ["serialize"] }
+log = "0.4.27"
+quick-xml = { version = "0.37.4", features = ["serialize"] }
 regex = "1.11.1"
-reqwest = { version = ">=0.12", features = ["cookies"] }
-scraper = ">=0.20"
-serde = "1.0.210"
-serde_json = "1.0.128"
-tokio = { version = ">=1.4", features = ["full"] }
+scraper = "0.23.1"
+serde = "1.0.219"
+serde_json = "1.0.140"
+tokio = { version = "1.44.2", features = ["full"] }
 tokio-test = "0.4.4"
-urlencoding = ">=2.0"
-indicatif = "0.17.8"
+urlencoding = "2.1.3"
+indicatif = "0.17.11"
+anyhow = "1.0.98"
+dotenvy = "0.15.7"
+fxhash = "0.2.1"
+wait-timeout = "0.2.1"
+openai-tools = "0.1.3"
+const_format = { version = "0.2.34", features = ["derive"] }
+encoding = "0.2.33"
+flate2 = "1.1.1"
