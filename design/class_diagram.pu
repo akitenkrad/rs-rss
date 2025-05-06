@@ -9,25 +9,24 @@ package crawler {
         note left: Implements the Site\ninterface for every site
     }
     package model {
-        struct WebResource
+        struct WebResource {
+        }
     }
 }
 
 package kernel {
     package model {
-        Interface Site {
-            +String name
-            +Category category
-            +get_articles(): Vec<WebArticle>
-            +parse_article(url: String): (Html, Text)
-        }
         struct WebArticle {
-            +from<WebResource>
+            +from<WebArticleRecord>()
+            +from<WebResource>()
         }
     }
     package repository {
-        struct AIRepository {
-            +interpret(&mut article: WebArticle)
+        interface WebArticleRepository {
+            +create()
+            +read()
+            +update()
+            +delete()
         }
     }
 }
@@ -35,12 +34,15 @@ package kernel {
 package adapter {
     package model {
         struct WebArticleRecord {
-            +from<WebArticle>
+            +from<WebArticle>()
         }
     }
     package repository {
-        struct WebArticleRepository {
-            +create(article: WebArticleRecord)
+        struct WebArticleRepositoryImpl {
+            +create()
+            +read()
+            +update()
+            +delete()
         }
     }
 }
@@ -50,10 +52,11 @@ database PostgreSQL {
 }
 
 
-kernel.model.Site ..|> crawler.sites.AnySite
-Internet --> crawler.model.WebResource
-crawler.model.WebResource --> kernel.model.WebArticle
-kernel.model.WebArticle --> adapter.model.WebArticleRecord
-adapter.model.WebArticleRecord --> adapter.repository.WebArticleRepository
-adapter.repository.WebArticleRepository --> PostgreSQL.WebArticle
+Internet --> crawler.sites.AnySite:data flow
+crawler.sites.AnySite --> crawler.model.WebResource: data flow
+crawler.model.WebResource --> kernel.model.WebArticle: data flow
+kernel.model.WebArticle --> adapter.model.WebArticleRecord: data flow
+adapter.model.WebArticleRecord --> PostgreSQL.WebArticle: data flow
+
+kernel.repository.WebArticleRepository ..|> adapter.repository.WebArticleRepositoryImpl: implements
 @enduml
