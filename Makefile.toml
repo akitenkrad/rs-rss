@@ -1,0 +1,182 @@
+[config]
+default_to_workspace = false
+
+[env]
+AUTH_TOKEN_TTL = 86400
+DATABASE_NAME = "rss"
+DATABASE_PASSWORD = "password"
+DATABASE_PORT = 65432
+DATABASE_USERNAME = "postgres"
+DATABASE_HOST = "192.168.11.5"
+DATABASE_URL = "postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+PORT = 18080
+JAEGER_HOST = "jaeger"
+JAEGER_PORT = 6831
+
+[tasks.before-build]
+run_task = [{ name = ["compose-up-db", "migrate"] }]
+
+[tasks.compose-build-app]
+args = [
+  "compose",
+  "build",
+  "app",
+  "--build-arg",
+  "BUILDKIT_INLINE_CACHE=1",
+  "${@}",
+]
+command = "docker"
+
+[tasks.run]
+args = ["run", "${@}"]
+command = "cargo"
+dependencies = ["before-build"]
+
+[tasks.run-in-docker]
+args = ["compose", "up", "-d", "app"]
+command = "docker"
+dependencies = ["before-build", "compose-build-app"]
+
+[tasks.logs]
+args = ["compose", "logs", "${@}"]
+command = "docker"
+dependencies = ["before-build"]
+
+[tasks.build]
+args = ["build", "${@}"]
+command = "cargo"
+dependencies = ["before-build"]
+
+[tasks.check]
+args = ["check"]
+command = "cargo"
+dependencies = ["before-build"]
+
+[tasks.watch]
+dependencies = ["before-build"]
+run_task = [{ name = ["fmt", "clippy", "test"] }]
+watch = true
+
+[tasks.fmt]
+args = ["fmt", "--all", "${@}"]
+command = "cargo"
+
+[tasks.clippy]
+args = ["clippy", "--all", "--all-targets", "${@}"]
+command = "cargo"
+
+[tasks.test]
+args = [
+  "nextest",
+  "run",
+  "--workspace",
+  "--status-level",
+  "all",
+  "--test-threads=1",
+]
+command = "cargo"
+install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
+  "nextest",
+  "--help",
+] }
+
+[tasks.clippy-ci]
+dependencies = ["before-build"]
+run_task = "clippy"
+
+[tasks.test-ci]
+dependencies = ["before-build"]
+run_task = "test"
+
+[tasks.migrate]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+script = '''
+#!/bin/bash
+until sqlx migrate run --source adapter/migrations; do
+  sleep 1
+done
+'''
+
+[tasks.migrate-revert]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+script = '''
+#!/bin/bash
+until sqlx migrate revert --source adapter/migrations; do
+  sleep 1
+done
+'''
+
+[tasks.migration-logs]
+args = [
+  "run",
+  "-it",
+  "--rm",
+  "--network",
+  "host",
+  "-v",
+  "${PWD}:/work",
+  "postgres:latest",
+  "psql",
+  "${DATABASE_URL}",
+  "-c",
+  "SELECT * FROM \"_sqlx_migrations\" ORDER BY \"version\" DESC",
+]
+command = "docker"
+
+[tasks.sqlx]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+args = ["${@}", "--source", "adapter/migrations"]
+command = "sqlx"
+
+[tasks.psql]
+args = [
+  "run",
+  "-it",
+  "--rm",
+  "--network",
+  "host",
+  "-v",
+  "${PWD}:/work",
+  "postgres:latest",
+  "psql",
+  "${DATABASE_URL}",
+  "${@}",
+]
+command = "docker"
+
+[tasks.initial-setup]
+args = [
+  "run",
+  "-it",
+  "--rm",
+  "--network",
+  "host",
+  "-v",
+  "${PWD}:/work",
+  "postgres:15",
+  "psql",
+  "${DATABASE_URL}",
+  "-f",
+  "/work/data/initial_setup.sql",
+]
+command = "docker"
+
+[tasks.compose]
+args = ["compose", "${@}"]
+command = "docker"
+
+[tasks.compose-up-db]
+args = ["compose", "up", "-d", "postgres"]
+command = "docker"
+
+[tasks.compose-down]
+args = ["compose", "down"]
+command = "docker"
+
+[tasks.compose-remove]
+args = ["compose", "down", "-v"]
+command = "docker"
+
+[tasks.pu2png]
+args = ["design/pu2png.sh"]
+command = "bash"

@@ -1,0 +1,9 @@
+@startuml erd
+
+!include er/article.pu
+!include er/site.pu
+!include er/logs.pu
+
+Site }|-u-o| Article : "site_id"
+
+@enduml

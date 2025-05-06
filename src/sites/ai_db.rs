@@ -58,7 +58,7 @@ impl Site for AIDB {
 
         let param = vec![
             ("swpm_user_name", std::env::var("AI_DB_USER").unwrap()),
-            ("swpm_password", std::env::var("AI_DB_PASSWORD").unwrap()),
+            ("swpm_password", std::env::var("AI_DATABASE_PASSWORD").unwrap()),
         ];
         let response = client.post(url).query(&param).send().await?;
         if response.status() != 200 {

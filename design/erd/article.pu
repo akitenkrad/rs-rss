@@ -1,0 +1,17 @@
+@startuml erd
+entity "Article" as Article {
+    + id : string
+    --
+    * site_id : string <<FK>>
+    * title : string
+    * url: string
+    * description : string
+    * timestamp : string
+    * html : string
+    * summary_of_article: string
+    * is_new_technology_related: boolean
+    * is_new_product_introduction: boolean
+    * is_new_paper: boolean
+    * is_ai_related: boolean
+}
+@enduml

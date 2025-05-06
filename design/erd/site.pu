@@ -1,0 +1,10 @@
+@startuml erd
+
+entity "Site" as Site {
+    + id : string
+    --
+    * name : string
+    * url : string
+}
+
+@enduml

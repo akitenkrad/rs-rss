@@ -1,0 +1,12 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "kernel"
+publish.workspace = true
+version = "0.1.0"
+
+[dependencies]
+async-trait.workspace = true
+derive-new.workspace = true
+shared.workspace = true
+chrono.workspace = true

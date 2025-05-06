@@ -19,10 +19,10 @@ pub enum Category {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WebArticleProperty {
-    pub summary_of_article: Option<String>,
+    pub summary: Option<String>,
     pub is_new_technology_related: Option<bool>,
-    pub is_new_product_introduction: Option<bool>,
-    pub is_new_paper: Option<bool>,
+    pub is_new_product_related: Option<bool>,
+    pub is_new_paper_related: Option<bool>,
     pub is_ai_related: Option<bool>,
 }
 

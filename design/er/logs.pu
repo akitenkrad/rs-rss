@@ -1,9 +1,0 @@
-@startuml erd
-
-entity "AccessLog" as AccessLog {
-    + id : string
-    --
-    * timestamp : string
-}
-
-@enduml
