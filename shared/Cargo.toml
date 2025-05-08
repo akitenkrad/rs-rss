@@ -6,8 +6,15 @@ publish.workspace = true
 version = "0.1.0"
 
 [dependencies]
-thiserror.workspace = true
-sqlx.workspace = true
 anyhow.workspace = true
+feed-parser.workspace = true
+request.workspace = true
 serde.workspace = true
+sqlx.workspace = true
+strum.workspace = true
+thiserror.workspace = true
 uuid.workspace = true
+url.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+scraper.workspace = true

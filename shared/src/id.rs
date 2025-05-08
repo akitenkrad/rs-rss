@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::errors::AppError;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 

@@ -1,11 +1,13 @@
 use crate::models::web_article::{WebArticle, WebSite};
 use async_trait::async_trait;
-use shared::error::AppResult;
+use shared::errors::AppResult;
 
 #[async_trait]
 pub trait WebSiteRepository: Send + Sync {
     async fn create_web_site(&self, web_site: WebSite) -> AppResult<WebSite>;
-    async fn read_we_bsite_by_id(&self, id: &str) -> AppResult<WebSite>;
+    async fn read_web_site_by_id(&self, id: &str) -> AppResult<WebSite>;
+    async fn read_web_site_by_name(&self, name: &str) -> AppResult<WebSite>;
+    async fn read_or_create_web_site(&self, name: &str, url: &str) -> AppResult<WebSite>;
     async fn read_all_web_sites(&self) -> AppResult<Vec<WebSite>>;
     async fn update_web_site(&self, web_site: WebSite) -> AppResult<()>;
     async fn delete_web_site(&self, id: &str) -> AppResult<()>;

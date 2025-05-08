@@ -1,6 +1,6 @@
 use crate::models::academic_paper::{AcademicPaper, Author, Journal, Task};
 use async_trait::async_trait;
-use shared::error::AppResult;
+use shared::errors::AppResult;
 
 #[async_trait]
 pub trait AuthorRepository: Send + Sync {

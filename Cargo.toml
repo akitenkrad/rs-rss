@@ -27,7 +27,7 @@ const_format = { version = "0.2.34", features = ["derive"] }
 crawler = { path = "./crawler" }
 derive-new = "0.7.0"
 dotenvy = "0.15.7"
-feed-parser = "1.0.11"
+feed-parser = "1.0.12"
 fxhash = "0.2.1"
 indicatif = "0.17.11"
 kernel = { path = "./kernel" }
@@ -52,7 +52,18 @@ tokio = { version = "1.45.0", features = ["full"] }
 tokio-test = "0.4.4"
 thiserror = "2.0.12"
 tracing = { version = "0.1.41", features = ["log"] }
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
 urlencoding = "2.1.3"
 uuid = { version = "1.16.0", features = ["v4", "serde"] }
+strum = { version = "0.27.1", features = ["derive"] }
+url = "2.5.4"
 
 [dependencies]
+tracing.workspace = true
+shared.workspace = true
+anyhow.workspace = true
+adapter.workspace = true
+tracing-subscriber.workspace = true
+registry.workspace = true
+crawler.workspace = true
+tokio.workspace = true

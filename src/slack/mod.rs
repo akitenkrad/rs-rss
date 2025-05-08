@@ -1,5 +1,5 @@
 use crate::sites::WebArticle;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use indicatif::ProgressBar;
 use keywords::rsc::{extract_keywords, load_keywords, Keyword, Language};
 use serde_json::{json, Value};

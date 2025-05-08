@@ -6,3 +6,5 @@ publish.workspace = true
 version = "0.1.0"
 
 [dependencies]
+kernel.workspace = true
+adapter.workspace = true
