@@ -15,10 +15,12 @@ pub trait WebSiteRepository: Send + Sync {
 
 #[async_trait]
 pub trait WebArticleRepository: Send + Sync {
-    async fn create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle>;
+    async fn create_web_article(&self, web_article: &mut WebArticle) -> AppResult<WebArticle>;
     async fn read_todays_articles(&self) -> AppResult<Vec<WebArticle>>;
     async fn read_web_article_by_id(&self, id: &str) -> AppResult<WebArticle>;
     async fn read_web_articles_by_keyword(&self, keyword: &str) -> AppResult<Vec<WebArticle>>;
+    async fn read_web_article_by_url(&self, url: &str) -> AppResult<WebArticle>;
+    async fn read_or_create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle>;
     async fn read_all_articles(&self) -> AppResult<Vec<WebArticle>>;
     async fn update_web_article(&self, web_article: WebArticle) -> AppResult<()>;
     async fn delete_web_article(&self, id: &str) -> AppResult<()>;

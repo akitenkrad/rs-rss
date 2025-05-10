@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::DateTime;
 use feed_parser::parsers;
 use request::Url;
@@ -38,11 +38,14 @@ impl WebSiteResource for ITMediaAtIt {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::News;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
-        "atmarkit.itmedia.co.jp".to_string()
+        "atmarkit.itmedia.co.jp".to_string() // This is the correct domain for @IT
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::default());
@@ -61,10 +64,13 @@ impl WebSiteResource for ITMediaAtIt {
             .map(|feed| {
                 WebArticleResource::new(
                     self.site_name(),
+                    self.site_url().to_string(),
                     feed.title.clone(),
                     feed.link.clone(),
                     feed.description.clone().unwrap_or("".to_string()),
-                    DateTime::parse_from_rfc2822(&feed.publish_date.clone().unwrap()).unwrap().into(),
+                    DateTime::parse_from_rfc2822(&feed.publish_date.clone().unwrap())
+                        .unwrap()
+                        .into(),
                 )
             })
             .collect::<Vec<WebArticleResource>>();
@@ -78,7 +84,10 @@ impl WebSiteResource for ITMediaAtIt {
         let selector = match scraper::Selector::parse("#cmsBody div.inner p") {
             Ok(selector) => selector,
             Err(e) => {
-                return Err(AppError::ScrapeError(format!("Failed to parse selector (#cmsBody div.inner p): {}", e)));
+                return Err(AppError::ScrapeError(format!(
+                    "Failed to parse selector (#cmsBody div.inner p): {}",
+                    e
+                )));
             }
         };
         let mut text = String::new();

@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::DateTime;
 use request::Url;
 use scraper::Selector;
@@ -38,11 +38,14 @@ impl WebSiteResource for StockmarkTechBlog {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::Blog;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::default());
@@ -64,13 +67,25 @@ impl WebSiteResource for StockmarkTechBlog {
 
             let article = WebArticleResource::new(
                 self.site_name(),
+                self.site_url().to_string(),
                 post.select(&title_selector).next().unwrap().text().collect(),
-                post.select(&url_selector).next().unwrap().value().attr("href").unwrap().to_string(),
+                post.select(&url_selector)
+                    .next()
+                    .unwrap()
+                    .value()
+                    .attr("href")
+                    .unwrap()
+                    .to_string(),
                 post.select(&desc_selector).next().unwrap().text().collect(),
                 DateTime::parse_from_str(
                     &format!(
                         "{} 00:00:00+0900",
-                        post.select(&date_selector).next().unwrap().text().collect::<Vec<_>>().join("")
+                        post.select(&date_selector)
+                            .next()
+                            .unwrap()
+                            .text()
+                            .collect::<Vec<_>>()
+                            .join("")
                     ),
                     "%Y-%m-%d %H:%M:%S%z",
                 )

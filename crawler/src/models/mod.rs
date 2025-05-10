@@ -3,9 +3,11 @@ pub mod web_article;
 
 use crate::models::sites::*;
 use crate::models::web_article::WebSiteResource;
+use registry::Registry;
+use shared::errors::AppResult;
 
-pub fn get_all_sites() -> Vec<Box<dyn WebSiteResource>> {
-    vec![
+pub async fn get_all_sites(registry: &Registry) -> AppResult<Vec<Box<dyn WebSiteResource>>> {
+    let mut sites: Vec<Box<dyn WebSiteResource>> = vec![
         Box::new(ai_db::AIDB::default()),
         Box::new(ai_it_now::AIItNow::default()),
         Box::new(ai_news::AINews::default()),
@@ -69,16 +71,38 @@ pub fn get_all_sites() -> Vec<Box<dyn WebSiteResource>> {
         Box::new(zenn_topic::ZennTopic::new("生成ai")),
         Box::new(zenn_topic::ZennTopic::new("rust")),
         Box::new(zenn_trend::ZennTrend::default()),
-    ]
+    ];
+
+    for site in sites.iter_mut() {
+        let site_id = site.get_site_id(&registry).await?;
+        site.set_site_id(site_id);
+    }
+
+    return Ok(sites);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use adapter::database::connect_database_with;
+    use shared::config::AppConfig;
+    use shared::logger::init_logger;
+    use tracing::{event, Level};
 
     #[tokio::test]
     async fn test_all_sites() {
-        let sites = get_all_sites();
+        let config = AppConfig::new().expect("Failed to load config");
+        let db = connect_database_with(&config.database);
+        let registry = Registry::new(db);
+
+        init_logger().expect("Failed to initialize logger");
+
+        let sites = get_all_sites(&registry).await.unwrap();
+
+        sites.iter().for_each(|site| {
+            event!(Level::INFO, "Site ID:{} Site Name:{}", site.site_id(), site.site_name());
+        });
+
         assert!(!sites.is_empty());
         let mut articles = Vec::new();
         for site in sites {
@@ -86,6 +110,7 @@ mod tests {
             let result = site.get_articles().await;
             match result {
                 Ok(site_articles) => {
+                    event!(Level::INFO, "Site Name:{} Articles Count:{}", site.site_name(), site_articles.len());
                     articles.extend(site_articles);
                 }
                 Err(e) => {

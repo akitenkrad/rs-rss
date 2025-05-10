@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::DateTime;
 use dotenvy::dotenv;
 use feed_parser::parsers;
@@ -44,11 +44,14 @@ impl WebSiteResource for NikkeiXTech {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::News;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         dotenv().ok();
@@ -72,7 +75,10 @@ impl WebSiteResource for NikkeiXTech {
         let cookies = Arc::new(Jar::default());
         let login_url = Url::parse("https://id.nikkei.com/login/id").unwrap();
         cookies.add_cookie_str(&cookie_str, &login_url);
-        let client = request::Client::builder().cookie_store(true).cookie_provider(cookies).build()?;
+        let client = request::Client::builder()
+            .cookie_store(true)
+            .cookie_provider(cookies)
+            .build()?;
 
         let param = vec![("login-id-email", std::env::var("NIKKEI_ID_EMAIL").unwrap())];
         let response = client.post(login_url).query(&param).send().await?;
@@ -91,7 +97,10 @@ impl WebSiteResource for NikkeiXTech {
         println!("Cookies: {}", cookie_str);
         let cookies = Arc::new(Jar::default());
         cookies.add_cookie_str(&cookie_str, &password_url);
-        let client = request::Client::builder().cookie_store(true).cookie_provider(cookies).build()?;
+        let client = request::Client::builder()
+            .cookie_store(true)
+            .cookie_provider(cookies)
+            .build()?;
 
         let param = vec![("login_password_password", std::env::var("NIKKEI_PASSWORD").unwrap())];
         let response = client.post(password_url).query(&param).send().await?;
@@ -120,10 +129,13 @@ impl WebSiteResource for NikkeiXTech {
             .map(|feed| {
                 WebArticleResource::new(
                     self.site_name(),
+                    self.site_url().to_string(),
                     feed.title.clone(),
                     feed.link.clone(),
                     feed.description.clone().unwrap_or("".to_string()),
-                    DateTime::parse_from_rfc3339(&feed.date.clone().unwrap()).unwrap().into(),
+                    DateTime::parse_from_rfc3339(&feed.date.clone().unwrap())
+                        .unwrap()
+                        .into(),
                 )
             })
             .collect::<Vec<WebArticleResource>>();

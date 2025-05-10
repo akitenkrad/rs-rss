@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::{DateTime, Local};
 use request::Url;
 use scraper::Selector;
@@ -41,11 +41,14 @@ impl WebSiteResource for CodeZine {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::News;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         return self.url.domain().unwrap().to_string();
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::default());
@@ -81,6 +84,7 @@ impl WebSiteResource for CodeZine {
 
                 articles.push(WebArticleResource::new(
                     self.site_name(),
+                    self.site_url().to_string(),
                     tilte_text,
                     "https://codezine.jp".to_string() + &url,
                     "".to_string(),

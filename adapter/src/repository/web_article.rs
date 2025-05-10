@@ -119,10 +119,13 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         Ok(())
     }
     async fn delete_web_site(&self, id: &str) -> AppResult<()> {
-        sqlx::query!(r#"DELETE FROM web_site WHERE site_id = $1"#, Uuid::from_str(id).unwrap())
-            .execute(self.db.inner_ref())
-            .await
-            .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        sqlx::query!(
+            r#"DELETE FROM web_site WHERE site_id = $1"#,
+            Uuid::from_str(id).unwrap()
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
         Ok(())
     }
 }
@@ -134,7 +137,70 @@ pub struct WebArticleRepositoryImpl {
 
 #[async_trait]
 impl WebArticleRepository for WebArticleRepositoryImpl {
-    async fn create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle> {
+    async fn create_web_article(&self, web_article: &mut WebArticle) -> AppResult<WebArticle> {
+        // Check if the article already exists
+        let existing_article = sqlx::query_as!(
+            WebArticleRecord,
+            r#"SELECT
+                site_id,
+                article_id,
+                title,
+                description,
+                url,
+                timestamp,
+                text,
+                html,
+                summary,
+                is_new_technology_related,
+                is_new_product_related,
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
+            FROM web_article WHERE url = $1"#,
+            web_article.url
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+
+        if !existing_article.is_empty() {
+            return Ok(existing_article[0].clone().into());
+        }
+
+        // Check if the site exists
+        let site = sqlx::query_as!(
+            WebSiteRecord,
+            r#"SELECT site_id, name, url FROM web_site WHERE name = $1"#,
+            web_article.site.name
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        if site.is_empty() {
+            let res = sqlx::query!(
+                r#"INSERT INTO web_site (site_id, name, url) VALUES ($1, $2, $3) RETURNING site_id"#,
+                Uuid::from(web_article.site.site_id),
+                web_article.site.name,
+                web_article.site.url
+            )
+            .fetch_one(self.db.inner_ref())
+            .await
+            .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+
+            web_article.site = WebSite::new(
+                WebSiteId::from(res.site_id),
+                web_article.site.name.clone(),
+                web_article.site.url.clone(),
+            );
+        } else {
+            web_article.site = WebSite::new(
+                WebSiteId::from(site[0].site_id),
+                web_article.site.name.clone(),
+                web_article.site.url.clone(),
+            );
+        }
+
         let res = sqlx::query!(
             r#"INSERT INTO web_article (
                 site_id,
@@ -148,9 +214,11 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary,
                 is_new_technology_related,
                 is_new_product_related,
-                is_new_paper_related,
-                is_ai_related
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING article_id"#,
             Uuid::from(web_article.site.site_id),
             Uuid::from(web_article.article_id),
@@ -163,26 +231,30 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.summary,
             web_article.is_new_technology_related,
             web_article.is_new_product_related,
-            web_article.is_new_paper_related,
-            web_article.is_ai_related
+            web_article.is_new_academic_paper_related,
+            web_article.is_ai_related,
+            web_article.is_security_related,
+            web_article.is_it_related,
         )
         .fetch_one(self.db.inner_ref())
         .await
         .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
         Ok(WebArticle::new(
-            web_article.site,
+            web_article.site.clone(),
             WebArticleId::from(res.article_id),
-            web_article.title,
-            web_article.description,
-            web_article.url,
-            web_article.text,
-            web_article.html,
+            web_article.title.clone(),
+            web_article.description.clone(),
+            web_article.url.clone(),
+            web_article.text.clone(),
+            web_article.html.clone(),
             web_article.timestamp,
-            web_article.summary,
+            web_article.summary.clone(),
             web_article.is_new_technology_related,
             web_article.is_new_product_related,
-            web_article.is_new_paper_related,
+            web_article.is_new_academic_paper_related,
             web_article.is_ai_related,
+            web_article.is_security_related,
+            web_article.is_it_related,
         ))
     }
     async fn read_todays_articles(&self) -> AppResult<Vec<WebArticle>> {
@@ -202,8 +274,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary,
                 is_new_technology_related,
                 is_new_product_related,
-                is_new_paper_related,
-                is_ai_related
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
             FROM 
                 web_article
             WHERE timestamp BETWEEN $1 AND $2"#,
@@ -232,8 +306,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary,
                 is_new_technology_related,
                 is_new_product_related,
-                is_new_paper_related,
-                is_ai_related
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
             FROM 
                 web_article
             WHERE article_id = $1"#,
@@ -264,8 +340,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary,
                 is_new_technology_related,
                 is_new_product_related,
-                is_new_paper_related,
-                is_ai_related
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
             FROM 
                 web_article
             WHERE title LIKE $1 OR description LIKE $1 OR summary LIKE $1"#,
@@ -275,6 +353,65 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .await
         .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
+    }
+    async fn read_web_article_by_url(&self, url: &str) -> AppResult<WebArticle> {
+        let rows = sqlx::query_as!(
+            WebArticleRecord,
+            r#"SELECT
+                site_id,
+                article_id,
+                title,
+                description,
+                url,
+                timestamp,
+                text,
+                html,
+                summary,
+                is_new_technology_related,
+                is_new_product_related,
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
+            FROM 
+                web_article
+            WHERE url = $1"#,
+            url
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        if rows.is_empty() {
+            Err(AppError::RecordNotFound(sqlx::Error::RowNotFound))
+        } else {
+            let row = rows.first().unwrap();
+            Ok(WebArticle::from(row.clone()))
+        }
+    }
+    async fn read_or_create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle> {
+        match self.read_web_article_by_url(&web_article.url).await {
+            Ok(web_article) => Ok(web_article),
+            Err(_) => {
+                let web_article = WebArticle::new(
+                    web_article.site,
+                    web_article.article_id,
+                    web_article.title,
+                    web_article.description,
+                    web_article.url,
+                    web_article.text,
+                    web_article.html,
+                    web_article.timestamp,
+                    web_article.summary,
+                    web_article.is_new_technology_related,
+                    web_article.is_new_product_related,
+                    web_article.is_new_academic_paper_related,
+                    web_article.is_ai_related,
+                    web_article.is_security_related,
+                    web_article.is_it_related,
+                );
+                self.create_web_article(&mut web_article.clone()).await
+            }
+        }
     }
     async fn read_all_articles(&self) -> AppResult<Vec<WebArticle>> {
         let rows = sqlx::query_as!(
@@ -291,8 +428,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary,
                 is_new_technology_related,
                 is_new_product_related,
-                is_new_paper_related,
-                is_ai_related
+                is_new_academic_paper_related,
+                is_ai_related,
+                is_security_related,
+                is_it_related
             FROM 
                 web_article"#
         )
@@ -313,9 +452,11 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 summary = $7,
                 is_new_technology_related = $8,
                 is_new_product_related = $9,
-                is_new_paper_related = $10,
-                is_ai_related = $11
-            WHERE article_id = $12"#,
+                is_new_academic_paper_related = $10,
+                is_ai_related = $11,
+                is_security_related = $12,
+                is_it_related = $13
+            WHERE article_id = $14"#,
             web_article.title,
             web_article.description,
             web_article.url,
@@ -325,8 +466,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.summary,
             web_article.is_new_technology_related,
             web_article.is_new_product_related,
-            web_article.is_new_paper_related,
+            web_article.is_new_academic_paper_related,
             web_article.is_ai_related,
+            web_article.is_security_related,
+            web_article.is_it_related,
             Uuid::from(web_article.article_id)
         )
         .execute(self.db.inner_ref())
@@ -335,10 +478,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         Ok(())
     }
     async fn delete_web_article(&self, id: &str) -> AppResult<()> {
-        sqlx::query!(r#"DELETE FROM web_article WHERE article_id = $1"#, Uuid::from_str(id).unwrap())
-            .execute(self.db.inner_ref())
-            .await
-            .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        sqlx::query!(
+            r#"DELETE FROM web_article WHERE article_id = $1"#,
+            Uuid::from_str(id).unwrap()
+        )
+        .execute(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
         Ok(())
     }
 }
@@ -352,7 +498,11 @@ mod tests {
     #[sqlx::test]
     async fn test_website_crud(pool: sqlx::PgPool) {
         let repo = WebSiteRepositoryImpl::new(ConnectionPool::new(pool));
-        let web_site = WebSite::new(WebSiteId::new(), "Test Website".to_string(), "https://testwebsite.com".to_string());
+        let web_site = WebSite::new(
+            WebSiteId::new(),
+            "Test Website".to_string(),
+            "https://testwebsite.com".to_string(),
+        );
 
         // Create
         let web_site = repo.create_web_site(web_site.clone()).await.unwrap();
@@ -376,7 +526,9 @@ mod tests {
         assert_eq!(updated_records[0].url, "https://testwebsite.com");
 
         // Delete
-        repo.delete_web_site(&updated_records[0].site_id.to_string()).await.unwrap();
+        repo.delete_web_site(&updated_records[0].site_id.to_string())
+            .await
+            .unwrap();
         let records_after_delete = repo.read_all_web_sites().await.unwrap();
         assert_eq!(records_after_delete.len(), 0);
     }
@@ -393,17 +545,23 @@ mod tests {
             assert_eq!(article_1.summary, article_2.summary);
             assert_eq!(article_1.is_new_technology_related, article_2.is_new_technology_related);
             assert_eq!(article_1.is_new_product_related, article_2.is_new_product_related);
-            assert_eq!(article_1.is_new_paper_related, article_2.is_new_paper_related);
+            assert_eq!(
+                article_1.is_new_academic_paper_related,
+                article_2.is_new_academic_paper_related
+            );
             assert_eq!(article_1.is_ai_related, article_2.is_ai_related);
         }
 
-        // Create a new website
         let web_site_repo = WebSiteRepositoryImpl::new(ConnectionPool::new(pool.clone()));
-        let web_site = WebSite::new(WebSiteId::new(), "Test Website".to_string(), "https://testwebsite.com".to_string());
-        let web_site = web_site_repo.create_web_site(web_site.clone()).await.unwrap();
+        let repo = WebArticleRepositoryImpl::new(ConnectionPool::new(pool.clone()));
+
+        let web_site = WebSite::new(
+            WebSiteId::new(),
+            "Test Website".to_string(),
+            "https://testwebsite.com".to_string(),
+        );
 
         // Test web article CRUD operations
-        let repo = WebArticleRepositoryImpl::new(ConnectionPool::new(pool.clone()));
         let web_article = WebArticle::new(
             web_site.clone(),
             WebArticleId::new(),
@@ -411,9 +569,11 @@ mod tests {
             "Test Description".to_string(),
             "https://testarticle.com".to_string(),
             "Test Text".to_string(),
-            "Test HTML".to_string(),
+            "<HTML><TEST>test</TEST></HTML>".to_string(),
             chrono::Local::now().date_naive(),
             "Test Summary".to_string(),
+            false,
+            false,
             false,
             false,
             false,
@@ -421,10 +581,13 @@ mod tests {
         );
 
         // Create
-        let web_article = repo.create_web_article(web_article.clone()).await.unwrap();
+        let web_article = repo.create_web_article(&mut web_article.clone()).await.unwrap();
 
         // Read
-        let records = repo.read_web_article_by_id(&web_article.article_id.to_string()).await.unwrap();
+        let records = repo
+            .read_web_article_by_id(&web_article.article_id.to_string())
+            .await
+            .unwrap();
         assert_article_eq(&web_article, &records);
         let records = repo.read_web_articles_by_keyword("Test").await.unwrap();
         assert_article_eq(&web_article, &records[0]);
@@ -441,11 +604,16 @@ mod tests {
         assert_eq!(updated_records[0].title, "Updated Article");
 
         // Delete
-        repo.delete_web_article(&updated_records[0].article_id.to_string()).await.unwrap();
+        repo.delete_web_article(&updated_records[0].article_id.to_string())
+            .await
+            .unwrap();
         let records_after_delete = repo.read_all_articles().await.unwrap();
         assert_eq!(records_after_delete.len(), 0);
 
         // Clean up the website
-        web_site_repo.delete_web_site(&web_site.site_id.to_string()).await.unwrap();
+        web_site_repo
+            .delete_web_site(&web_site.site_id.to_string())
+            .await
+            .unwrap();
     }
 }

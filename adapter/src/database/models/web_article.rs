@@ -38,8 +38,10 @@ pub struct WebArticleRecord {
     pub summary: String,
     pub is_new_technology_related: bool,
     pub is_new_product_related: bool,
-    pub is_new_paper_related: bool,
+    pub is_new_academic_paper_related: bool,
     pub is_ai_related: bool,
+    pub is_security_related: bool,
+    pub is_it_related: bool,
 }
 
 impl From<WebArticle> for WebArticleRecord {
@@ -56,8 +58,10 @@ impl From<WebArticle> for WebArticleRecord {
             summary,
             is_new_technology_related,
             is_new_product_related,
-            is_new_paper_related,
+            is_new_academic_paper_related,
             is_ai_related,
+            is_security_related,
+            is_it_related,
         } = web_article;
         Self {
             site_id: site.site_id,
@@ -71,8 +75,10 @@ impl From<WebArticle> for WebArticleRecord {
             summary,
             is_new_technology_related,
             is_new_product_related,
-            is_new_paper_related,
+            is_new_academic_paper_related,
             is_ai_related,
+            is_security_related,
+            is_it_related,
         }
     }
 }
@@ -91,8 +97,10 @@ impl From<WebArticleRecord> for WebArticle {
             summary,
             is_new_technology_related,
             is_new_product_related,
-            is_new_paper_related,
+            is_new_academic_paper_related: is_new_paper_related,
             is_ai_related,
+            is_security_related,
+            is_it_related,
         } = web_article_record;
         Self {
             site: WebSite {
@@ -110,8 +118,10 @@ impl From<WebArticleRecord> for WebArticle {
             summary,
             is_new_technology_related,
             is_new_product_related,
-            is_new_paper_related,
+            is_new_academic_paper_related: is_new_paper_related,
             is_ai_related,
+            is_security_related,
+            is_it_related,
         }
     }
 }

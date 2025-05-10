@@ -80,6 +80,15 @@ install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
   "--help",
 ] }
 
+[tasks.nextest]
+args = ["nextest", "${@}", "--workspace"]
+command = "cargo"
+install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
+  "nextest",
+  "--help",
+] }
+
+
 [tasks.clippy-ci]
 dependencies = ["before-build"]
 run_task = "clippy"

@@ -22,3 +22,4 @@ shared.workspace = true
 tokio.workspace = true
 registry.workspace = true
 tracing.workspace = true
+adapter.workspace = true

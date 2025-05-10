@@ -18,8 +18,10 @@ CREATE TABLE IF NOT EXISTS web_article (
     summary TEXT NOT NULL DEFAULT '',
     is_new_technology_related BOOLEAN NOT NULL DEFAULT FALSE,
     is_new_product_related BOOLEAN NOT NULL DEFAULT FALSE,
-    is_new_paper_related BOOLEAN NOT NULL DEFAULT FALSE,
+    is_new_academic_paper_related BOOLEAN NOT NULL DEFAULT FALSE,
     is_ai_related BOOLEAN NOT NULL DEFAULT FALSE,
+    is_security_related BOOLEAN NOT NULL DEFAULT FALSE,
+    is_it_related BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
     updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
 );

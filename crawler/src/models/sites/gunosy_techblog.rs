@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::DateTime;
 use feed_parser::parsers;
 use request::Url;
@@ -39,11 +39,14 @@ impl WebSiteResource for GunosyTechBlog {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::Blog;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         return "tech.gunosy.io".to_string();
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::new());
@@ -62,10 +65,13 @@ impl WebSiteResource for GunosyTechBlog {
             .map(|feed| {
                 WebArticleResource::new(
                     self.site_name(),
+                    self.site_url().to_string(),
                     feed.title.clone(),
                     feed.link.clone(),
                     feed.description.clone().unwrap_or("".to_string()),
-                    DateTime::parse_from_rfc3339(&feed.updated.clone().unwrap()).unwrap().into(),
+                    DateTime::parse_from_rfc3339(&feed.updated.clone().unwrap())
+                        .unwrap()
+                        .into(),
                 )
             })
             .collect::<Vec<WebArticleResource>>();

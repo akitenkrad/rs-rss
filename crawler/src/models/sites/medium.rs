@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use request::Url;
 use scraper::Selector;
 use shared::errors::{AppError, AppResult};
@@ -42,11 +42,14 @@ impl WebSiteResource for Medium {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::News;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::default());
@@ -60,7 +63,13 @@ impl WebSiteResource for Medium {
         let sel = Selector::parse("article").unwrap();
         for article in doc.select(&sel) {
             let title_sel = Selector::parse("a h2").unwrap();
-            let title_text = article.select(&title_sel).next().unwrap().text().collect::<Vec<_>>().join("");
+            let title_text = article
+                .select(&title_sel)
+                .next()
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join("");
             let mut url = Url::parse("https://medium.com").unwrap();
             let a_sel = Selector::parse("div a").unwrap();
             let href = article.select(&a_sel).next().unwrap().value().attr("href").unwrap();
@@ -90,7 +99,14 @@ impl WebSiteResource for Medium {
                 Some(x) => x.text().collect::<Vec<_>>().join(""),
                 None => "".to_string(),
             };
-            let article = WebArticleResource::new(self.site_name(), title_text, url.to_string(), desc_text, date.into());
+            let article = WebArticleResource::new(
+                self.site_name(),
+                self.site_url().to_string(),
+                title_text,
+                url.to_string(),
+                desc_text,
+                date.into(),
+            );
             articles.push(article);
         }
         return Ok(articles);

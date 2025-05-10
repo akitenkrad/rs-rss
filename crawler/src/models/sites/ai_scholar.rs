@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::{DateTime, Local};
 use request::Url;
 use scraper::Selector;
@@ -40,11 +40,14 @@ impl WebSiteResource for AIScholar {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::News;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         return self.url.domain().unwrap().to_string();
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         // No login required
@@ -62,7 +65,13 @@ impl WebSiteResource for AIScholar {
             .select(&sel)
             .map(|article| {
                 let a_sel = Selector::parse("a").unwrap();
-                let title_text = article.select(&a_sel).next().unwrap().text().collect::<Vec<_>>().join("");
+                let title_text = article
+                    .select(&a_sel)
+                    .next()
+                    .unwrap()
+                    .text()
+                    .collect::<Vec<_>>()
+                    .join("");
                 let url = article.select(&a_sel).next().unwrap().value().attr("href").unwrap();
                 let date_sel = Selector::parse("a div.list-item__description time").unwrap();
                 let mut date_text = match article.select(&date_sel).next() {
@@ -79,7 +88,14 @@ impl WebSiteResource for AIScholar {
                     Ok(x) => x.with_timezone(&Local),
                     Err(_) => DateTime::<Local>::default(),
                 };
-                WebArticleResource::new(self.site_name(), title_text, url.to_string(), desc_text, date)
+                WebArticleResource::new(
+                    self.site_name(),
+                    self.site_url().to_string(),
+                    title_text,
+                    url.to_string(),
+                    desc_text,
+                    date,
+                )
             })
             .collect::<Vec<WebArticleResource>>();
         return Ok(articles);

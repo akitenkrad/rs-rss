@@ -1,4 +1,4 @@
-use crate::models::web_article::{Category, Cookie, Html, Text, WebArticleResource, WebSiteResource};
+use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSiteResource};
 use chrono::DateTime;
 use request::Url;
 use scraper::Selector;
@@ -38,11 +38,14 @@ impl WebSiteResource for Supership {
     fn site_name(&self) -> String {
         return self.site_name.clone();
     }
-    fn category(&self) -> Category {
-        return Category::Organization;
+    fn site_url(&self) -> Url {
+        return self.url.clone();
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
+    }
+    fn set_site_id(&mut self, site_id: WebSiteId) {
+        self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
         return Ok(Cookie::default());
@@ -57,11 +60,31 @@ impl WebSiteResource for Supership {
         let sel = Selector::parse("main article ul.p-magazine__archive li.p-magazine__card").unwrap();
         for li in doc.select(&sel) {
             let title_sel = Selector::parse("p.p-magazine__card_title").unwrap();
-            let title_text = li.select(&title_sel).next().unwrap().text().collect::<Vec<_>>().join("");
+            let title_text = li
+                .select(&title_sel)
+                .next()
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join("");
             let url_sel = Selector::parse("a").unwrap();
-            let url = li.select(&url_sel).next().unwrap().value().attr("href").unwrap().to_string();
+            let url = li
+                .select(&url_sel)
+                .next()
+                .unwrap()
+                .value()
+                .attr("href")
+                .unwrap()
+                .to_string();
             let pubdate_sel = Selector::parse("time.p-magazine__card_time").unwrap();
-            let publish_date_text = li.select(&pubdate_sel).next().unwrap().text().collect::<Vec<_>>().join("") + " 00:00:00+09:00";
+            let publish_date_text = li
+                .select(&pubdate_sel)
+                .next()
+                .unwrap()
+                .text()
+                .collect::<Vec<_>>()
+                .join("")
+                + " 00:00:00+09:00";
             let publish_date = match DateTime::parse_from_str(&publish_date_text, "%Y.%m.%d %H:%M:%S%z") {
                 Ok(x) => x,
                 Err(e) => {
@@ -69,7 +92,14 @@ impl WebSiteResource for Supership {
                     continue;
                 }
             };
-            let article = WebArticleResource::new(self.site_name(), title_text, url, "".to_string(), publish_date.into());
+            let article = WebArticleResource::new(
+                self.site_name(),
+                self.site_url().to_string(),
+                title_text,
+                url,
+                "".to_string(),
+                publish_date.into(),
+            );
             articles.push(article);
         }
         return Ok(articles);
@@ -84,42 +114,5 @@ impl WebSiteResource for Supership {
         let text = doc.select(&sel).next().unwrap().text().collect::<Vec<_>>().join("\n");
         let html = doc.select(&sel).next().unwrap().html().to_string();
         return Ok((self.trim_text(&html), self.trim_text(&text)));
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_supership() {
-        let mut site = Supership::default();
-        let articles = site.get_articles().await;
-        if let Ok(articles) = articles {
-            if articles.len() == 0 {
-                println!("No articles found");
-                assert!(true);
-                return;
-            }
-
-            let article = articles.get(0).unwrap();
-            println!("Article: {:?}", article);
-            let html_and_text = site.parse_article(&article.url).await;
-            match html_and_text {
-                Ok(html_and_text) => {
-                    let (html, text) = html_and_text;
-                    println!("HTML: {}", html);
-                    println!("Text: {}", text);
-                    assert!(html.len() > 0);
-                    assert!(text.len() > 0);
-                }
-                Err(e) => {
-                    println!("Error: {}", e);
-                    assert!(false);
-                }
-            }
-        } else {
-            assert!(false);
-        }
     }
 }
