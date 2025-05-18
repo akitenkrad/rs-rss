@@ -1,0 +1,135 @@
+@startuml ER
+
+hide circle
+skinparam linetype ortho
+
+!include https://raw.githubusercontent.com/kurotych/sqlant/9b19d6691b55c838b0809ed66707e61533a4c9f2/puml-lib/db_ent.puml
+
+table(_sqlx_migrations) {
+  column(version, "bigint", $pk=true, $nn=true)
+  ---
+  column(checksum, "bytea", $nn=true)
+  column(description, "text", $nn=true)
+  column(execution_time, "bigint", $nn=true)
+  column(installed_on, "timestamp with time zone", $nn=true)
+  column(success, "boolean", $nn=true)
+}
+
+table(academic_paper) {
+  column(paper_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(journal_id, "uuid", $fk=true, $nn=true)
+  column(status_id, "uuid", $fk=true, $nn=true)
+  column(abstract, "text", $nn=true)
+  column(abstract_ja, "text", $nn=true)
+  column(arxiv_id, "character varying", $nn=true)
+  column(bibtex, "text", $nn=true)
+  column(citation_count, "integer", $nn=true)
+  column(influential_citation_count, "integer", $nn=true)
+  column(primary_category, "character varying", $nn=true)
+  column(published_date, "date", $nn=true)
+  column(references_count, "integer", $nn=true)
+  column(ss_id, "character varying", $nn=true)
+  column(text, "text", $nn=true)
+  column(title, "text", $nn=true)
+  column(url, "text", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(author) {
+  column(author_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(h_index, "integer", $nn=true)
+  column(name, "character varying", $nn=true)
+  column(ss_id, "character varying", $nn=true)
+}
+
+table(author_paper_relation) {
+  column(author_id, "uuid", $pk=true, $fk=true, $nn=true)
+  column(paper_id, "uuid", $pk=true, $fk=true, $nn=true)
+  ---
+}
+
+table(journal) {
+  column(journal_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(name, "character varying", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(status) {
+  column(status_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(name, "character varying", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(task) {
+  column(task_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(task_name, "character varying", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(task_paper_relation) {
+  column(paper_id, "uuid", $pk=true, $fk=true, $nn=true)
+  column(task_id, "uuid", $pk=true, $fk=true, $nn=true)
+  ---
+}
+
+table(web_article) {
+  column(article_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(site_id, "uuid", $fk=true)
+  column(status_id, "uuid", $fk=true)
+  column(description, "text", $nn=true)
+  column(html, "text", $nn=true)
+  column(is_ai_related, "boolean", $nn=true)
+  column(is_it_related, "boolean", $nn=true)
+  column(is_new_academic_paper_related, "boolean", $nn=true)
+  column(is_new_product_related, "boolean", $nn=true)
+  column(is_new_technology_related, "boolean", $nn=true)
+  column(is_security_related, "boolean", $nn=true)
+  column(summary, "text", $nn=true)
+  column(text, "text", $nn=true)
+  column(timestamp, "date", $nn=true)
+  column(title, "text", $nn=true)
+  column(url, "character varying", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(web_site) {
+  column(site_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(name, "character varying", $nn=true)
+  column(url, "text", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+
+
+academic_paper }o--|| journal
+
+academic_paper }o--|| status
+
+author_paper_relation }o--|| author
+
+author_paper_relation }o--|| academic_paper
+
+task_paper_relation }o--|| task
+
+task_paper_relation }o--|| academic_paper
+
+web_article }o--|| web_site
+
+web_article }o--|| status
+
+
+add_legend()
+@enduml
