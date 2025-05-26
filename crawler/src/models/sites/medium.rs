@@ -24,7 +24,7 @@ impl Medium {
         };
     }
     pub fn get_url(&self) -> String {
-        return URL.replace("{}", &self.tag);
+        URL.replace("{}", &self.tag)
     }
 }
 
@@ -37,13 +37,13 @@ impl Default for Medium {
 #[async_trait::async_trait]
 impl WebSiteResource for Medium {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -52,7 +52,7 @@ impl WebSiteResource for Medium {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -109,7 +109,7 @@ impl WebSiteResource for Medium {
             );
             articles.push(article);
         }
-        return Ok(articles);
+        Ok(articles)
     }
 
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
@@ -123,21 +123,13 @@ impl WebSiteResource for Medium {
                 return Err(AppError::ScrapeError(format!("Failed to parse selector: {}", e)));
             }
         };
-        let text = match doc.select(&sel).next() {
-            Some(elem) => {
-                let text = elem.text().collect::<Vec<_>>().join("\n");
-                text
-            }
-            None => "NO TEXT".into(),
-        };
-        let html = match doc.select(&sel).next() {
+        let (html, text) = match doc.select(&sel).next() {
             Some(elem) => {
                 let html = elem.html().to_string();
-                html
+                (html.clone(), html2md::rewrite_html(&html, false))
             }
-            None => "NO HTML".into(),
+            None => ("NO HTML".into(), "NO TEXT".into()),
         };
-
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

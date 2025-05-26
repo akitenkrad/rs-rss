@@ -3,10 +3,10 @@ pub mod web_article;
 
 use crate::models::sites::*;
 use crate::models::web_article::WebSiteResource;
-use registry::Registry;
+use registry::AppRegistryImpl;
 use shared::errors::AppResult;
 
-pub async fn get_all_sites(registry: &Registry) -> AppResult<Vec<Box<dyn WebSiteResource>>> {
+pub async fn get_all_sites(registry: &AppRegistryImpl) -> AppResult<Vec<Box<dyn WebSiteResource>>> {
     let mut sites: Vec<Box<dyn WebSiteResource>> = vec![
         Box::new(ai_db::AIDB::default()),
         Box::new(ai_it_now::AIItNow::default()),
@@ -37,7 +37,10 @@ pub async fn get_all_sites(registry: &Registry) -> AppResult<Vec<Box<dyn WebSite
         Box::new(itmedia_general::ITMediaGeneral::default()),
         Box::new(jpcert::JPCert::default()),
         Box::new(line_techblog::LineTechBlog::default()),
-        Box::new(medium::Medium::new("Artificial Intelligence", "artificial-intelligence")),
+        Box::new(medium::Medium::new(
+            "Artificial Intelligence",
+            "artificial-intelligence",
+        )),
         Box::new(medium::Medium::new("AI", "ai")),
         Box::new(medium::Medium::new("Machine Learning", "machine-learning")),
         Box::new(medium::Medium::new("ChatGPT", "chatgpt")),
@@ -78,7 +81,7 @@ pub async fn get_all_sites(registry: &Registry) -> AppResult<Vec<Box<dyn WebSite
         site.set_site_id(site_id);
     }
 
-    return Ok(sites);
+    Ok(sites)
 }
 
 #[cfg(test)]
@@ -93,7 +96,7 @@ mod tests {
     async fn test_all_sites() {
         let config = AppConfig::new().expect("Failed to load config");
         let db = connect_database_with(&config.database);
-        let registry = Registry::new(db);
+        let registry = AppRegistryImpl::new(db);
 
         init_logger().expect("Failed to initialize logger");
 
@@ -110,7 +113,12 @@ mod tests {
             let result = site.get_articles().await;
             match result {
                 Ok(site_articles) => {
-                    event!(Level::INFO, "Site Name:{} Articles Count:{}", site.site_name(), site_articles.len());
+                    event!(
+                        Level::INFO,
+                        "Site Name:{} Articles Count:{}",
+                        site.site_name(),
+                        site_articles.len()
+                    );
                     articles.extend(site_articles);
                 }
                 Err(e) => {

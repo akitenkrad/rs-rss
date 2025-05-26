@@ -3,46 +3,99 @@
 package Internet <<Cloud>> {
 }
 
-package crawler {
-    package sites {
-        struct AnySite
-        note left: Implements the Site\ninterface for every site
+package ApplicationLayer as AL {
+    package crawler {
+        package sites {
+            struct AnySite
+            note left: Implements the Site\ninterface for every site
+        }
+        package model {
+            struct WebResource {
+            }
+        }
     }
-    package model {
-        struct WebResource {
+
+    package dashboard {
+        package model {}
+        package handler {
+            package health {
+                interface FUNCTIONS {
+                    repository: AppRepository
+                    +health_check() -> StatusCode
+                    +health_check_db() -> StatusCode
+                }
+            }
+        }
+        package route {
+            package v1 {
+                interface FUNCTIONS {
+                    +route() -> Router
+                }
+            }
+            package health {
+                interface FUNCTIONS {
+                    +build_health_check_router() -> Router
+                }
+            }
         }
     }
 }
 
-package kernel {
-    package model {
-        struct WebArticle {
-            +from<WebArticleRecord>()
-            +from<WebResource>()
+package MiddleLayer as ML {
+
+    package kernel {
+        package model {
+            struct WebArticle {
+                +from<WebArticleRecord>()
+                +from<WebResource>()
+            }
+        }
+        package repository {
+            package web_article {
+                interface WebArticleRepository {
+                    +create()
+                    +read()
+                    +update()
+                    +delete()
+                }
+            }
+            package health {
+                interface HealthCheckRepository {
+                    +check_db() -> bool
+                }
+            }
         }
     }
-    package repository {
-        interface WebArticleRepository {
-            +create()
-            +read()
-            +update()
-            +delete()
+    package registry {
+        struct AppRegistry {
+            +web_article_repository
+            +health_check_repository
         }
     }
 }
 
-package adapter {
-    package model {
-        struct WebArticleRecord {
-            +from<WebArticle>()
+package DataLayer as DL {
+    package adapter {
+       package repository {
+            package web_article {
+                struct WebArticleRepositoryImpl {
+                    +create()
+                    +read()
+                    +update()
+                    +delete()
+                }
+            }
+
+            package health {
+                struct HealthCheckRepositoryImpl {
+                    +check_db() -> bool
+                }
+            }
         }
-    }
-    package repository {
-        struct WebArticleRepositoryImpl {
-            +create()
-            +read()
-            +update()
-            +delete()
+        package model {
+            struct WebArticleRecord {
+                +from<WebArticle>()
+            }
         }
     }
 }
@@ -51,12 +104,21 @@ database PostgreSQL {
     entity WebArticle
 }
 
+'Data Flow
+Internet --> AL.crawler.sites.AnySite:data flow
+AL.crawler.sites.AnySite --> AL.crawler.model.WebResource: data flow
+AL.crawler.model.WebResource --> ML.kernel.model.WebArticle: data flow
+ML.kernel.model.WebArticle --> DL.adapter.model.WebArticleRecord: data flow
+DL.adapter.model.WebArticleRecord --> PostgreSQL.WebArticle: data flow
+ML.kernel.repository.web_article.WebArticleRepository ..|> DL.adapter.repository.web_article.WebArticleRepositoryImpl: implements
+ML.kernel.repository.health.HealthCheckRepository ..|> DL.adapter.repository.health.HealthCheckRepositoryImpl: implements
 
-Internet --> crawler.sites.AnySite:data flow
-crawler.sites.AnySite --> crawler.model.WebResource: data flow
-crawler.model.WebResource --> kernel.model.WebArticle: data flow
-kernel.model.WebArticle --> adapter.model.WebArticleRecord: data flow
-adapter.model.WebArticleRecord --> PostgreSQL.WebArticle: data flow
-
-kernel.repository.WebArticleRepository ..|> adapter.repository.WebArticleRepositoryImpl: implements
+'API Call Flow
+AL.dashboard.route.health.FUNCTIONS -up-> AL.dashboard.route.v1.FUNCTIONS: merge routes
+AL.dashboard.handler.health.FUNCTIONS -up-> Internet
+ML.kernel.repository.web_article.WebArticleRepository .up.> ML.registry.AppRegistry: uses
+ML.registry.AppRegistry .up.> AL.dashboard.handler.health.FUNCTIONS: uses
+ML.kernel.repository.health.HealthCheckRepository .up.> ML.registry.AppRegistry: uses
+DL.adapter.repository.web_article.WebArticleRepositoryImpl .down.> PostgreSQL.WebArticle
+DL.adapter.repository.health.HealthCheckRepositoryImpl .down.> PostgreSQL.WebArticle
 @enduml

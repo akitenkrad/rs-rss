@@ -144,7 +144,7 @@ AIに関わるものとは，人工知能や機械学習，LLMや自然言語処
             Option::from(
                 r#"この記事がセキュリティに関わるものであるかどうか．
 セキュリティに関わるものとは，情報セキュリティやサイバーセキュリティなどの技術を指し，
-例えば新しいセキュリティ技術の紹介や情報漏えいなどのセキュリティ事故，サイバー攻撃などが挙げられる．"#
+例えば新しいセキュリティ技術の紹介や情報漏えいなどのセキュリティ事故，サイバー攻撃の報告，脆弱性のレポートなどが挙げられる．"#
                     .to_string(),
             ),
         );
@@ -178,8 +178,14 @@ ITに関わるものとは，情報技術や情報通信技術などの技術を
             }
             Err(e) => {
                 tracing::warn!("Failed to parse WebArticleProperty: {}", e);
-                return Err(AppError::JsonParseError(e));
+                Err(AppError::JsonParseError(e))
             }
         }
     }
+}
+
+#[derive(Debug, Clone, new)]
+pub struct WebSiteListOptions {
+    pub limit: i64,
+    pub offset: i64,
 }

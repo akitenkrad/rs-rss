@@ -35,13 +35,13 @@ impl Default for MITResearch {
 #[async_trait::async_trait]
 impl WebSiteResource for MITResearch {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -50,7 +50,7 @@ impl WebSiteResource for MITResearch {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -58,7 +58,7 @@ impl WebSiteResource for MITResearch {
         let feeds = match parsers::rss2::parse(response.text().await?.as_str()) {
             Ok(feeds) => feeds,
             Err(e) => {
-                println!("Error parsing RSS feed: {}", e);
+                tracing::error!("Error parsing RSS feed: {}", e);
                 return Err(AppError::ScrapeError("Failed to parse RSS".into()));
             }
         };
@@ -77,7 +77,7 @@ impl WebSiteResource for MITResearch {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -85,17 +85,12 @@ impl WebSiteResource for MITResearch {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("article div.news-article--content--body p").unwrap();
-        let text = document
-            .select(&selector)
-            .map(|x| x.text().collect::<Vec<_>>().join("\n"));
         let html = document
             .select(&selector)
             .map(|x| x.html())
             .collect::<Vec<_>>()
             .join("\n");
-        return Ok((
-            self.trim_text(&html),
-            self.trim_text(&text.collect::<Vec<_>>().join("\n")),
-        ));
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

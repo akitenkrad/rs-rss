@@ -19,4 +19,8 @@ Cargo.lock
 
 # End of https://www.toptal.com/developers/gitignore/api/rust
 
+# Environment variables
 .env
+
+# Local configuration files
+.DS_Store

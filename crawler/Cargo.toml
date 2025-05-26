@@ -6,20 +6,21 @@ publish.workspace = true
 version = "0.1.0"
 
 [dependencies]
+adapter.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
 chrono.workspace = true
 dotenvy.workspace = true
+fast_html2md.workspace = true
 feed-parser.workspace = true
 kernel.workspace = true
 openai-tools.workspace = true
 regex.workspace = true
+registry.workspace = true
 request.workspace = true
 scraper.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 shared.workspace = true
 tokio.workspace = true
-registry.workspace = true
 tracing.workspace = true
-adapter.workspace = true

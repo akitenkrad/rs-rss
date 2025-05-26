@@ -36,16 +36,16 @@ fn is_included(article: WebArticle) -> bool {
     // |           1 |              1 |         1 |          1 | true   |
 
     if !new_prod && !new_tech && !new_paper && !ai_related {
-        return false;
+        false
     }
     if new_prod && !new_tech && !new_paper && !ai_related {
-        return false;
+        false
     }
     if new_prod && new_tech && !new_paper && !ai_related {
-        return false;
+        false
     }
 
-    return true;
+    true
 }
 
 fn to_payload(index: usize, article: WebArticle, score: isize, kws: Vec<Keyword>) -> Value {
@@ -68,7 +68,7 @@ fn to_payload(index: usize, article: WebArticle, score: isize, kws: Vec<Keyword>
             }
         ]
     });
-    return payload;
+    payload
 }
 
 pub async fn notify_slack(articles: Vec<WebArticle>) -> Result<(), String> {
@@ -85,7 +85,11 @@ pub async fn notify_slack(articles: Vec<WebArticle>) -> Result<(), String> {
         let bar = ProgressBar::new(articles.len() as u64);
         for article in articles.iter() {
             let mut extracted_keywords = extract_keywords(article.title.as_str(), kws.clone(), Language::Japanese);
-            extracted_keywords.extend(extract_keywords(article.description.as_str(), kws.clone(), Language::Japanese));
+            extracted_keywords.extend(extract_keywords(
+                article.description.as_str(),
+                kws.clone(),
+                Language::Japanese,
+            ));
 
             let score = extracted_keywords.iter().map(|kwd| kwd.score).sum::<isize>();
             if is_included(article.clone()) {
@@ -143,6 +147,5 @@ pub async fn notify_slack(articles: Vec<WebArticle>) -> Result<(), String> {
         }
         bar.finish();
     }
-
-    return Ok(());
+    Ok(())
 }

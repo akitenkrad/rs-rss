@@ -2,7 +2,7 @@ use crate::models::web_article::{Cookie, Html, Text, WebArticleResource, WebSite
 use chrono::DateTime;
 use request::Url;
 use scraper::Selector;
-use shared::errors::AppResult;
+use shared::errors::{AppError, AppResult};
 use shared::id::WebSiteId;
 
 const URL: &str = "https://supership.jp/news/";
@@ -33,13 +33,13 @@ impl Default for Supership {
 #[async_trait::async_trait]
 impl WebSiteResource for Supership {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -48,7 +48,7 @@ impl WebSiteResource for Supership {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -102,7 +102,7 @@ impl WebSiteResource for Supership {
             );
             articles.push(article);
         }
-        return Ok(articles);
+        Ok(articles)
     }
 
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
@@ -111,8 +111,14 @@ impl WebSiteResource for Supership {
         let response = self.request(url.as_str(), &cookies).await?;
         let doc = scraper::Html::parse_document(response.text().await?.as_str());
         let sel = Selector::parse("main article div.c-grid__block--content").unwrap();
-        let text = doc.select(&sel).next().unwrap().text().collect::<Vec<_>>().join("\n");
-        let html = doc.select(&sel).next().unwrap().html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let article = match doc.select(&sel).next() {
+            Some(article) => article,
+            None => {
+                return Err(AppError::ScrapeError(format!("Failed to parse article: {:?}", sel)));
+            }
+        };
+        let html = article.html().to_string();
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

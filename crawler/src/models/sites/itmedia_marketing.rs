@@ -35,13 +35,13 @@ impl Default for ITMediaMarketing {
 #[async_trait::async_trait]
 impl WebSiteResource for ITMediaMarketing {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         "marketing.itmedia.co.jp".to_string() // This is the correct domain for ITMedia Marketing
@@ -50,7 +50,7 @@ impl WebSiteResource for ITMediaMarketing {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -76,7 +76,7 @@ impl WebSiteResource for ITMediaMarketing {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -84,12 +84,17 @@ impl WebSiteResource for ITMediaMarketing {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("#cmsBody div.inner p").unwrap();
-        let mut text = String::new();
-        for p in document.select(&selector) {
-            text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
-            text.push_str("\n");
-        }
-        let html = document.select(&selector).next().unwrap().html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let article = match document.select(&selector).next() {
+            Some(article) => article,
+            None => {
+                return Err(AppError::ScrapeError(format!(
+                    "Failed to find article content in the document: {:?}",
+                    selector
+                )));
+            }
+        };
+        let html = article.html().to_string();
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

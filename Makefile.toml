@@ -1,17 +1,14 @@
+env_files = ["env/.env"]
+
 [config]
 default_to_workspace = false
 
 [env]
 AUTH_TOKEN_TTL = 86400
-DATABASE_NAME = "rss"
-DATABASE_PASSWORD = "password"
-DATABASE_PORT = 65432
-DATABASE_USERNAME = "postgres"
-DATABASE_HOST = "192.168.11.5"
 DATABASE_URL = "postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
-PORT = 18080
 JAEGER_HOST = "jaeger"
 JAEGER_PORT = 6831
+PORT = 18080
 
 [tasks.before-build]
 run_task = [{ name = ["compose-up-db", "migrate"] }]
@@ -28,6 +25,11 @@ args = [
 command = "docker"
 
 [tasks.run]
+args = ["run", "--release", "${@}"]
+command = "cargo"
+dependencies = ["before-build"]
+
+[tasks.run-bebug]
 args = ["run", "${@}"]
 command = "cargo"
 dependencies = ["before-build"]
@@ -133,9 +135,9 @@ args = [
 command = "docker"
 
 [tasks.sqlx]
-install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 args = ["${@}", "--source", "adapter/migrations"]
 command = "sqlx"
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 
 [tasks.psql]
 args = [
@@ -186,6 +188,21 @@ command = "docker"
 args = ["compose", "down", "-v"]
 command = "docker"
 
+[tasks.sort-cargo-toml]
+args = ["fmt", "--option", "reorder_keys=true"]
+command = "taplo"
+install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--help" }
+
+## Documentation tasks
+[tasks.doc]
+dependencies = ["pu2png"]
+
 [tasks.pu2png]
+dependencies = ["generate-er"]
 args = ["design/pu2png.sh"]
 command = "bash"
+
+[tasks.generate-er]
+install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
+command = "bash"
+args = ["design/generate-er.sh"]

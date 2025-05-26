@@ -153,7 +153,7 @@ async fn get_articles_from_eath_site() -> Vec<WebArticle> {
 
     articles = articles.into_iter().filter(|article| article.html != "").collect();
 
-    return articles;
+    articles
 }
 
 #[tokio::main]

@@ -1,16 +1,16 @@
 [package]
-name = "adapter"
-version = "0.1.0"
 edition.workspace = true
-publish.workspace = true
 license.workspace = true
+name = "adapter"
+publish.workspace = true
+version = "0.1.0"
 
 [dependencies]
-sqlx.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
 derive-new.workspace = true
 kernel.workspace = true
 shared.workspace = true
-async-trait.workspace = true
-chrono.workspace = true
+sqlx.workspace = true
 uuid.workspace = true
-anyhow.workspace = true

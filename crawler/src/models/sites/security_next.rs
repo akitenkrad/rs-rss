@@ -35,13 +35,13 @@ impl Default for SecurityNext {
 #[async_trait::async_trait]
 impl WebSiteResource for SecurityNext {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -50,16 +50,14 @@ impl WebSiteResource for SecurityNext {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
         let response = self.request(self.url.as_str(), &cookies).await?;
         let feeds = match parsers::rss2::parse(response.text().await?.as_str()) {
             Ok(feeds) => feeds,
-            Err(e) => {
-                return Err(AppError::ScrapeError(format!("Failed to parse RSS: {}", e)));
-            }
+            Err(e) => return Err(AppError::ScrapeError(format!("Failed to parse RSS: {}", e))),
         };
         let articles = feeds
             .iter()
@@ -76,7 +74,7 @@ impl WebSiteResource for SecurityNext {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -84,22 +82,12 @@ impl WebSiteResource for SecurityNext {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("div.main div.content p").unwrap();
-        let mut text = String::new();
-        let a_sel = scraper::Selector::parse("a").unwrap();
-        for p in document.select(&selector) {
-            if p.select(&a_sel).next().is_some() {
-                continue;
-            }
-            text.push_str(&p.text().collect::<Vec<_>>().join("\n"));
-        }
         let html = document
             .select(&selector)
             .map(|x| x.html())
             .collect::<Vec<_>>()
             .join("\n");
-        let html_text = self.trim_text(&html);
-        let mut text = self.trim_text(&text);
-        text.push_str("\n\nSecurity Next\n");
-        return Ok((html_text, text));
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

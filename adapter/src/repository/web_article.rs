@@ -1,11 +1,14 @@
 use crate::database::{
-    models::web_article::{WebArticleRecord, WebSiteRecord},
+    models::web_article::{PaginatedWebSiteRecord, WebArticleRecord, WebSiteRecord},
     ConnectionPool,
 };
 use async_trait::async_trait;
 use derive_new::new;
 use kernel::{
-    models::web_article::{WebArticle, WebSite},
+    models::{
+        list::PaginatedList,
+        web_article::{WebArticle, WebSite, WebSiteListOptions},
+    },
     repository::web_article::{WebArticleRepository, WebSiteRepository},
 };
 use shared::{
@@ -34,11 +37,11 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         )
         .fetch_one(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(WebSite::new(WebSiteId::from(res.site_id), web_site.name, web_site.url))
     }
-    async fn read_web_site_by_id(&self, id: &str) -> AppResult<WebSite> {
+    async fn select_web_site_by_id(&self, id: &str) -> AppResult<WebSite> {
         let rows = sqlx::query_as!(
             WebSiteRecord,
             r#"SELECT
@@ -52,7 +55,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         if rows.is_empty() {
             Err(AppError::RecordNotFound(sqlx::Error::RowNotFound))
         } else {
@@ -60,7 +63,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
             Ok(WebSite::from(row.clone()))
         }
     }
-    async fn read_web_site_by_name(&self, name: &str) -> AppResult<WebSite> {
+    async fn select_web_site_by_name(&self, name: &str) -> AppResult<WebSite> {
         let rows = sqlx::query_as!(
             WebSiteRecord,
             r#"SELECT
@@ -74,7 +77,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         if rows.is_empty() {
             Err(AppError::RecordNotFound(sqlx::Error::RowNotFound))
         } else {
@@ -82,8 +85,8 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
             Ok(WebSite::from(row.clone()))
         }
     }
-    async fn read_or_create_web_site(&self, name: &str, url: &str) -> AppResult<WebSite> {
-        match self.read_web_site_by_name(name).await {
+    async fn select_or_create_web_site(&self, name: &str, url: &str) -> AppResult<WebSite> {
+        match self.select_web_site_by_name(name).await {
             Ok(web_site) => Ok(web_site),
             Err(_) => {
                 let web_site = WebSite::new(WebSiteId::new(), name.to_string(), url.to_string());
@@ -91,20 +94,47 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
             }
         }
     }
-    async fn read_all_web_sites(&self) -> AppResult<Vec<WebSite>> {
+    async fn select_all_web_sites(&self, options: WebSiteListOptions) -> AppResult<PaginatedList<WebSite>> {
+        let WebSiteListOptions { limit, offset } = options;
         let rows = sqlx::query_as!(
+            PaginatedWebSiteRecord,
+            r#"
+            SELECT
+                COUNT(*) OVER() AS "total!",
+                ws.site_id as site_id,
+                ws.name as name,
+                ws.url as url
+            FROM 
+                web_site as ws
+            ORDER BY ws.created_at DESC
+            LIMIT $1
+            OFFSET $2"#,
+            limit,
+            offset
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+        let total = rows.first().map_or(0, |row| row.total);
+        let site_ids = rows.into_iter().map(|row| row.site_id).collect::<Vec<WebSiteId>>();
+
+        let items = sqlx::query_as!(
             WebSiteRecord,
             r#"SELECT
                 site_id,
                 name,
                 url
             FROM 
-                web_site"#
+                web_site
+            WHERE site_id = ANY($1::uuid[])"#,
+            &site_ids as _
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
-        Ok(rows.into_iter().map(WebSite::from).collect())
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+        let items = items.into_iter().map(WebSite::from).collect::<Vec<WebSite>>();
+
+        Ok(PaginatedList::new(total, limit, offset, items))
     }
     async fn update_web_site(&self, web_site: WebSite) -> AppResult<()> {
         sqlx::query!(
@@ -115,7 +145,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         )
         .execute(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(())
     }
     async fn delete_web_site(&self, id: &str) -> AppResult<()> {
@@ -125,7 +155,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
         )
         .execute(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(())
     }
 }
@@ -162,7 +192,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         if !existing_article.is_empty() {
             return Ok(existing_article[0].clone().into());
@@ -176,7 +206,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         if site.is_empty() {
             let res = sqlx::query!(
                 r#"INSERT INTO web_site (site_id, name, url) VALUES ($1, $2, $3) RETURNING site_id"#,
@@ -186,7 +216,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             )
             .fetch_one(self.db.inner_ref())
             .await
-            .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
             web_article.site = WebSite::new(
                 WebSiteId::from(res.site_id),
@@ -201,6 +231,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             );
         }
 
+        // Insert the article into the database
         let res = sqlx::query!(
             r#"INSERT INTO web_article (
                 site_id,
@@ -217,8 +248,11 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 is_new_academic_paper_related,
                 is_ai_related,
                 is_security_related,
-                is_it_related
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                is_it_related,
+                status_id
+            ) SELECT 
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, status_id
+            FROM status WHERE name = 'todo'
             RETURNING article_id"#,
             Uuid::from(web_article.site.site_id),
             Uuid::from(web_article.article_id),
@@ -238,7 +272,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_one(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(WebArticle::new(
             web_article.site.clone(),
             WebArticleId::from(res.article_id),
@@ -257,7 +291,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.is_it_related,
         ))
     }
-    async fn read_todays_articles(&self) -> AppResult<Vec<WebArticle>> {
+    async fn select_todays_articles(&self) -> AppResult<Vec<WebArticle>> {
         let today = chrono::Local::now().date_naive();
         let tomorrow = today + chrono::Duration::days(1);
         let rows = sqlx::query_as!(
@@ -286,12 +320,12 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))
+        .map_err(|e| shared::errors::AppError::SqlxError(e))
         .unwrap();
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
 
-    async fn read_web_article_by_id(&self, id: &str) -> AppResult<WebArticle> {
+    async fn select_web_article_by_id(&self, id: &str) -> AppResult<WebArticle> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
@@ -317,7 +351,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         if rows.is_empty() {
             Err(AppError::RecordNotFound(sqlx::Error::RowNotFound))
         } else {
@@ -325,7 +359,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             Ok(WebArticle::from(row.clone()))
         }
     }
-    async fn read_web_articles_by_keyword(&self, keyword: &str) -> AppResult<Vec<WebArticle>> {
+    async fn select_web_articles_by_keyword(&self, keyword: &str) -> AppResult<Vec<WebArticle>> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
@@ -351,10 +385,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
-    async fn read_web_article_by_url(&self, url: &str) -> AppResult<WebArticle> {
+    async fn select_web_article_by_url(&self, url: &str) -> AppResult<WebArticle> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
@@ -380,7 +414,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         if rows.is_empty() {
             Err(AppError::RecordNotFound(sqlx::Error::RowNotFound))
         } else {
@@ -388,8 +422,8 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             Ok(WebArticle::from(row.clone()))
         }
     }
-    async fn read_or_create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle> {
-        match self.read_web_article_by_url(&web_article.url).await {
+    async fn select_or_create_web_article(&self, web_article: WebArticle) -> AppResult<WebArticle> {
+        match self.select_web_article_by_url(&web_article.url).await {
             Ok(web_article) => Ok(web_article),
             Err(_) => {
                 let web_article = WebArticle::new(
@@ -413,7 +447,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             }
         }
     }
-    async fn read_all_articles(&self) -> AppResult<Vec<WebArticle>> {
+    async fn select_all_articles(&self) -> AppResult<Vec<WebArticle>> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
@@ -437,7 +471,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .fetch_all(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
     async fn update_web_article(&self, web_article: WebArticle) -> AppResult<()> {
@@ -474,7 +508,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .execute(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(())
     }
     async fn delete_web_article(&self, id: &str) -> AppResult<()> {
@@ -484,7 +518,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         )
         .execute(self.db.inner_ref())
         .await
-        .map_err(|e| shared::errors::AppError::DatabaseError(e))?;
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(())
     }
 }
@@ -508,29 +542,30 @@ mod tests {
         let web_site = repo.create_web_site(web_site.clone()).await.unwrap();
 
         // Read
-        let records = repo.read_web_site_by_id(&web_site.site_id.to_string()).await.unwrap();
+        let options = WebSiteListOptions { limit: 10, offset: 0 };
+        let records = repo.select_web_site_by_id(&web_site.site_id.to_string()).await.unwrap();
         assert_eq!(records.name, "Test Website");
         assert_eq!(records.url, "https://testwebsite.com");
-        let records = repo.read_web_site_by_name("Test Website").await.unwrap();
+        let records = repo.select_web_site_by_name("Test Website").await.unwrap();
         assert_eq!(records.name, "Test Website");
         assert_eq!(records.url, "https://testwebsite.com");
-        let records = repo.read_all_web_sites().await.unwrap();
-        assert_eq!(records.len(), 1);
+        let records = repo.select_all_web_sites(options.clone()).await.unwrap();
+        assert_eq!(records.items.len(), 1);
 
         // Update
-        let mut web_site = records[0].clone();
+        let mut web_site = records.items[0].clone();
         web_site.name = "Updated Website".to_string();
         repo.update_web_site(web_site.clone()).await.unwrap();
-        let updated_records = repo.read_all_web_sites().await.unwrap();
-        assert_eq!(updated_records[0].name, "Updated Website");
-        assert_eq!(updated_records[0].url, "https://testwebsite.com");
+        let updated_records = repo.select_all_web_sites(options.clone()).await.unwrap();
+        assert_eq!(updated_records.items[0].name, "Updated Website");
+        assert_eq!(updated_records.items[0].url, "https://testwebsite.com");
 
         // Delete
-        repo.delete_web_site(&updated_records[0].site_id.to_string())
+        repo.delete_web_site(&updated_records.items[0].site_id.to_string())
             .await
             .unwrap();
-        let records_after_delete = repo.read_all_web_sites().await.unwrap();
-        assert_eq!(records_after_delete.len(), 0);
+        let records_after_delete = repo.select_all_web_sites(options.clone()).await.unwrap();
+        assert_eq!(records_after_delete.items.len(), 0);
     }
 
     #[sqlx::test]
@@ -585,29 +620,29 @@ mod tests {
 
         // Read
         let records = repo
-            .read_web_article_by_id(&web_article.article_id.to_string())
+            .select_web_article_by_id(&web_article.article_id.to_string())
             .await
             .unwrap();
         assert_article_eq(&web_article, &records);
-        let records = repo.read_web_articles_by_keyword("Test").await.unwrap();
+        let records = repo.select_web_articles_by_keyword("Test").await.unwrap();
         assert_article_eq(&web_article, &records[0]);
-        let records = repo.read_todays_articles().await.unwrap();
+        let records = repo.select_todays_articles().await.unwrap();
         assert_article_eq(&web_article, &records[0]);
-        let records = repo.read_all_articles().await.unwrap();
+        let records = repo.select_all_articles().await.unwrap();
         assert_eq!(records.len(), 1);
 
         // Update
         let mut web_article = records[0].clone();
         web_article.title = "Updated Article".to_string();
         repo.update_web_article(web_article.clone()).await.unwrap();
-        let updated_records = repo.read_all_articles().await.unwrap();
+        let updated_records = repo.select_all_articles().await.unwrap();
         assert_eq!(updated_records[0].title, "Updated Article");
 
         // Delete
         repo.delete_web_article(&updated_records[0].article_id.to_string())
             .await
             .unwrap();
-        let records_after_delete = repo.read_all_articles().await.unwrap();
+        let records_after_delete = repo.select_all_articles().await.unwrap();
         assert_eq!(records_after_delete.len(), 0);
 
         // Clean up the website

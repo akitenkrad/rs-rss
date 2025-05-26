@@ -33,13 +33,13 @@ impl Default for TrendMicroSecurityAdvisories {
 #[async_trait::async_trait]
 impl WebSiteResource for TrendMicroSecurityAdvisories {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -48,7 +48,7 @@ impl WebSiteResource for TrendMicroSecurityAdvisories {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -74,7 +74,7 @@ impl WebSiteResource for TrendMicroSecurityAdvisories {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -82,14 +82,12 @@ impl WebSiteResource for TrendMicroSecurityAdvisories {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("section.TEArticle div.articleContainer").unwrap();
-        let text = document
-            .select(&selector)
-            .next()
-            .unwrap()
-            .text()
-            .collect::<Vec<_>>()
-            .join("\n");
-        let html = document.select(&selector).next().unwrap().html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let article = match document.select(&selector).next() {
+            Some(article) => article,
+            None => return Err(AppError::ScrapeError(format!("Failed to find article: {:?}", selector))),
+        };
+        let html = article.html().to_string();
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

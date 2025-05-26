@@ -35,22 +35,22 @@ impl Default for AWSSecurityBlog {
 #[async_trait::async_trait]
 impl WebSiteResource for AWSSecurityBlog {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
-        return self.url.domain().unwrap().to_string();
+        self.url.domain().unwrap().to_string()
     }
     fn set_site_id(&mut self, site_id: WebSiteId) {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(String::default());
+        Ok(String::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -76,7 +76,7 @@ impl WebSiteResource for AWSSecurityBlog {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let cookies = self.login().await?;
@@ -85,13 +85,11 @@ impl WebSiteResource for AWSSecurityBlog {
         let selector = scraper::Selector::parse("article section.blog-post-content").unwrap();
         match document.select(&selector).next() {
             Some(elem) => {
-                let text = elem.text().collect::<Vec<_>>().join("\n");
                 let html = elem.html().to_string();
-                return Ok((self.trim_text(&html), self.trim_text(&text)));
+                let text = html2md::rewrite_html(&html, false);
+                Ok((self.trim_text(&html), self.trim_text(&text)))
             }
-            None => {
-                return Err(AppError::ScrapeError("Failed to parse article text".into()));
-            }
+            None => Err(AppError::ScrapeError("Failed to parse article text".into())),
         }
     }
 }

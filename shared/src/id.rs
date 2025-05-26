@@ -56,7 +56,11 @@ macro_rules! define_id {
 
         impl std::fmt::Display for $id_type {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "{}", self.0.as_simple().encode_lower(&mut uuid::Uuid::encode_buffer()))
+                write!(
+                    f,
+                    "{}",
+                    self.0.as_simple().encode_lower(&mut uuid::Uuid::encode_buffer())
+                )
             }
         }
 

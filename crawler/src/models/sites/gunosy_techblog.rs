@@ -34,22 +34,22 @@ impl Default for GunosyTechBlog {
 #[async_trait::async_trait]
 impl WebSiteResource for GunosyTechBlog {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
-        return "tech.gunosy.io".to_string();
+        "tech.gunosy.io".to_string()
     }
     fn set_site_id(&mut self, site_id: WebSiteId) {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::new());
+        Ok(Cookie::new())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookies = self.login().await?;
@@ -75,7 +75,7 @@ impl WebSiteResource for GunosyTechBlog {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -83,9 +83,16 @@ impl WebSiteResource for GunosyTechBlog {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("#main article div.entry-content").unwrap();
-        let article = document.select(&selector).next().unwrap();
-        let text = article.text().collect::<Vec<_>>().join("\n");
+        let article = match document.select(&selector).next() {
+            Some(article) => article,
+            None => {
+                return Err(AppError::ScrapeError(
+                    "Failed to find article content: #main article div.entry-content".to_string(),
+                ));
+            }
+        };
         let html = article.html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

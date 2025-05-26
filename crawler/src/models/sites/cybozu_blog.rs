@@ -36,22 +36,22 @@ impl Default for CybozuBlog {
 #[async_trait::async_trait]
 impl WebSiteResource for CybozuBlog {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
-        return self.url.domain().unwrap().to_string();
+        self.url.domain().unwrap().to_string()
     }
     fn set_site_id(&mut self, site_id: WebSiteId) {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let cookie = self.login().await?;
@@ -77,7 +77,7 @@ impl WebSiteResource for CybozuBlog {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -87,13 +87,11 @@ impl WebSiteResource for CybozuBlog {
         let selector = scraper::Selector::parse("#main article div.entry-inner div.entry-content").unwrap();
         match document.select(&selector).next() {
             Some(elem) => {
-                let text = elem.text().collect::<Vec<_>>().join("\n");
                 let html = elem.html().to_string();
-                return Ok((self.trim_text(&html), self.trim_text(&text)));
+                let text = html2md::rewrite_html(&html, false);
+                Ok((self.trim_text(&html), self.trim_text(&text)))
             }
-            None => {
-                return Err(AppError::ScrapeError("Failed to parse article text".into()));
-            }
+            None => Err(AppError::ScrapeError("Failed to parse article text".into())),
         }
     }
 }

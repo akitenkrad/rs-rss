@@ -19,15 +19,15 @@ pub struct ZennTopic {
 
 impl ZennTopic {
     pub fn new(topic: &str) -> Self {
-        return Self {
+        Self {
             site_id: WebSiteId::default(),
             site_name: format!("Zenn Topic - {}", topic).to_string(),
             topic: topic.to_string(),
             url: Url::parse(URL.replace("{}", topic).as_str()).unwrap(),
-        };
+        }
     }
     pub fn get_url(&self) -> String {
-        return URL.replace("{}", &self.topic);
+        URL.replace("{}", &self.topic)
     }
 }
 
@@ -40,13 +40,13 @@ impl Default for ZennTopic {
 #[async_trait::async_trait]
 impl WebSiteResource for ZennTopic {
     fn site_id(&self) -> WebSiteId {
-        return self.site_id.clone();
+        self.site_id.clone()
     }
     fn site_name(&self) -> String {
-        return self.site_name.clone();
+        self.site_name.clone()
     }
     fn site_url(&self) -> Url {
-        return self.url.clone();
+        self.url.clone()
     }
     fn domain(&self) -> String {
         self.url.domain().unwrap().to_string()
@@ -55,7 +55,7 @@ impl WebSiteResource for ZennTopic {
         self.site_id = site_id;
     }
     async fn login(&mut self) -> AppResult<Cookie> {
-        return Ok(Cookie::default());
+        Ok(Cookie::default())
     }
     async fn get_articles(&mut self) -> AppResult<Vec<WebArticleResource>> {
         let url = Url::parse(self.get_url().as_str()).unwrap();
@@ -82,7 +82,7 @@ impl WebSiteResource for ZennTopic {
                 )
             })
             .collect::<Vec<WebArticleResource>>();
-        return Ok(articles);
+        Ok(articles)
     }
     async fn parse_article(&mut self, url: &str) -> AppResult<(Html, Text)> {
         let url = Url::parse(url).unwrap();
@@ -90,9 +90,17 @@ impl WebSiteResource for ZennTopic {
         let response = self.request(url.as_str(), &cookies).await?;
         let document = scraper::Html::parse_document(response.text().await?.as_str());
         let selector = scraper::Selector::parse("article section div.BodyContent_anchorToHeadings__uGxNv").unwrap();
-        let article = document.select(&selector).next().unwrap();
-        let text = article.text().collect::<Vec<_>>().join("\n");
+        let article = match document.select(&selector).next() {
+            Some(article) => article,
+            None => {
+                return Err(AppError::ScrapeError(format!(
+                    "Failed to parse article: {:?}",
+                    selector
+                )));
+            }
+        };
         let html = article.html().to_string();
-        return Ok((self.trim_text(&html), self.trim_text(&text)));
+        let text = html2md::rewrite_html(&html, false);
+        Ok((self.trim_text(&html), self.trim_text(&text)))
     }
 }

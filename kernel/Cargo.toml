@@ -7,11 +7,12 @@ version = "0.1.0"
 
 [dependencies]
 async-trait.workspace = true
-derive-new.workspace = true
-shared.workspace = true
 chrono.workspace = true
-openai-tools.workspace = true
+derive-new.workspace = true
 dotenvy.workspace = true
-serde_json.workspace = true
+openai-tools.workspace = true
 serde.workspace = true
+serde_json.workspace = true
+shared.workspace = true
 tracing.workspace = true
+mockall.workspace = true

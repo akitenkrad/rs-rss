@@ -10,19 +10,24 @@ pub struct WebSiteRecord {
     pub name: String,
     pub url: String,
 }
-
 impl From<WebSite> for WebSiteRecord {
     fn from(web_site: WebSite) -> Self {
         let WebSite { site_id, name, url } = web_site;
         Self { site_id, name, url }
     }
 }
-
 impl From<WebSiteRecord> for WebSite {
     fn from(web_site_record: WebSiteRecord) -> Self {
         let WebSiteRecord { site_id, name, url } = web_site_record;
         Self { site_id, name, url }
     }
+}
+
+pub struct PaginatedWebSiteRecord {
+    pub total: i64,
+    pub site_id: WebSiteId,
+    pub name: String,
+    pub url: String,
 }
 
 #[derive(Debug, Clone, new, FromRow)]

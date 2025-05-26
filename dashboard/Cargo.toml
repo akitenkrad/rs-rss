@@ -1,0 +1,16 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "dashboard"
+publish.workspace = true
+version = "0.1.0"
+
+[dependencies]
+axum.workspace = true
+kernel.workspace = true
+registry.workspace = true
+tracing.workspace = true
+shared.workspace = true
+garde.workspace = true
+derive-new.workspace = true
+serde.workspace = true

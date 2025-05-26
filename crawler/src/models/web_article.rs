@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local};
 use kernel::models::web_article::{WebArticle, WebSite};
 use regex::Regex;
-use registry::Registry;
+use registry::AppRegistryImpl;
 use request::{Response, Url};
 use serde::{Deserialize, Serialize};
 use shared::errors::{AppError, AppResult};
@@ -58,6 +58,16 @@ impl From<WebArticleResource> for WebArticle {
             text,
             html,
         } = article;
+        let reg_cdata = Regex::new(r"<!\[CDATA\[(?<text>.+?)\]\]>").unwrap();
+        let title = reg_cdata
+            .captures(&title)
+            .and_then(|cap| cap.name("text").map(|m| m.as_str().to_string()))
+            .unwrap_or(title);
+        let description = reg_cdata
+            .captures(&description)
+            .and_then(|cap| cap.name("text").map(|m| m.as_str().to_string()))
+            .unwrap_or(description);
+        let description = html2md::rewrite_html(&description, false);
         WebArticle {
             site: WebSite::new(WebSiteId::new(), site_name, site_url),
             article_id: WebArticleId::new(),
@@ -83,21 +93,20 @@ pub trait WebSiteResource: Send + Sync {
     fn domain(&self) -> String;
     fn trim_text(&self, text: &str) -> String {
         let re = Regex::new(r"\s\s+").unwrap();
-        let trimmed_text = re.replace_all(text, "\n").to_string();
-        return trimmed_text;
+        re.replace_all(text, "\n").to_string()
     }
-    async fn get_site_id(&self, registry: &Registry) -> AppResult<WebSiteId> {
+    async fn get_site_id(&self, registry: &AppRegistryImpl) -> AppResult<WebSiteId> {
         let name = self.site_name();
         let url = self.site_url();
         let site = registry
             .web_site_repository()
-            .read_or_create_web_site(&name, url.as_str())
+            .select_or_create_web_site(&name, url.as_str())
             .await?;
         Ok(site.site_id)
     }
     fn set_site_id(&mut self, site_id: WebSiteId);
     fn get_domain(&self, url: &str) -> AppResult<String> {
-        return Ok(Url::parse(url)?.domain().unwrap_or_default().to_string());
+        Ok(Url::parse(url)?.domain().unwrap_or_default().to_string())
     }
     async fn request(&self, url: &str, cookie_str: &str) -> AppResult<Response> {
         let url = request::Url::parse(url).unwrap();
@@ -125,11 +134,9 @@ pub trait WebSiteResource: Send + Sync {
 
         let response = match client.get(url).send().await {
             Ok(response) => response,
-            Err(e) => {
-                return Err(AppError::RequestError(e));
-            }
+            Err(e) => return Err(AppError::RequestError(e)),
         };
-        return Ok(response);
+        Ok(response)
     }
 }
 
