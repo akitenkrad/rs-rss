@@ -1,4 +1,4 @@
-@startuml class_diagram
+@startuml class_diagram_crawler
 
 package Internet <<Cloud>> {
 }
@@ -11,31 +11,6 @@ package ApplicationLayer as AL {
         }
         package model {
             struct WebResource {
-            }
-        }
-    }
-
-    package dashboard {
-        package model {}
-        package handler {
-            package health {
-                interface FUNCTIONS {
-                    repository: AppRepository
-                    +health_check() -> StatusCode
-                    +health_check_db() -> StatusCode
-                }
-            }
-        }
-        package route {
-            package v1 {
-                interface FUNCTIONS {
-                    +route() -> Router
-                }
-            }
-            package health {
-                interface FUNCTIONS {
-                    +build_health_check_router() -> Router
-                }
             }
         }
     }
@@ -59,17 +34,11 @@ package MiddleLayer as ML {
                     +delete()
                 }
             }
-            package health {
-                interface HealthCheckRepository {
-                    +check_db() -> bool
-                }
-            }
         }
     }
     package registry {
         struct AppRegistry {
             +web_article_repository
-            +health_check_repository
         }
     }
 }
@@ -83,12 +52,6 @@ package DataLayer as DL {
                     +read()
                     +update()
                     +delete()
-                }
-            }
-
-            package health {
-                struct HealthCheckRepositoryImpl {
-                    +check_db() -> bool
                 }
             }
         }
@@ -111,14 +74,5 @@ AL.crawler.model.WebResource --> ML.kernel.model.WebArticle: data flow
 ML.kernel.model.WebArticle --> DL.adapter.model.WebArticleRecord: data flow
 DL.adapter.model.WebArticleRecord --> PostgreSQL.WebArticle: data flow
 ML.kernel.repository.web_article.WebArticleRepository ..|> DL.adapter.repository.web_article.WebArticleRepositoryImpl: implements
-ML.kernel.repository.health.HealthCheckRepository ..|> DL.adapter.repository.health.HealthCheckRepositoryImpl: implements
 
-'API Call Flow
-AL.dashboard.route.health.FUNCTIONS -up-> AL.dashboard.route.v1.FUNCTIONS: merge routes
-AL.dashboard.handler.health.FUNCTIONS -up-> Internet
-ML.kernel.repository.web_article.WebArticleRepository .up.> ML.registry.AppRegistry: uses
-ML.registry.AppRegistry .up.> AL.dashboard.handler.health.FUNCTIONS: uses
-ML.kernel.repository.health.HealthCheckRepository .up.> ML.registry.AppRegistry: uses
-DL.adapter.repository.web_article.WebArticleRepositoryImpl .down.> PostgreSQL.WebArticle
-DL.adapter.repository.health.HealthCheckRepositoryImpl .down.> PostgreSQL.WebArticle
 @enduml

@@ -1,0 +1,30 @@
+@startuml class_diagram_layers
+
+package Internet <<Cloud>> {
+}
+
+package ApplicationLayer as AL {
+    package crawler{}
+
+    package dashboard{}
+}
+
+package MiddleLayer as ML {
+    package kernel {}
+    package registry {}
+}
+
+package DataLayer as DL {
+    package adapter {}
+}
+
+database PostgreSQL {
+    entity WebArticle
+}
+
+Internet <--> AL
+AL <--> ML
+ML <--> DL
+DL <--> PostgreSQL
+
+@enduml

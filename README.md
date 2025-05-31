@@ -6,6 +6,16 @@
 
 ![ER](design/images/er.png)
 
-## Class Diagram
+## Layers
 
-![Class](design/images/class_diagram.png)
+![Class](design/images/class_diagram_layers.png)
+
+### Crawler
+
+![Class](design/images/class_diagram_crawler.png)
+
+### API
+
+#### Health
+
+![Class](design/images/class_diagram_health_api.png)

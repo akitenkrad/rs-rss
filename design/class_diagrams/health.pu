@@ -1,0 +1,73 @@
+@startuml class_diagram_health_api
+
+package Internet <<Cloud>> {
+}
+
+package ApplicationLayer as AL {
+    package dashboard {
+        package handler {
+            package health {
+                interface FUNCTIONS {
+                    repository: AppRepository
+                    +health_check() -> StatusCode
+                    +health_check_db() -> StatusCode
+                }
+            }
+        }
+        package route {
+            package v1 {
+                interface FUNCTIONS {
+                    +route() -> Router
+                }
+            }
+            package health {
+                interface FUNCTIONS {
+                    +build_health_check_router() -> Router
+                }
+            }
+        }
+    }
+}
+
+package MiddleLayer as ML {
+    package kernel {
+        package repository {
+            package health {
+                interface HealthCheckRepository {
+                    +check_db() -> bool
+                }
+            }
+        }
+    }
+    package registry {
+        struct AppRegistry {
+            +health_check_repository
+        }
+    }
+}
+
+package DataLayer as DL {
+    package adapter {
+       package repository {
+            package health {
+                struct HealthCheckRepositoryImpl {
+                    +check_db() -> bool
+                }
+            }
+        }
+}
+
+database PostgreSQL {
+    entity WebArticle
+}
+
+'Data Flow
+ML.kernel.repository.health.HealthCheckRepository ..|> DL.adapter.repository.health.HealthCheckRepositoryImpl: implements
+
+'API Call Flow
+AL.dashboard.route.health.FUNCTIONS -up-> AL.dashboard.route.v1.FUNCTIONS: merge routes
+AL.dashboard.handler.health.FUNCTIONS -up-> Internet
+ML.registry.AppRegistry .up.> AL.dashboard.handler.health.FUNCTIONS: uses
+ML.kernel.repository.health.HealthCheckRepository .up.> ML.registry.AppRegistry: uses
+DL.adapter.repository.health.HealthCheckRepositoryImpl .down.> PostgreSQL.WebArticle
+@enduml

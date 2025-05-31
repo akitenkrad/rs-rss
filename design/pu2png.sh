@@ -1,7 +1,10 @@
 #!/bin/bash
 set -eu
 
-java -jar design/plantuml.jar -charset UTF-8 design/class_diagram.pu
-java -jar design/plantuml.jar -charset UTF-8 design/er.pu
+rm -r design/images
+mkdir -p design/images/
 
-mv design/class_diagram.png design/er.png design/images
+java -jar design/plantuml.jar -charset UTF-8 design design/**/*.pu
+
+mv design/*.png design/images/
+mv design/class_diagrams/*.png design/images/
