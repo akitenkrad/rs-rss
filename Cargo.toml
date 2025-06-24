@@ -45,7 +45,7 @@ fxhash = "0.2.1"
 indicatif = "0.17.11"
 kernel = { path = "./kernel" }
 keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
-openai-tools = "0.1.3"
+openai-tools = "0.1.6"
 regex = "1.11.1"
 registry = { path = "./registry" }
 request = { version = "0.12.20", features = ["cookies"], package = "reqwest" }
@@ -78,6 +78,7 @@ garde = { version = "0.22.0", features = ["derive", "email"] }
 rsrpp = "1.0.16"
 arxiv-tools = "1.1.2"
 ss-tools = "0.2.7"
+tiktoken-rs = "0.7.0"
 
 [dependencies]
 academic_paper_crawler.workspace = true

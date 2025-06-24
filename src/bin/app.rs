@@ -93,7 +93,7 @@ async fn collect_articles(_args: &CollectArticlesArgs) {
 
                     //Fill the article attributes
                     let mut web_article = WebArticle::from(article.clone());
-                    if let Err(e) = web_article.fill_attributes() {
+                    if let Err(e) = web_article.fill_attributes().await {
                         tracing::error!(
                             "Failed to fill attributes for article {}: {}",
                             web_article.article_id,
@@ -205,7 +205,10 @@ async fn add_academic_paper(args: &AddAcademicPaperArgs) {
 
     // kernel
     let mut paper = AcademicPaper::from(paper_rsc);
-    paper.fill_fields_with_ai().expect("Failed to fill fields with AI");
+    paper
+        .fill_fields_with_ai()
+        .await
+        .expect("Failed to fill fields with AI");
     paper.fill_bibtex().expect("Failed to fill BibTeX");
 
     // Log the paper details

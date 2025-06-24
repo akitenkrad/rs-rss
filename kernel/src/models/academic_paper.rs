@@ -4,6 +4,7 @@ use derive_new::new;
 use openai_tools::{json_schema::JsonSchema, Message, OpenAI, ResponseFormat};
 use serde::{Deserialize, Serialize};
 use shared::id::{AcademicPaperId, AuthorId, JournalId, TaskId};
+use tiktoken_rs::o200k_base;
 
 #[derive(Debug, Clone, Default, new)]
 pub struct Author {
@@ -83,7 +84,7 @@ pub struct AcademicPaperSummary {
 }
 
 impl AcademicPaper {
-    pub fn fill_fields_with_ai(&mut self) -> Result<AcademicPaper> {
+    pub async fn fill_fields_with_ai(&mut self) -> Result<AcademicPaper> {
         // print current environment variables for debugging
         for (key, value) in std::env::vars() {
             tracing::debug!("{}: {}", key, value);
@@ -114,14 +115,28 @@ impl AcademicPaper {
                 String::from("user"),
                 format!(
                     r#"与えられた論文のテキストから以下の情報を抽出してJSON形式で出力してください．
-- 論文の要約を日本語に翻訳してください．
-- 論文の概要を日本語で記述してください．
-- 論文が取り組んでいるタスクを英語のリストで記記述してください．
-- 論文の研究の背景と目的を日本語で記述してください．
-- 論文の研究手法を先行研究と比較して日本語で記述してください．
-- 論文で使用されているデータセットを日本語で記述してください．
-- 論文の主な結果と知見を日本語で記述してください．
-- 論文の利点・限界・今後の展望を日本語で記述してください．
+- [abstract_in_japanese] 論文の要約を日本語に翻訳してください．
+- [summary] 論文の概要を日本語で記述してください．
+- [tasks] 論文が取り組んでいるタスクを英語のリストで記記述してください．
+- [background_and_purpose] 論文の研究の背景と目的を日本語で記述してください．
+- [methodology] 論文の研究手法を先行研究と比較して日本語で記述してください．
+- [dataset] 論文で使用されているデータセットを日本語で記述してください．
+- [results] 論文の主な結果と知見を日本語で記述してください．
+- [advantages_limitations_and_future_work] 論文の利点・限界・今後の展望を日本語で記述してください．
+
+出力形式は以下のようにしてください：
+{{
+    "abstract_in_japanese": "要約",
+    "summary": "概要",
+    "tasks": [
+        {{"name": "タスク名"}}
+    ],
+    "background_and_purpose": "背景と目的",
+    "methodology": "手法",
+    "dataset": "データセット",
+    "results": "結果",
+    "advantages_limitations_and_future_work": "利点・限界・今後の展望"
+}}
 
 [論文タイトル]
 {title}
@@ -137,6 +152,25 @@ impl AcademicPaper {
                 ),
             ),
         ];
+
+        let bpe = o200k_base().unwrap();
+        let tokens = bpe.encode_with_special_tokens(&self.text);
+        tracing::info!("Encoded text into {} tokens", tokens.len());
+        let max_tokens = std::env::var("OPENAI_MAX_TOKENS")
+            .unwrap_or_else(|_| "200000".to_string())
+            .parse::<usize>()
+            .unwrap_or(200000);
+
+        if tokens.len() > max_tokens {
+            tracing::warn!(
+                "Text is too long: {} tokens, truncating to {} tokens",
+                tokens.len(),
+                max_tokens
+            );
+            let target_length = max_tokens * 0.95 as usize; // 95% of max_tokens
+            let truncated_text = bpe.decode(tokens[..target_length].to_vec())?;
+            self.text = truncated_text;
+        }
 
         let mut json_schema = JsonSchema::new("academic_paper".into());
         json_schema.add_property(
@@ -186,12 +220,11 @@ impl AcademicPaper {
             .temperature(1.0)
             .response_format(response_format);
 
-        let response = openai.chat().unwrap();
+        let response = openai.chat().await.unwrap();
         let mut max_retries = 5;
         while max_retries > 0 {
             match serde_json::from_str::<AcademicPaperSummary>(&response.choices[0].message.content) {
                 Ok(summary) => {
-                    tracing::info!("LLM Response: {:?}", summary.clone());
                     self.abstract_text_ja = summary.abstract_in_japanese.clone();
                     self.summary = summary.summary.clone();
                     self.tasks = summary
@@ -219,7 +252,10 @@ impl AcademicPaper {
                 }
             }
         }
-        Ok(self.clone())
+        tracing::warn!("It seems to fail to query OpenAI API");
+        return Err(anyhow::anyhow!(
+            "Failed to fill fields with AI: OpenAI API query failed"
+        ));
     }
     pub fn fill_bibtex(&mut self) -> Result<AcademicPaper> {
         let first_author = self

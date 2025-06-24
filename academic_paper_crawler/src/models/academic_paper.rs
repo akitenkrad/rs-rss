@@ -112,8 +112,14 @@ impl AcademicPaperResource {
                         title: section.title,
                         content: section.contents.join("\n"),
                     })
+                    .filter(|section| {
+                        !section.title.to_lowercase().contains("reference") && !section.content.is_empty()
+                    })
                     .collect();
                 tracing::info!("Successfully parsed PDF at URL: {}", self.url);
+                for (i, section) in self.text.iter().enumerate() {
+                    tracing::info!("Section {}: {}", i + 1, section.title);
+                }
                 Ok(self.clone())
             }
             Err(e) => {

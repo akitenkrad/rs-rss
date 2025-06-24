@@ -268,9 +268,9 @@ pub struct AcademicPaperRepositoryImpl {
 impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
     async fn create_academic_paper(&self, academic_paper: AcademicPaper) -> AppResult<AcademicPaper> {
         // Check if the academic paper already exists by ss_id
-        if let Ok(existing_paper) = self.select_academic_paper_by_ss_id(&academic_paper.ss_id).await {
-            return Ok(existing_paper);
-        }
+        // if let Ok(existing_paper) = self.select_academic_paper_by_ss_id(&academic_paper.ss_id).await {
+        //     return Ok(existing_paper);
+        // }
 
         // If the academic paper does not exist, insert a new record
         // Check if the authors exist, if not, create them

@@ -60,7 +60,7 @@ pub struct WebArticle {
 }
 
 impl WebArticle {
-    pub fn fill_attributes(&mut self) -> AppResult<()> {
+    pub async fn fill_attributes(&mut self) -> AppResult<()> {
         dotenv().ok();
         let model_id = std::env::var("OPENAI_MODEL_ID").expect("OPENAI_MODEL_ID must be set");
         let mut openai = OpenAI::new();
@@ -166,7 +166,7 @@ ITに関わるものとは，情報技術や情報通信技術などの技術を
             .temperature(1.0)
             .response_format(response_format);
 
-        let response = openai.chat().unwrap();
+        let response = openai.chat().await.unwrap();
         match serde_json::from_str::<WebArticleProperty>(&response.choices[0].message.content) {
             Ok(properties) => {
                 self.summary = properties.summary.unwrap_or("NO SUMMARY".to_string());
