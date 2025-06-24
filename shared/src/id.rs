@@ -80,3 +80,4 @@ define_id!(JournalId);
 define_id!(AcademicPaperId);
 define_id!(AuthorPaperRelationId);
 define_id!(TaskPaperRelationId);
+define_id!(StatusId);

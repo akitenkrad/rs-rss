@@ -13,7 +13,7 @@ pub trait WebSiteRepository: Send + Sync {
     async fn select_web_site_by_id(&self, id: &str) -> AppResult<WebSite>;
     async fn select_web_site_by_name(&self, name: &str) -> AppResult<WebSite>;
     async fn select_or_create_web_site(&self, name: &str, url: &str) -> AppResult<WebSite>;
-    async fn select_all_web_sites(&self, options: WebSiteListOptions) -> AppResult<PaginatedList<WebSite>>;
+    async fn select_all_web_sites_paginated(&self, options: WebSiteListOptions) -> AppResult<PaginatedList<WebSite>>;
 }
 
 #[async_trait]

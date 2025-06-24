@@ -1,0 +1,73 @@
+@startuml class_diagram_academic_paper_crawler
+
+package Internet <<Cloud>> {
+}
+
+package ApplicationLayer as AL {
+    package academic_paper_crawler {
+        package model {
+            struct AcademicPaperResource {
+            }
+        }
+    }
+}
+
+package MiddleLayer as ML {
+
+    package kernel {
+        package model {
+            struct AcademicPaper {
+                +from<AcademicPaperRecord>()
+                +from<AcademicPaperResource>()
+            }
+        }
+        package repository {
+            package academic_paper {
+                interface AcademicPaperRepository {
+                    +create()
+                    +read()
+                    +update()
+                    +delete()
+                }
+            }
+        }
+    }
+    package registry {
+        struct AppRegistry {
+            +academic_paper_repository
+        }
+    }
+}
+
+package DataLayer as DL {
+    package adapter {
+       package repository {
+            package academic_paper {
+                struct AcademicPaperRepositoryImpl {
+                    +create()
+                    +read()
+                    +update()
+                    +delete()
+                }
+            }
+        }
+        package model {
+            struct AcademicPaperRecord {
+                +from<AcademicPaper>()
+            }
+        }
+    }
+}
+
+database PostgreSQL {
+    entity WebArticle
+}
+
+'Data Flow
+Internet <--> AL
+AL <--> ML
+ML <--> DL
+DL <--> PostgreSQL
+
+
+@enduml

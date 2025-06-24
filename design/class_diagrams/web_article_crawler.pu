@@ -4,7 +4,7 @@ package Internet <<Cloud>> {
 }
 
 package ApplicationLayer as AL {
-    package crawler {
+    package web_article_crawler {
         package sites {
             struct AnySite
             note left: Implements the Site\ninterface for every site
@@ -69,8 +69,8 @@ database PostgreSQL {
 
 'Data Flow
 Internet --> AL.crawler.sites.AnySite:data flow
-AL.crawler.sites.AnySite --> AL.crawler.model.WebResource: data flow
-AL.crawler.model.WebResource --> ML.kernel.model.WebArticle: data flow
+AL.web_article_crawler.sites.AnySite --> AL.web_article_crawler.model.WebResource: data flow
+AL.web_article_crawler.model.WebResource --> ML.kernel.model.WebArticle: data flow
 ML.kernel.model.WebArticle --> DL.adapter.model.WebArticleRecord: data flow
 DL.adapter.model.WebArticleRecord --> PostgreSQL.WebArticle: data flow
 ML.kernel.repository.web_article.WebArticleRepository ..|> DL.adapter.repository.web_article.WebArticleRepositoryImpl: implements

@@ -15,7 +15,7 @@ pub async fn get_all_sites(
 
     registry
         .web_site_repository()
-        .select_all_web_sites(query.into())
+        .select_all_web_sites_paginated(query.into())
         .await
         .map(PaginatedWebSiteResponse::from)
         .map(Json)

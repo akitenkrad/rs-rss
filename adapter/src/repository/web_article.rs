@@ -94,7 +94,7 @@ impl WebSiteRepository for WebSiteRepositoryImpl {
             }
         }
     }
-    async fn select_all_web_sites(&self, options: WebSiteListOptions) -> AppResult<PaginatedList<WebSite>> {
+    async fn select_all_web_sites_paginated(&self, options: WebSiteListOptions) -> AppResult<PaginatedList<WebSite>> {
         let WebSiteListOptions { limit, offset } = options;
         let rows = sqlx::query_as!(
             PaginatedWebSiteRecord,
@@ -549,14 +549,14 @@ mod tests {
         let records = repo.select_web_site_by_name("Test Website").await.unwrap();
         assert_eq!(records.name, "Test Website");
         assert_eq!(records.url, "https://testwebsite.com");
-        let records = repo.select_all_web_sites(options.clone()).await.unwrap();
+        let records = repo.select_all_web_sites_paginated(options.clone()).await.unwrap();
         assert_eq!(records.items.len(), 1);
 
         // Update
         let mut web_site = records.items[0].clone();
         web_site.name = "Updated Website".to_string();
         repo.update_web_site(web_site.clone()).await.unwrap();
-        let updated_records = repo.select_all_web_sites(options.clone()).await.unwrap();
+        let updated_records = repo.select_all_web_sites_paginated(options.clone()).await.unwrap();
         assert_eq!(updated_records.items[0].name, "Updated Website");
         assert_eq!(updated_records.items[0].url, "https://testwebsite.com");
 
@@ -564,7 +564,7 @@ mod tests {
         repo.delete_web_site(&updated_records.items[0].site_id.to_string())
             .await
             .unwrap();
-        let records_after_delete = repo.select_all_web_sites(options.clone()).await.unwrap();
+        let records_after_delete = repo.select_all_web_sites_paginated(options.clone()).await.unwrap();
         assert_eq!(records_after_delete.items.len(), 0);
     }
 

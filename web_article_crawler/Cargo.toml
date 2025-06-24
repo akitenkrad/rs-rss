@@ -1,7 +1,7 @@
 [package]
 edition.workspace = true
 license.workspace = true
-name = "crawler"
+name = "web_article_crawler"
 publish.workspace = true
 version = "0.1.0"
 

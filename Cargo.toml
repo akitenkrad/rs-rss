@@ -6,7 +6,15 @@ publish.workspace = true
 version = "1.0.0"
 
 [workspace]
-members = ["adapter", "crawler", "dashboard", "kernel", "registry", "shared"]
+members = [
+    "adapter",
+    "web_article_crawler",
+    "dashboard",
+    "kernel",
+    "registry",
+    "shared",
+    "academic_paper_crawler",
+]
 
 [[bin]]
 name = "rsrss"
@@ -18,6 +26,7 @@ license = "MIT"
 publish = false
 
 [workspace.dependencies]
+academic_paper_crawler = { path = "./academic_paper_crawler" }
 adapter = { path = "./adapter" }
 anyhow = "1.0.98"
 async-trait = "0.1.88"
@@ -25,9 +34,9 @@ axum = { version = "0.8.4", features = ["macros"] }
 axum-extra = "0.10.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 chrono-tz = "0.10.3"
-clap = { version = "4.5.38", features = ["derive"] }
+clap = { version = "4.5.40", features = ["derive"] }
 const_format = { version = "0.2.34", features = ["derive"] }
-crawler = { path = "./crawler" }
+web_article_crawler = { path = "./web_article_crawler" }
 derive-new = "0.7.0"
 dotenvy = "0.15.7"
 fast_html2md = "0.0.48"
@@ -39,7 +48,7 @@ keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main
 openai-tools = "0.1.3"
 regex = "1.11.1"
 registry = { path = "./registry" }
-request = { version = "0.12.15", features = ["cookies"], package = "reqwest" }
+request = { version = "0.12.20", features = ["cookies"], package = "reqwest" }
 scraper = "0.23.1"
 serde = "1.0.219"
 serde_json = "1.0.140"
@@ -62,17 +71,21 @@ url = "2.5.4"
 urlencoding = "2.1.3"
 uuid = { version = "1.17.0", features = ["v4", "serde"] }
 tower = "0.5.2"
-tower-http = { version = "0.6.4", features = ["cors", "trace"] }
+tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 mockall = "0.13.1"
 dashboard = { path = "./dashboard" }
 garde = { version = "0.22.0", features = ["derive", "email"] }
+rsrpp = "1.0.16"
+arxiv-tools = "1.1.2"
+ss-tools = "0.2.7"
 
 [dependencies]
+academic_paper_crawler.workspace = true
 dashboard.workspace = true
 adapter.workspace = true
 anyhow.workspace = true
 chrono.workspace = true
-crawler.workspace = true
+web_article_crawler.workspace = true
 kernel.workspace = true
 registry.workspace = true
 shared.workspace = true
@@ -83,3 +96,4 @@ clap.workspace = true
 tower.workspace = true
 tower-http.workspace = true
 axum.workspace = true
+dotenvy.workspace = true

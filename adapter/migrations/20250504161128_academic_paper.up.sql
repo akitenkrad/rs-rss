@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS journal (
 
 CREATE TABLE IF NOT EXISTS task (
     task_id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
-    task_name VARCHAR(255) NOT NULL DEFAULT '',
+    name VARCHAR(255) NOT NULL DEFAULT '',
     created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
     updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
 );
@@ -30,12 +30,19 @@ CREATE TABLE IF NOT EXISTS academic_paper (
     abstract_ja TEXT NOT NULL DEFAULT '',
     text TEXT NOT NULL DEFAULT '',
     url TEXT NOT NULL DEFAULT '',
+    doi TEXT NOT NULL DEFAULT '',
     published_date DATE NOT NULL DEFAULT '1970-01-01',
     primary_category VARCHAR(255) NOT NULL DEFAULT '',
     citation_count INT NOT NULL DEFAULT 0,
     references_count INT NOT NULL DEFAULT 0,
     influential_citation_count INT NOT NULL DEFAULT 0,
     bibtex TEXT NOT NULL DEFAULT '',
+    summary TEXT NOT NULL DEFAULT '',
+    background_and_purpose TEXT NOT NULL DEFAULT '',
+    methodology TEXT NOT NULL DEFAULT '',
+    dataset TEXT NOT NULL DEFAULT '',
+    results TEXT NOT NULL DEFAULT '',
+    advantages_limitations_and_future_work TEXT NOT NULL DEFAULT '',
     status_id UUID NOT NULL REFERENCES status (status_id),
     created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
     updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)

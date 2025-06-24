@@ -1,103 +1,8 @@
-env_files = ["env/.env"]
-
 [config]
 default_to_workspace = false
 
 [env]
-AUTH_TOKEN_TTL = 86400
-DATABASE_URL = "postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
-JAEGER_HOST = "jaeger"
-JAEGER_PORT = 6831
-PORT = 18080
-
-[tasks.before-build]
-run_task = [{ name = ["compose-up-db", "migrate"] }]
-
-[tasks.compose-build-app]
-args = [
-  "compose",
-  "build",
-  "app",
-  "--build-arg",
-  "BUILDKIT_INLINE_CACHE=1",
-  "${@}",
-]
-command = "docker"
-
-[tasks.run]
-args = ["run", "--release", "${@}"]
-command = "cargo"
-dependencies = ["before-build"]
-
-[tasks.run-bebug]
-args = ["run", "${@}"]
-command = "cargo"
-dependencies = ["before-build"]
-
-[tasks.run-in-docker]
-args = ["compose", "up", "-d", "app"]
-command = "docker"
-dependencies = ["before-build", "compose-build-app"]
-
-[tasks.logs]
-args = ["compose", "logs", "${@}"]
-command = "docker"
-dependencies = ["before-build"]
-
-[tasks.build]
-args = ["build", "${@}"]
-command = "cargo"
-dependencies = ["before-build"]
-
-[tasks.check]
-args = ["check"]
-command = "cargo"
-dependencies = ["before-build"]
-
-[tasks.watch]
-dependencies = ["before-build"]
-run_task = [{ name = ["fmt", "clippy", "test"] }]
-watch = true
-
-[tasks.fmt]
-args = ["fmt", "--all", "${@}"]
-command = "cargo"
-
-[tasks.clippy]
-args = ["clippy", "--all", "--all-targets", "${@}"]
-command = "cargo"
-
-[tasks.test]
-args = [
-  "nextest",
-  "run",
-  "--workspace",
-  "--status-level",
-  "all",
-  "--test-threads=1",
-]
-command = "cargo"
-install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
-  "nextest",
-  "--help",
-] }
-
-[tasks.nextest]
-args = ["nextest", "${@}", "--workspace"]
-command = "cargo"
-install_crate = { crate_name = "cargo-nextest", binary = "cargo", test_arg = [
-  "nextest",
-  "--help",
-] }
-
-
-[tasks.clippy-ci]
-dependencies = ["before-build"]
-run_task = "clippy"
-
-[tasks.test-ci]
-dependencies = ["before-build"]
-run_task = "test"
+env_file = ".env"
 
 [tasks.migrate]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
@@ -108,16 +13,88 @@ until sqlx migrate run --source adapter/migrations; do
 done
 '''
 
+[tasks.compose-up-db]
+command = "docker"
+args = ["compose", "up", "-d", "postgres"]
+
+[tasks.before-build]
+run_task = [{ name = ["compose-up-db", "migrate"] }]
+
+[tasks.compose-build]
+script = '''
+#!/bin/bash
+docker compose build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
+'''
+
+[tasks.compose-build-no-cache]
+command = "docker"
+args = ["compose", "build", "--pull", "--no-cache", "--progress=plain"]
+
+[tasks.run]
+command = "cargo"
+args = ["run", "--release", "${@}"]
+dependencies = ["before-build"]
+
+[tasks.run-debug]
+command = "cargo"
+args = ["run", "${@}"]
+dependencies = ["before-build"]
+
+[tasks.run-in-docker]
+args = ["compose", "run", "--rm", "rsrss", "${@}"]
+command = "docker"
+dependencies = ["before-build"]
+env_files = [".env"]
+
+[tasks.logs]
+command = "docker"
+args = ["compose", "logs", "${@}"]
+dependencies = ["before-build"]
+
+[tasks.build]
+command = "cargo"
+args = ["build", "${@}"]
+dependencies = ["before-build"]
+
+[tasks.reformat]
+script = '''
+#!/bin/bash
+cargo fmt -- --emit files
+'''
+
+[tasks.nextest]
+dependencies = ["before-build"]
+script = '''
+#!/bin/bash
+docker run --rm rsrss cargo nextest run --workspace --status-level all --test-threads=1 "${@}"
+'''
+
+command = "cargo"
+args = [
+  "nextest",
+  "run",
+  "--workspace",
+  "--status-level",
+  "all",
+  "--test-threads=1",
+]
+install_crate = "cargo-nextest"
+
 [tasks.migrate-revert]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-until sqlx migrate revert --source adapter/migrations; do
-  sleep 1
+migration=$(find adapter/migrations -type f -name "*down.sql" | sort -r)
+for m in ${migration[@]}; do
+  echo "Reverting migrations for $m"
+  until sqlx migrate revert --source adapter/migrations; do
+    sleep 1
+  done
 done
 '''
 
 [tasks.migration-logs]
+command = "docker"
 args = [
   "run",
   "-it",
@@ -132,14 +109,14 @@ args = [
   "-c",
   "SELECT * FROM \"_sqlx_migrations\" ORDER BY \"version\" DESC",
 ]
-command = "docker"
 
 [tasks.sqlx]
-args = ["${@}", "--source", "adapter/migrations"]
 command = "sqlx"
+args = ["${@}", "--source", "adapter/migrations"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 
 [tasks.psql]
+command = "docker"
 args = [
   "run",
   "-it",
@@ -153,9 +130,9 @@ args = [
   "${DATABASE_URL}",
   "${@}",
 ]
-command = "docker"
 
 [tasks.initial-setup]
+command = "docker"
 args = [
   "run",
   "-it",
@@ -170,27 +147,10 @@ args = [
   "-f",
   "/work/data/initial_setup.sql",
 ]
-command = "docker"
-
-[tasks.compose]
-args = ["compose", "${@}"]
-command = "docker"
-
-[tasks.compose-up-db]
-args = ["compose", "up", "-d", "postgres"]
-command = "docker"
-
-[tasks.compose-down]
-args = ["compose", "down"]
-command = "docker"
-
-[tasks.compose-remove]
-args = ["compose", "down", "-v"]
-command = "docker"
 
 [tasks.sort-cargo-toml]
-args = ["fmt", "--option", "reorder_keys=true"]
 command = "taplo"
+args = ["fmt", "--option", "reorder_keys=true"]
 install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--help" }
 
 ## Documentation tasks
@@ -198,11 +158,11 @@ install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--
 dependencies = ["pu2png"]
 
 [tasks.pu2png]
+command = "bash"
 dependencies = ["generate-er"]
 args = ["design/pu2png.sh"]
-command = "bash"
 
 [tasks.generate-er]
-install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
 command = "bash"
+install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
 args = ["design/generate-er.sh"]
