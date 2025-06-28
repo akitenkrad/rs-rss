@@ -4,9 +4,10 @@ default_to_workspace = false
 [env]
 env_file = ".env"
 
+# ===== Build tasks =====
 [tasks.compose-up-postgres]
-command = "docker"
 args = ["compose", "up", "-d", "postgres"]
+command = "docker"
 
 [tasks.migrate]
 dependencies = ["compose-up-postgres"]
@@ -38,42 +39,11 @@ docker compose build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
 '''
 
 [tasks.compose-build-no-cache]
-dependencies = ["before-build"]
-command = "docker"
 args = ["compose", "build", "--pull", "--no-cache", "--progress=plain"]
-
-[tasks.run]
-command = "cargo"
-args = ["run", "--release", "${@}"]
-dependencies = ["before-build"]
-
-[tasks.run-debug]
-command = "cargo"
-args = ["run", "${@}"]
-dependencies = ["before-build"]
-
-[tasks.run-in-docker]
-args = ["compose", "run", "--rm", "rsrss", "${@}"]
 command = "docker"
 dependencies = ["before-build"]
-env_files = [".env"]
 
-[tasks.logs]
-command = "docker"
-args = ["compose", "logs", "${@}"]
-dependencies = ["before-build"]
-
-[tasks.build]
-command = "cargo"
-args = ["build", "${@}"]
-dependencies = ["before-build"]
-
-[tasks.reformat]
-script = '''
-#!/bin/bash
-cargo fmt -- --emit files
-'''
-
+# ===== Test tasks =====
 [tasks.nextest]
 dependencies = ["before-build"]
 script = '''
@@ -81,24 +51,13 @@ script = '''
 docker run --rm rsrss cargo nextest run --workspace --status-level all --test-threads=1 "${@}"
 '''
 
-[tasks.start-dashboard]
-dependencies = ["before-build"]
-script = "docker compose up -d"
+# ===== Utility tasks =====
 
-[tasks.add-academic-paper]
-dependencies = ["before-build"]
-command = "docker"
-args = [
-  "compose",
-  "run",
-  "--rm",
-  "--entrypoint",
-  "",
-  "rsrss",
-  "/app/target/release/rsrss",
-  "add-academic-paper",
-  "${@}",
-]
+[tasks.reformat]
+script = '''
+#!/bin/bash
+cargo fmt -- --emit files
+'''
 
 [tasks.migrate-revert]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
@@ -114,25 +73,74 @@ done
 '''
 
 [tasks.sqlx]
-command = "sqlx"
 args = ["${@}", "--source", "data_layer/adapter/migrations"]
+command = "sqlx"
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 
 [tasks.sort-cargo-toml]
-command = "taplo"
 args = ["fmt", "--option", "reorder_keys=true"]
+command = "taplo"
 install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--help" }
 
-## Documentation tasks
+# ====== Documentation tasks ======
 [tasks.doc]
 dependencies = ["pu2png"]
 
 [tasks.pu2png]
+args = ["design/pu2png.sh"]
 command = "bash"
 dependencies = ["generate-er"]
-args = ["design/pu2png.sh"]
 
 [tasks.generate-er]
+args = ["design/generate-er.sh"]
 command = "bash"
 install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
-args = ["design/generate-er.sh"]
+
+# ====== Command tasks ======
+[tasks.start-dashboard]
+dependencies = ["before-build"]
+script = "docker compose up -d"
+
+[tasks.collect-web-articles]
+args = [
+  "compose",
+  "run",
+  "--rm",
+  "--entrypoint",
+  "",
+  "rsrss",
+  "/app/target/release/rsrss",
+  "collect-articles",
+  "${@}",
+]
+command = "docker"
+dependencies = ["before-build"]
+
+[tasks.add-academic-paper]
+args = [
+  "compose",
+  "run",
+  "--rm",
+  "--entrypoint",
+  "",
+  "rsrss",
+  "/app/target/release/rsrss",
+  "add-academic-paper",
+  "${@}",
+]
+command = "docker"
+dependencies = ["before-build"]
+
+[tasks.notify-web-articles-to-slack]
+command = "docker"
+dependencies = ["before-build"]
+args = [
+  "compose",
+  "run",
+  "--rm",
+  "--entrypoint",
+  "",
+  "rsrss",
+  "/app/target/release/rsrss",
+  "notify-web-articles-to-slack",
+]

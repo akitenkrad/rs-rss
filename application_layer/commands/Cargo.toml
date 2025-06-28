@@ -1,0 +1,25 @@
+[package]
+name = "commands"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+tokio.workspace = true
+academic_paper_crawler.workspace = true
+adapter.workspace = true
+anyhow.workspace = true
+axum.workspace = true
+clap.workspace = true
+dashboard.workspace = true
+kernel.workspace = true
+registry.workspace = true
+shared.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+web_article_crawler.workspace = true
+chrono.workspace = true
+keyword-tools.workspace = true
+serde_json.workspace = true
+request.workspace = true

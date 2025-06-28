@@ -7,10 +7,10 @@ version.workspace = true
 
 [dependencies]
 axum.workspace = true
+derive-new.workspace = true
+garde.workspace = true
 kernel.workspace = true
 registry.workspace = true
-tracing.workspace = true
-shared.workspace = true
-garde.workspace = true
-derive-new.workspace = true
 serde.workspace = true
+shared.workspace = true
+tracing.workspace = true

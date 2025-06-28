@@ -85,11 +85,6 @@ pub struct AcademicPaperSummary {
 
 impl AcademicPaper {
     pub async fn fill_fields_with_ai(&mut self) -> Result<AcademicPaper> {
-        // print current environment variables for debugging
-        for (key, value) in std::env::vars() {
-            tracing::debug!("{}: {}", key, value);
-        }
-
         let model_id = std::env::var("OPENAI_MODEL_ID").expect("OPENAI_MODEL_ID must be set");
         let mut openai = OpenAI::new();
         let messages = vec![

@@ -322,7 +322,36 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))
         .unwrap();
-        Ok(rows.into_iter().map(WebArticle::from).collect())
+
+        let sites = sqlx::query_as!(
+            WebSiteRecord,
+            r#"SELECT
+                site_id,
+                name,
+                url
+            FROM 
+                web_site"#
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::SqlxError(e))
+        .unwrap();
+
+        let web_articles: Vec<WebArticle> = rows
+            .into_iter()
+            .map(|row| {
+                let site = sites
+                    .iter()
+                    .find(|s| s.site_id == row.site_id)
+                    .map(|s| WebSite::from(s.clone()))
+                    .unwrap_or_else(|| WebSite::new(WebSiteId::new(), "Unknown".to_string(), "Unknown".to_string()));
+                let mut article = WebArticle::from(row);
+                article.site = site;
+                article
+            })
+            .collect();
+
+        Ok(web_articles)
     }
 
     async fn select_web_article_by_id(&self, id: &str) -> AppResult<WebArticle> {
