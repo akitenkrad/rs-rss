@@ -1,0 +1,16 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "adapter"
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
+derive-new.workspace = true
+kernel.workspace = true
+shared.workspace = true
+sqlx.workspace = true
+uuid.workspace = true

@@ -175,7 +175,7 @@ async fn bootstrap() -> Result<()> {
         .layer(cors())
         .with_state(registry);
 
-    let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 8080);
+    let addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8080);
     let listener = TcpListener::bind(addr).await?;
     tracing::info!("Listening on {}", addr);
     axum::serve(listener, app)
@@ -240,6 +240,12 @@ async fn add_academic_paper(args: &AddAcademicPaperArgs) {
 
     // Save to DB
     let config = AppConfig::new().expect("Failed to load config");
+    tracing::info!(
+        "Connecting to database...: {}:{}/{}",
+        config.database.host,
+        config.database.port,
+        config.database.database
+    );
     let db = connect_database_with(&config.database);
     let registry = Arc::new(AppRegistryImpl::new(db));
 

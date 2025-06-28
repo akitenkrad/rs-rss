@@ -5,33 +5,28 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
-      network: host
     ports:
-      - 8080:${API_PORT}
-      - 3001:${DASHBOARD_PORT}
+      - 8080:8080
     env_file:
       - .env
+    tty: true
+    user: root
+    # entrypoint: "/app/target/release/rsrss start-dashboard"
     depends_on:
       - postgres
   postgres:
     image: postgres:latest
-    command: postgres -c log_destination=stderr -c log_statement=all -c log_connections=on -c log_disconnections=on
-    ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
+    env_file:
+      - .env
     volumes:
-      - data:/data:z
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
     environment:
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRES_DB: ${DATABASE_NAME}
-      PGDATA: /data/rss/pgsql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${DATABASE_USERNAME}"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
+      POSTGRES_DB: rsrss
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
 volumes:
-  data:
-    name: data
+  postgres:
     external: true

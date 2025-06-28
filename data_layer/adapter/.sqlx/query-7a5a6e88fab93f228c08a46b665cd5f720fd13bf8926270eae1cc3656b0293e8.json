@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO author (\n                ss_id,\n                name,\n                h_index\n            ) VALUES ($1, $2, $3)\n            RETURNING author_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "author_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7a5a6e88fab93f228c08a46b665cd5f720fd13bf8926270eae1cc3656b0293e8"
+}

@@ -9,17 +9,15 @@ RUN apt update -y && apt upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . .
-RUN cargo build --release
+RUN echo "DATABASE_URL: ${DATABASE_URL}"
+RUN SQLX_OFFLINE=true cargo build --release
 
 FROM ubuntu:24.04 AS runtime
 WORKDIR /app
 RUN apt update -y && apt upgrade -y && \
     apt install -y build-essential pkg-config poppler-utils libopencv-dev clang libclang-dev libssl-dev curl && \
+    apt install -y postgresql && \
     rm -rf /var/lib/apt/lists/*
-RUN adduser rss && chown -R rss /app
+RUN adduser rss && chown -R rss /app && usermod -aG sudo rss
 USER rss
 COPY --from=builder /app/target/release/rsrss ./target/release/rsrss
-
-ENV PORT 8080
-EXPOSE $PORT
-ENTRYPOINT ["/app/target/release/rsrss"]

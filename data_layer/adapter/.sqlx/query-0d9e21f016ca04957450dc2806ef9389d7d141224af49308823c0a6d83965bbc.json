@@ -1,0 +1,155 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n                paper_id,\n                ss_id,\n                arxiv_id,\n                journal_id,\n                title,\n                abstract,\n                abstract_ja,\n                text,\n                url,\n                doi,\n                published_date,\n                primary_category,\n                citation_count,\n                references_count,\n                influential_citation_count,\n                status_id,\n                bibtex,\n                summary,\n                background_and_purpose,\n                methodology,\n                dataset,\n                results,\n                advantages_limitations_and_future_work\n            FROM academic_paper\n            ORDER BY published_date DESC\n            LIMIT $1 OFFSET $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "paper_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "ss_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "arxiv_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "journal_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "abstract",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "abstract_ja",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "doi",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "published_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 11,
+        "name": "primary_category",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 12,
+        "name": "citation_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 13,
+        "name": "references_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 14,
+        "name": "influential_citation_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 15,
+        "name": "status_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 16,
+        "name": "bibtex",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 17,
+        "name": "summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 18,
+        "name": "background_and_purpose",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 19,
+        "name": "methodology",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 20,
+        "name": "dataset",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 21,
+        "name": "results",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 22,
+        "name": "advantages_limitations_and_future_work",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0d9e21f016ca04957450dc2806ef9389d7d141224af49308823c0a6d83965bbc"
+}

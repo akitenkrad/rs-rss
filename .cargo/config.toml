@@ -1,2 +1,2 @@
 [env]
-DATABASE_URL = "postgresql://192.168.11.5:65432/rss?user=postgres&password=password"
+DATABASE_URL = "postgresql://localhost:5432/rsrss?user=postgres&password=password"

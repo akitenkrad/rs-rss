@@ -3,17 +3,17 @@ edition.workspace = true
 license.workspace = true
 name = "rsrss"
 publish.workspace = true
-version = "1.0.0"
+version.workspace = true
 
 [workspace]
 members = [
-    "adapter",
-    "web_article_crawler",
-    "dashboard",
-    "kernel",
-    "registry",
-    "shared",
-    "academic_paper_crawler",
+    "application_layer/web_article_crawler",
+    "application_layer/dashboard",
+    "application_layer/academic_paper_crawler",
+    "data_layer/adapter",
+    "middle_layer/kernel",
+    "common_layer/registry",
+    "common_layer/shared",
 ]
 
 [[bin]]
@@ -24,10 +24,11 @@ path = "src/bin/app.rs"
 edition = "2021"
 license = "MIT"
 publish = false
+version = "0.1.0"
 
 [workspace.dependencies]
-academic_paper_crawler = { path = "./academic_paper_crawler" }
-adapter = { path = "./adapter" }
+academic_paper_crawler = { path = "./application_layer/academic_paper_crawler" }
+adapter = { path = "./data_layer/adapter" }
 anyhow = "1.0.98"
 async-trait = "0.1.88"
 axum = { version = "0.8.4", features = ["macros"] }
@@ -36,23 +37,23 @@ chrono = { version = "0.4.41", features = ["serde"] }
 chrono-tz = "0.10.3"
 clap = { version = "4.5.40", features = ["derive"] }
 const_format = { version = "0.2.34", features = ["derive"] }
-web_article_crawler = { path = "./web_article_crawler" }
+web_article_crawler = { path = "./application_layer/web_article_crawler" }
 derive-new = "0.7.0"
 dotenvy = "0.15.7"
 fast_html2md = "0.0.48"
 feed-parser = "1.0.12"
 fxhash = "0.2.1"
 indicatif = "0.17.11"
-kernel = { path = "./kernel" }
+kernel = { path = "./middle_layer/kernel" }
 keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
 openai-tools = "0.1.6"
 regex = "1.11.1"
-registry = { path = "./registry" }
+registry = { path = "./common_layer/registry" }
 request = { version = "0.12.20", features = ["cookies"], package = "reqwest" }
 scraper = "0.23.1"
 serde = "1.0.219"
 serde_json = "1.0.140"
-shared = { path = "./shared" }
+shared = { path = "./common_layer/shared" }
 sqlx = { version = "0.8.6", features = [
     "runtime-tokio",
     "uuid",
@@ -73,7 +74,7 @@ uuid = { version = "1.17.0", features = ["v4", "serde"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 mockall = "0.13.1"
-dashboard = { path = "./dashboard" }
+dashboard = { path = "./application_layer/dashboard" }
 garde = { version = "0.22.0", features = ["derive", "email"] }
 rsrpp = "1.0.16"
 arxiv-tools = "1.1.2"

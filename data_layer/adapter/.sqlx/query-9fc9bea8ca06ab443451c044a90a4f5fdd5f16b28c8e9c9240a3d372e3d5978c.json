@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO journal (\n                name\n            ) VALUES ($1)\n            RETURNING journal_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "journal_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9fc9bea8ca06ab443451c044a90a4f5fdd5f16b28c8e9c9240a3d372e3d5978c"
+}
