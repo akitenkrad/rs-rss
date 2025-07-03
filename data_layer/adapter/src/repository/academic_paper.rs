@@ -14,6 +14,7 @@ use kernel::{
 use shared::{
     errors::{AppError, AppResult},
     id::{AcademicPaperId, AuthorId, JournalId, TaskId},
+    utils::levenshtein_dist,
 };
 use std::str::FromStr;
 use uuid::Uuid;
@@ -268,9 +269,15 @@ pub struct AcademicPaperRepositoryImpl {
 impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
     async fn create_academic_paper(&self, academic_paper: AcademicPaper) -> AppResult<AcademicPaper> {
         // Check if the academic paper already exists by ss_id
-        // if let Ok(existing_paper) = self.select_academic_paper_by_ss_id(&academic_paper.ss_id).await {
-        //     return Ok(existing_paper);
-        // }
+        if let Ok(existing_paper) = self.select_academic_paper_by_title(&academic_paper.title).await {
+            for paper in existing_paper {
+                let lev_dist = levenshtein_dist(&paper.title, &academic_paper.title);
+                if lev_dist < 2 {
+                    // If the paper already exists with a similar title, return it
+                    return Ok(paper);
+                }
+            }
+        }
 
         // If the academic paper does not exist, insert a new record
         // Check if the authors exist, if not, create them
@@ -626,6 +633,50 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         let mut academic_paper = AcademicPaper::from(paper);
         self.fill_fields(&mut academic_paper).await?;
         Ok(academic_paper)
+    }
+    async fn select_academic_paper_by_title(&self, title: &str) -> AppResult<Vec<AcademicPaper>> {
+        let papers = sqlx::query_as!(
+            AcademicPaperRecord,
+            r#"SELECT
+                paper_id,
+                ss_id,
+                arxiv_id,
+                journal_id,
+                title,
+                abstract,
+                abstract_ja,
+                text,
+                url,
+                doi,
+                published_date,
+                primary_category,
+                citation_count,
+                references_count,
+                influential_citation_count,
+                status_id,
+                bibtex,
+                summary,
+                background_and_purpose,
+                methodology,
+                dataset,
+                results,
+                advantages_limitations_and_future_work
+            FROM academic_paper WHERE title ILIKE $1"#,
+            format!("%{}%", title)
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
+
+        let mut academic_papers: Vec<AcademicPaper> = vec![];
+        // fill fields
+        for paper in papers.iter() {
+            let mut academic_paper = AcademicPaper::from(paper.clone());
+            self.fill_fields(&mut academic_paper).await?;
+            academic_papers.push(academic_paper);
+        }
+
+        Ok(academic_papers)
     }
     async fn select_all_academic_papers(&self) -> AppResult<Vec<AcademicPaper>> {
         let papers = sqlx::query_as!(

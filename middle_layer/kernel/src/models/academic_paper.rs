@@ -1,7 +1,11 @@
 use anyhow::Result;
 use chrono::{Datelike, NaiveDate};
 use derive_new::new;
-use openai_tools::{json_schema::JsonSchema, Message, OpenAI, ResponseFormat};
+use openai_tools::{
+    chat::{ChatCompletion, ChatCompletionResponseFormat},
+    common::Message,
+    structured_output::Schema,
+};
 use serde::{Deserialize, Serialize};
 use shared::id::{AcademicPaperId, AuthorId, JournalId, TaskId};
 use tiktoken_rs::o200k_base;
@@ -86,9 +90,9 @@ pub struct AcademicPaperSummary {
 impl AcademicPaper {
     pub async fn fill_fields_with_ai(&mut self) -> Result<AcademicPaper> {
         let model_id = std::env::var("OPENAI_MODEL_ID").expect("OPENAI_MODEL_ID must be set");
-        let mut openai = OpenAI::new();
+        let mut chat = ChatCompletion::new();
         let messages = vec![
-            Message::new(
+            Message::from_string(
                 String::from("system"),
                 String::from(
                     r#"あなたは「朝倉 理央（あさくら りお）」という名の論文分析専門アナリストです．
@@ -106,7 +110,7 @@ impl AcademicPaper {
 "#,
                 ),
             ),
-            Message::new(
+            Message::from_string(
                 String::from("user"),
                 format!(
                     r#"与えられた論文のテキストから以下の情報を抽出してJSON形式で出力してください．
@@ -167,7 +171,7 @@ impl AcademicPaper {
             self.text = truncated_text;
         }
 
-        let mut json_schema = JsonSchema::new("academic_paper".into());
+        let mut json_schema = Schema::chat_json_schema("academic_paper".into());
         json_schema.add_property(
             "abstract_in_japanese".into(),
             "string".into(),
@@ -208,14 +212,13 @@ impl AcademicPaper {
             Option::from(r#"論文の利点・限界・今後の展望を日本語で記述してください．"#.to_string()),
         );
 
-        let response_format = ResponseFormat::new("json_schema".to_string(), json_schema);
-        openai
-            .model_id(model_id)
+        let response_format = ChatCompletionResponseFormat::new("json_schema".to_string(), json_schema);
+        chat.model_id(model_id)
             .messages(messages)
             .temperature(1.0)
             .response_format(response_format);
 
-        let response = openai.chat().await.unwrap();
+        let response = chat.chat().await.unwrap();
         let mut max_retries = 5;
         while max_retries > 0 {
             match serde_json::from_str::<AcademicPaperSummary>(&response.choices[0].message.content) {

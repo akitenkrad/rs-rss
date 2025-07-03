@@ -1,7 +1,11 @@
 use chrono::NaiveDate;
 use derive_new::new;
 use dotenvy::dotenv;
-use openai_tools::{json_schema::JsonSchema, Message, OpenAI, ResponseFormat};
+use openai_tools::{
+    chat::{ChatCompletion, ChatCompletionResponseFormat},
+    common::Message,
+    structured_output::Schema,
+};
 use serde::{Deserialize, Serialize};
 use shared::{
     errors::{AppError, AppResult},
@@ -63,13 +67,40 @@ impl WebArticle {
     pub async fn fill_attributes(&mut self) -> AppResult<()> {
         dotenv().ok();
         let model_id = std::env::var("OPENAI_MODEL_ID").expect("OPENAI_MODEL_ID must be set");
-        let mut openai = OpenAI::new();
+        let mut chat = ChatCompletion::new();
         let messages = vec![
-            Message::new(
+            Message::from_string(
                 String::from("system"),
-                String::from("あなたは自然言語に関する世界トップレベルの研究者です．"),
+                String::from(
+                    r#"あなたは「綾瀬 智理（あやせ ちり）」という名のAIです．  
+あなたは高度な自然言語処理能力と論理的読解力を備えた，**Webインテリジェンス・アナリストAI**です．  
+主にWeb記事の内容を解析・要約し，必要に応じてキーフレーズ抽出，信頼性評価，Q&A形式の情報変換なども行います．
+
+## あなたの背景・技術力
+- 科学技術・ビジネス・政策・AI・サイバーセキュリティなど，多様な分野のWeb記事に対応できます．
+- 記事の論理構造（主張・根拠・結論）を把握して要約できます．
+- 出典や事実ベースの情報を重視し，憶測は避けてください．
+- ファクトチェックの補助として，引用元・日付・著者・数値データを正確に抽出できます．
+
+## 出力のスタイル
+- 目的に応じて **要点・構造・箇条書き・Q&A** 形式などを柔軟に切り替えてください．
+- ユーザが読みやすいように，情報を**段階的・簡潔・網羅的**にまとめてください．
+- 内容の要約は常に中立的な立場で行い，主観的な評価は控えてください．
+- もし内容の真偽が確認できない場合，「不確実」「出典不明」など明示してください．
+
+## キャラクターとふるまい
+- 落ち着いていて誠実，編集者のような口調．
+- 事実と論理にこだわり，信頼できる要約と情報抽出を重視．
+- 情報の見逃しを防ぐために慎重に解析し，「これは不要では？」という情報も残してくれる．
+- 情報が曖昧なときは，自信を持って断定せず，根拠を明示します．
+
+## あなたの目的
+ユーザーが読む価値のある情報だけを，短時間で理解できるように要約・抽出し，  
+**Web上の情報の本質をすばやく伝えること**があなたの使命です．
+"#,
+                ),
             ),
-            Message::new(
+            Message::from_string(
                 String::from("user"),
                 format!(
                     r#"与えられたWeb記事のタイトルと本文のHTMLから次の情報を抽出してください．
@@ -82,19 +113,22 @@ impl WebArticle {
 - この記事はITに関わるものかどうか: is_it_related (true or false)
 
 [記事のURL]
+{url}
 
-[タイトル]
+[記事のタイトル]
 {title}
 
 [本文のHTML]
-{html}"#,
+{html}
+"#,
+                    url = self.url,
                     title = self.title,
                     html = self.html,
                 ),
             ),
         ];
 
-        let mut json_schema = JsonSchema::new(String::from("web_article"));
+        let mut json_schema = Schema::chat_json_schema(String::from("web_article"));
         json_schema.add_property(
             String::from("summary"),
             String::from("string"),
@@ -159,14 +193,13 @@ ITに関わるものとは，情報技術や情報通信技術などの技術を
             ),
         );
 
-        let response_format = ResponseFormat::new("json_schema".to_string(), json_schema);
-        openai
-            .model_id(model_id)
+        let response_format = ChatCompletionResponseFormat::new("json_schema".to_string(), json_schema);
+        chat.model_id(model_id)
             .messages(messages)
             .temperature(1.0)
             .response_format(response_format);
 
-        let response = openai.chat().await.unwrap();
+        let response = chat.chat().await.unwrap();
         match serde_json::from_str::<WebArticleProperty>(&response.choices[0].message.content) {
             Ok(properties) => {
                 self.summary = properties.summary.unwrap_or("NO SUMMARY".to_string());

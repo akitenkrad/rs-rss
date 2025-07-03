@@ -42,3 +42,17 @@ pub fn levenshtein_dist(s1: &str, s2: &str) -> usize {
 
     return matrix[len1][len2];
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_levenshtein_dist() {
+        assert_eq!(levenshtein_dist("kitten", "sitting"), 3);
+        assert_eq!(levenshtein_dist("flaw", "lawn"), 2);
+        assert_eq!(levenshtein_dist("intention", "execution"), 5);
+        assert_eq!(levenshtein_dist("", ""), 0);
+        assert_eq!(levenshtein_dist("abc", "abc"), 0);
+    }
+}

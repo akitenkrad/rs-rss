@@ -39,6 +39,7 @@ pub trait AcademicPaperRepository: Send + Sync {
     async fn select_academic_paper_by_arxiv_id(&self, arxiv_id: &str) -> AppResult<AcademicPaper>;
     async fn select_academic_paper_by_ss_id(&self, ss_id: &str) -> AppResult<AcademicPaper>;
     async fn select_academic_paper_by_id(&self, id: &str) -> AppResult<AcademicPaper>;
+    async fn select_academic_paper_by_title(&self, title: &str) -> AppResult<Vec<AcademicPaper>>;
     async fn select_all_academic_papers(&self) -> AppResult<Vec<AcademicPaper>>;
     async fn select_academic_papers_by_keyword(&self, keyword: &str) -> AppResult<Vec<AcademicPaper>>;
     async fn select_all_academic_papers_paginated(

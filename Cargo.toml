@@ -47,14 +47,14 @@ fast_html2md = "0.0.48"
 feed-parser = "1.0.12"
 fxhash = "0.2.1"
 garde = { version = "0.22.0", features = ["derive", "email"] }
-indicatif = "0.17.11"
+indicatif = "0.17.12"
 kernel = { path = "./middle_layer/kernel" }
 keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
 mockall = "0.13.1"
-openai-tools = "0.1.6"
+openai-tools = { git = "https://github.com/akitenkrad/rs-openai-tools", branch = "main" }
 regex = "1.11.1"
 registry = { path = "./common_layer/registry" }
-request = { version = "0.12.20", features = ["cookies"], package = "reqwest" }
+request = { version = "0.12.22", features = ["cookies"], package = "reqwest" }
 rsrpp = "1.0.16"
 scraper = "0.23.1"
 serde = "1.0.219"
@@ -72,7 +72,7 @@ ss-tools = "0.2.7"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
 tiktoken-rs = "0.7.0"
-tokio = { version = "1.45.1", features = ["full"] }
+tokio = { version = "1.46.0", features = ["full"] }
 tokio-test = "0.4.4"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }

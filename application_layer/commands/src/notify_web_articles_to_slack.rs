@@ -76,7 +76,7 @@ fn to_payload(index: usize, article: WebArticle, score: isize, kws: Vec<Keyword>
             .map(|kwd| format!("{}({})", kwd.alias.clone(), kwd.score))
             .collect::<Vec<String>>()
             .join(" / "),
-        TEXT = article.description.replace("\n", "\n>")
+        TEXT = article.summary.replace("\n", "\n>")
     );
 
     let payload = json!({

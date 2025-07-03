@@ -1,37 +1,42 @@
 [config]
 default_to_workspace = false
 
-[env]
-env_file = ".env"
+[tasks.set-env]
+env_files = [".env"]
 
 # ===== Build tasks =====
 [tasks.compose-up-postgres]
+extend = "set-env"
 args = ["compose", "up", "-d", "postgres"]
 command = "docker"
 
 [tasks.migrate]
+extend = "set-env"
 dependencies = ["compose-up-postgres"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-export DATABASE_URL="postgresql://localhost:5432/rsrss?user=postgres&password=password"
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 echo "DATABASE_URL=$DATABASE_URL"
 sqlx migrate run --source data_layer/adapter/migrations
 '''
 
 [tasks.sqlx-prepare]
+extend = "set-env"
 dependencies = ["migrate"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
 cd data_layer/adapter
-DATABASE_URL="postgresql://localhost:5432/rsrss?user=postgres&password=password" cargo sqlx prepare
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+cargo sqlx prepare
 '''
 
 [tasks.before-build]
 run_task = [{ name = ["sqlx-prepare"] }]
 
 [tasks.compose-build]
+extend = "set-env"
 dependencies = ["before-build"]
 script = '''
 #!/bin/bash
@@ -39,12 +44,14 @@ docker compose build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
 '''
 
 [tasks.compose-build-no-cache]
+extend = "set-env"
 args = ["compose", "build", "--pull", "--no-cache", "--progress=plain"]
 command = "docker"
 dependencies = ["before-build"]
 
 # ===== Test tasks =====
 [tasks.nextest]
+extend = "set-env"
 dependencies = ["before-build"]
 script = '''
 #!/bin/bash
@@ -63,6 +70,7 @@ cargo fmt -- --emit files
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 migration=$(find data_layer/adapter/migrations -type f -name "*down.sql" | sort -r)
 for m in ${migration[@]}; do
   echo "Reverting migrations for $m"
@@ -97,11 +105,29 @@ command = "bash"
 install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
 
 # ====== Command tasks ======
+[tasks.help]
+extend = "set-env"
+dependencies = ["before-build"]
+args = [
+  "compose",
+  "run",
+  "--rm",
+  "--entrypoint",
+  "",
+  "rsrss",
+  "/app/target/release/rsrss",
+  "help",
+  "${@}",
+]
+command = "docker"
+
 [tasks.start-dashboard]
+extend = "set-env"
 dependencies = ["before-build"]
 script = "docker compose up -d"
 
-[tasks.collect-web-articles]
+[tasks.collect-articles]
+extend = "set-env"
 args = [
   "compose",
   "run",
@@ -117,6 +143,7 @@ command = "docker"
 dependencies = ["before-build"]
 
 [tasks.add-academic-paper]
+extend = "set-env"
 args = [
   "compose",
   "run",
@@ -132,6 +159,7 @@ command = "docker"
 dependencies = ["before-build"]
 
 [tasks.notify-web-articles-to-slack]
+extend = "set-env"
 command = "docker"
 dependencies = ["before-build"]
 args = [
