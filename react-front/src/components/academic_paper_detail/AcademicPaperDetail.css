@@ -1,0 +1,468 @@
+body {
+    background: #1a1d23;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.paper-detail {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background: #1a1d23;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    line-height: 1.6;
+    position: relative;
+}
+
+.navigation-bar {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    transition: top 0.3s ease;
+}
+
+.navigation-bar.scrolled {
+    top: 20px;
+}
+
+.back-button {
+    background: #2b6cb0;
+    color: #e2e8f0;
+    border: 1px solid #2d3748;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.back-button:hover {
+    background: #2c5282;
+    color: #ffffff;
+    border-color: #3182ce;
+    transform: translateY(-1px);
+}
+
+.back-button:active {
+    transform: translateY(0);
+}
+
+.paper-header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #2d3748;
+    margin-top: 20px;
+}
+
+.paper-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.paper-meta {
+    display: flex;
+    gap: 20px;
+    color: #a0aec0;
+    font-size: 1.1rem;
+}
+
+.published-date {
+    font-weight: 600;
+    color: #3182ce;
+}
+
+.journal {
+    font-style: italic;
+    color: #cbd5e0;
+}
+
+.paper-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.basic-info {
+    background: #2d3748;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #4a5568;
+}
+
+.authors-section {
+    margin-bottom: 30px;
+}
+
+.authors-section h2 {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.authors-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.author-card {
+    background: #374151;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #4a5568;
+    transition: all 0.2s ease;
+}
+
+.author-card:hover {
+    background: #4a5568;
+    transform: translateY(-2px);
+}
+
+.author-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.author-name {
+    display: block;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+}
+
+.author-h-index {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    background: #2b6cb0;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.abstract-section {
+    margin-bottom: 30px;
+}
+
+.abstract-section h2 {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.abstract-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.abstract-text {
+    font-size: 1.1rem;
+    color: #cbd5e0;
+    text-align: justify;
+    background: #374151;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #3182ce;
+    border: 1px solid #4a5568;
+}
+
+.keywords-section {
+    margin-bottom: 30px;
+}
+
+.keywords-section h2 {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.keywords-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.keywords-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.keyword-tag {
+    background: #2b6cb0;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.keyword-tag:hover {
+    background: #3182ce;
+}
+
+.links-section {
+    margin-bottom: 30px;
+}
+
+.links-section h2 {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.links-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.links-container {
+    display: flex;
+    gap: 15px;
+}
+
+.paper-link-button {
+    background: #2b6cb0;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #3182ce;
+}
+
+.paper-link-button:hover {
+    background: #3182ce;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.detailed-content {
+    background: #2d3748;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #4a5568;
+}
+
+.detailed-content h2 {
+    font-size: 1.8rem;
+    color: #e2e8f0;
+    margin-bottom: 30px;
+    font-weight: 600;
+    border-bottom: 2px solid #3182ce;
+    padding-bottom: 10px;
+    text-align: left;
+}
+
+.content-section {
+    margin-bottom: 40px;
+}
+
+.content-section h3 {
+    font-size: 1.3rem;
+    color: #e2e8f0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.section-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.content-section h4 {
+    font-size: 1.1rem;
+    color: #cbd5e0;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.content-text {
+    font-size: 1rem;
+    color: #a0aec0;
+    text-align: justify;
+    margin-bottom: 15px;
+}
+
+.research-question {
+    background: #2d3748;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #3182ce;
+    margin-top: 15px;
+    border: 1px solid #4a5568;
+}
+
+.question-text {
+    font-size: 1.1rem;
+    color: #63b3ed;
+    font-weight: 500;
+    margin: 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #a0aec0;
+    font-size: 1.2rem;
+}
+
+.error {
+    color: #f56565;
+    background-color: #2d3748;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.retry-button {
+    background: #2b6cb0;
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    display: block;
+    margin: 0 auto;
+}
+
+.retry-button:hover {
+    background: #3182ce;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .paper-detail {
+        padding: 15px;
+    }
+    
+    .navigation-bar {
+        top: 70px;
+        right: 15px;
+    }
+    
+    .navigation-bar.scrolled {
+        top: 15px;
+    }
+    
+    .back-button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+    
+    .paper-header {
+        margin-top: 20px;
+    }
+    
+    .paper-title {
+        font-size: 2rem;
+    }
+    
+    .paper-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .authors-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .basic-info, .detailed-content {
+        padding: 20px;
+    }
+    
+    .keywords-container {
+        justify-content: center;
+    }
+    
+    .links-container {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .paper-detail {
+        padding: 10px;
+    }
+    
+    .navigation-bar {
+        top: 65px;
+        right: 10px;
+    }
+    
+    .navigation-bar.scrolled {
+        top: 10px;
+    }
+    
+    .back-button {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .paper-header {
+        margin-top: 20px;
+    }
+    
+    .paper-title {
+        font-size: 1.5rem;
+    }
+    
+    .basic-info, .detailed-content {
+        padding: 15px;
+    }
+    
+    .author-card {
+        padding: 12px;
+    }
+    
+    .abstract-text {
+        padding: 15px;
+    }
+}

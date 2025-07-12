@@ -1,0 +1,173 @@
+/* Sidebar styles */
+.MuiDrawer-paper.sidebar {
+  width: 280px;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar header */
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+}
+
+/* Menu list */
+.menu-list {
+  padding: 16px 0;
+}
+
+/* Menu items */
+.menu-item {
+  margin: 4px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.menu-item-button {
+  padding: 16px 20px !important;
+  color: white !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.3s ease !important;
+  border-radius: 12px !important;
+}
+
+.menu-item-button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Menu icon */
+.menu-icon {
+  margin-right: 16px;
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+
+/* Menu text */
+.menu-text {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+  color: white !important;
+}
+
+/* Active state */
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.menu-item.active .menu-item-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  font-weight: 600 !important;
+}
+
+/* Header icon styles */
+.header-menu-icon {
+  transition: transform 0.3s ease;
+}
+
+.header-menu-icon:hover {
+  transform: rotate(90deg);
+}
+
+/* Sidebar overlay */
+.MuiBackdrop-root.sidebar-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .MuiDrawer-paper.sidebar {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .sidebar-header {
+    padding: 20px 16px;
+  }
+  
+  .menu-item-button {
+    padding: 14px 16px !important;
+  }
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.MuiDrawer-paper.sidebar-enter {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Gradient effect */
+.MuiDrawer-paper.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
+/* Focus state */
+.menu-item-button:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* Material-UI overrides */
+.MuiList-root.menu-list {
+  padding: 16px 0;
+}
+
+.MuiListItem-root.menu-item {
+  padding: 0;
+  margin: 4px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.MuiListItemButton-root.menu-item-button {
+  padding: 16px 20px !important;
+  color: white !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.3s ease !important;
+  border-radius: 12px !important;
+}
+
+.MuiListItemText-root .MuiListItemText-primary.menu-text {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.5px !important;
+  color: white !important;
+}

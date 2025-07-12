@@ -2,9 +2,8 @@ use chrono::NaiveDate;
 use derive_new::new;
 use dotenvy::dotenv;
 use openai_tools::{
-    chat::{ChatCompletion, ChatCompletionResponseFormat},
-    common::Message,
-    structured_output::Schema,
+    chat::request::ChatCompletion,
+    common::{message::Message, role::Role, structured_output::Schema},
 };
 use serde::{Deserialize, Serialize};
 use shared::{
@@ -70,9 +69,8 @@ impl WebArticle {
         let mut chat = ChatCompletion::new();
         let messages = vec![
             Message::from_string(
-                String::from("system"),
-                String::from(
-                    r#"あなたは「綾瀬 智理（あやせ ちり）」という名のAIです．  
+                Role::System,
+                r#"あなたは「綾瀬 智理（あやせ ちり）」という名のAIです．  
 あなたは高度な自然言語処理能力と論理的読解力を備えた，**Webインテリジェンス・アナリストAI**です．  
 主にWeb記事の内容を解析・要約し，必要に応じてキーフレーズ抽出，信頼性評価，Q&A形式の情報変換なども行います．
 
@@ -98,10 +96,9 @@ impl WebArticle {
 ユーザーが読む価値のある情報だけを，短時間で理解できるように要約・抽出し，  
 **Web上の情報の本質をすばやく伝えること**があなたの使命です．
 "#,
-                ),
             ),
             Message::from_string(
-                String::from("user"),
+                Role::User,
                 format!(
                     r#"与えられたWeb記事のタイトルと本文のHTMLから次の情報を抽出してください．
 - この記事の要約: summary (string)
@@ -128,85 +125,56 @@ impl WebArticle {
             ),
         ];
 
-        let mut json_schema = Schema::chat_json_schema(String::from("web_article"));
+        let mut json_schema = Schema::chat_json_schema("web_article");
+        json_schema.add_property("summary", "string", "記事の要約を日本語で記述してください．");
         json_schema.add_property(
-            String::from("summary"),
-            String::from("string"),
-            Option::from(r#"記事の要約を日本語で記述してください．"#.to_string()),
+            "is_new_technology_related",
+            "boolean",
+                "この記事が新しい技術に関するものであるかどうか．新しい技術とは，データサイエンスやAIに関する技術を指し，例えば新しいモデルやライブラリ，AI技術を用いた新しいサービスなどが挙げられる．",
         );
         json_schema.add_property(
-            String::from("is_new_technology_related"),
-            String::from("boolean"),
-            Option::from(
-                r#"この記事が新しい技術に関するものであるかどうか．
-新しい技術とは，データサイエンスやAIに関する技術を指し，例えば新しいモデルやライブラリ，AI技術を用いた新しいサービスなどが挙げられる．"#
-                    .to_string(),
-            ),
+            "is_new_product_related",
+            "boolean",
+                "この記事が商品の紹介に関するものであるかどうか．商品とは，新しい製品やサービスを指し，例えば新しいスマートフォン，新しいソフトウェア，新しいサービスなどが挙げられる．また，商品のレビューも含む．"
         );
         json_schema.add_property(
-            "is_new_product_related".to_string(),
-            "boolean".to_string(),
-            Option::from(
-                r#"この記事が商品の紹介に関するものであるかどうか．
-商品とは，新しい製品やサービスを指し，例えば新しいスマートフォン，新しいソフトウェア，新しいサービスなどが挙げられる．
-また，商品のレビューも含む．"#
-                    .to_string(),
-            ),
+            "is_new_academic_paper_related",
+            "boolean",
+            "この記事が新しい論文に関するものであるかどうか．新しい論文とは，新しい研究成果を指し，例えば新しいアルゴリズム，新しいモデル，新しいデータセットなどが挙げられる．"
         );
         json_schema.add_property(
-            "is_new_academic_paper_related".to_string(),
-            "boolean".to_string(),
-            Option::from(
-                r#"この記事が新しい論文に関するものであるかどうか．
-新しい論文とは，新しい研究成果を指し，例えば新しいアルゴリズム，新しいモデル，新しいデータセットなどが挙げられる．"#
-                    .to_string(),
-            ),
+            "is_ai_related",
+            "boolean",
+            "この記事がAIに関わるものであるかどうか．AIに関わるものとは，人工知能や機械学習，LLMや自然言語処理などの技術を指し，例えばAI技術を用いた新しいサービスの紹介やAIに関わる技術の論文紹介などが挙げられる．"
         );
         json_schema.add_property(
-            "is_ai_related".to_string(),
-            "boolean".to_string(),
-            Option::from(
-                r#"この記事がAIに関わるものであるかどうか．
-AIに関わるものとは，人工知能や機械学習，LLMや自然言語処理などの技術を指し，
-例えばAI技術を用いた新しいサービスの紹介やAIに関わる技術の論文紹介などが挙げられる．"#
-                    .to_string(),
-            ),
+            "is_security_related",
+            "boolean",
+                "この記事がセキュリティに関わるものであるかどうか．セキュリティに関わるものとは，情報セキュリティやサイバーセキュリティなどの技術を指し，例えば新しいセキュリティ技術の紹介や情報漏えいなどのセキュリティ事故，サイバー攻撃の報告，脆弱性のレポートなどが挙げられる．"
         );
         json_schema.add_property(
-            "is_security_related".to_string(),
-            "boolean".to_string(),
-            Option::from(
-                r#"この記事がセキュリティに関わるものであるかどうか．
-セキュリティに関わるものとは，情報セキュリティやサイバーセキュリティなどの技術を指し，
-例えば新しいセキュリティ技術の紹介や情報漏えいなどのセキュリティ事故，サイバー攻撃の報告，脆弱性のレポートなどが挙げられる．"#
-                    .to_string(),
-            ),
-        );
-        json_schema.add_property(
-            "is_it_related".to_string(),
-            "boolean".to_string(),
-            Option::from(
-                r#"この記事がITに関わるものであるかどうか．
-ITに関わるものとは，情報技術や情報通信技術などの技術を指し，
-例えば新しいIT技術の紹介やITに関わる論文紹介，IT技術を用いた企業の取組み事例紹介・プレスリリースなどが挙げられる．"#
-                    .to_string(),
-            ),
+            "is_it_related",
+            "boolean",
+            "この記事がITに関わるものであるかどうか．ITに関わるものとは，情報技術や情報通信技術などの技術を指し，例えば新しいIT技術の紹介やITに関わる論文紹介，IT技術を用いた企業の取組み事例紹介・プレスリリースなどが挙げられる．"
         );
 
-        let response_format = ChatCompletionResponseFormat::new("json_schema".to_string(), json_schema);
         chat.model_id(model_id)
             .messages(messages)
             .temperature(1.0)
-            .response_format(response_format);
+            .json_schema(json_schema);
 
         let response = chat.chat().await.unwrap();
-        match serde_json::from_str::<WebArticleProperty>(&response.choices[0].message.content) {
+        match serde_json::from_str::<WebArticleProperty>(
+            &response.choices[0].message.content.clone().unwrap().text.unwrap(),
+        ) {
             Ok(properties) => {
                 self.summary = properties.summary.unwrap_or("NO SUMMARY".to_string());
                 self.is_new_technology_related = properties.is_new_technology_related.unwrap_or(false);
                 self.is_new_product_related = properties.is_new_product_related.unwrap_or(false);
                 self.is_new_academic_paper_related = properties.is_new_academic_paper_related.unwrap_or(false);
                 self.is_ai_related = properties.is_ai_related.unwrap_or(false);
+                self.is_security_related = properties.is_security_related.unwrap_or(false);
+                self.is_it_related = properties.is_it_related.unwrap_or(false);
                 Ok(())
             }
             Err(e) => {

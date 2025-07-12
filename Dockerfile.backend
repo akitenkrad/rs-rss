@@ -20,4 +20,4 @@ RUN apt update -y && apt upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 RUN adduser rss && chown -R rss /app && usermod -aG sudo rss
 USER rss
-COPY --from=builder /app/target/release/rsrss ./target/release/rsrss
+COPY --from=builder /app/target/release/server ./target/release/server

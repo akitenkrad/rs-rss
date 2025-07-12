@@ -55,7 +55,7 @@ extend = "set-env"
 dependencies = ["before-build"]
 script = '''
 #!/bin/bash
-docker run --rm rsrss cargo nextest run --workspace --status-level all --test-threads=1 "${@}"
+docker run --rm server cargo nextest run --workspace --status-level all --test-threads=1 "${@}"
 '''
 
 # ===== Utility tasks =====
@@ -90,6 +90,14 @@ args = ["fmt", "--option", "reorder_keys=true"]
 command = "taplo"
 install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--help" }
 
+[tasks.backup-db]
+extend = "set-env"
+dependencies = ["compose-up-postgres"]
+script = '''
+#!/bin/bash
+docker compose exec postgres pg_dump -U ${DATABASE_USERNAME} -d ${DATABASE_NAME} > target/backup.postgres.dump
+'''
+
 # ====== Documentation tasks ======
 [tasks.doc]
 dependencies = ["pu2png"]
@@ -114,8 +122,8 @@ args = [
   "--rm",
   "--entrypoint",
   "",
-  "rsrss",
-  "/app/target/release/rsrss",
+  "server",
+  "/app/target/release/server",
   "help",
   "${@}",
 ]
@@ -134,8 +142,8 @@ args = [
   "--rm",
   "--entrypoint",
   "",
-  "rsrss",
-  "/app/target/release/rsrss",
+  "server",
+  "/app/target/release/server",
   "collect-articles",
   "${@}",
 ]
@@ -150,8 +158,8 @@ args = [
   "--rm",
   "--entrypoint",
   "",
-  "rsrss",
-  "/app/target/release/rsrss",
+  "server",
+  "/app/target/release/server",
   "add-academic-paper",
   "${@}",
 ]
@@ -168,7 +176,7 @@ args = [
   "--rm",
   "--entrypoint",
   "",
-  "rsrss",
-  "/app/target/release/rsrss",
+  "server",
+  "/app/target/release/server",
   "notify-web-articles-to-slack",
 ]

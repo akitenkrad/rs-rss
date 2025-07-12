@@ -8,7 +8,7 @@ version.workspace = true
 [workspace]
 members = [
   "application_layer/web_article_crawler",
-  "application_layer/dashboard",
+  "application_layer/api",
   "application_layer/academic_paper_crawler",
   "application_layer/commands",
   "data_layer/adapter",
@@ -18,7 +18,7 @@ members = [
 ]
 
 [[bin]]
-name = "rsrss"
+name = "server"
 path = "src/bin/app.rs"
 
 [workspace.package]
@@ -37,17 +37,17 @@ axum = { version = "0.8.4", features = ["macros"] }
 axum-extra = "0.10.1"
 chrono = { version = "0.4.41", features = ["serde"] }
 chrono-tz = "0.10.3"
-clap = { version = "4.5.40", features = ["derive"] }
+clap = { version = "4.5.41", features = ["derive"] }
 commands = { path = "./application_layer/commands" }
 const_format = { version = "0.2.34", features = ["derive"] }
-dashboard = { path = "./application_layer/dashboard" }
+api = { path = "./application_layer/api" }
 derive-new = "0.7.0"
 dotenvy = "0.15.7"
 fast_html2md = "0.0.48"
 feed-parser = "1.0.12"
 fxhash = "0.2.1"
 garde = { version = "0.22.0", features = ["derive", "email"] }
-indicatif = "0.17.12"
+indicatif = "0.18.0"
 kernel = { path = "./middle_layer/kernel" }
 keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
 mockall = "0.13.1"
@@ -72,12 +72,15 @@ ss-tools = "0.2.7"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
 tiktoken-rs = "0.7.0"
-tokio = { version = "1.46.0", features = ["full"] }
+tokio = { version = "1.46.1", default-features = false, features = [
+  "time",
+  "macros",
+] }
 tokio-test = "0.4.4"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 tracing = { version = "0.1.41", features = ["log"] }
-tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 url = "2.5.4"
 urlencoding = "2.1.3"
 uuid = { version = "1.17.0", features = ["v4", "serde"] }
@@ -90,7 +93,7 @@ anyhow.workspace = true
 axum.workspace = true
 chrono.workspace = true
 clap.workspace = true
-dashboard.workspace = true
+api.workspace = true
 dotenvy.workspace = true
 kernel.workspace = true
 registry.workspace = true

@@ -1,0 +1,17 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "api"
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+axum = { workspace = true }
+derive-new = { workspace = true }
+garde = { workspace = true }
+kernel = { workspace = true }
+registry = { workspace = true }
+serde = { workspace = true }
+shared = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }

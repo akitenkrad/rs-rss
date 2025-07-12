@@ -6,9 +6,9 @@ use tokio::net::TcpListener;
 
 use adapter::database::connect_database_with;
 use anyhow::{Context as _, Result};
+use api::route::v1;
 use axum::{http::Method, Router};
 use clap::Parser;
-use dashboard::route::v1;
 use registry::AppRegistryImpl;
 use shared::config::AppConfig;
 use tower_http::{

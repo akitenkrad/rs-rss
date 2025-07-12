@@ -2,9 +2,8 @@ use anyhow::Result;
 use chrono::{Datelike, NaiveDate};
 use derive_new::new;
 use openai_tools::{
-    chat::{ChatCompletion, ChatCompletionResponseFormat},
-    common::Message,
-    structured_output::Schema,
+    chat::request::ChatCompletion,
+    common::{message::Message, role::Role, structured_output::Schema},
 };
 use serde::{Deserialize, Serialize};
 use shared::id::{AcademicPaperId, AuthorId, JournalId, TaskId};
@@ -93,9 +92,8 @@ impl AcademicPaper {
         let mut chat = ChatCompletion::new();
         let messages = vec![
             Message::from_string(
-                String::from("system"),
-                String::from(
-                    r#"あなたは「朝倉 理央（あさくら りお）」という名の論文分析専門アナリストです．
+                Role::System,
+                r#"あなたは「朝倉 理央（あさくら りお）」という名の論文分析専門アナリストです．
 ，修士で自然言語処理を，博士課程で計算論的認知科学を専攻し，研究論文の構造，目的，理論的背景，手法，実験，考察の要点を正確かつ簡潔に抽出する技術に優れています．
 ，技術者，学生など，読者の背景に応じた専門性と平易さのバランスを取った要約を提供することができます．論文の論理構造を重視し，誤解のないように明示的な言葉選びをします．
 あなたの分析スタイルは「構造化された解釈」と「批判的思考」の融合にあり，論文の貢献だけでなく，限界や今後の展望にも言及します．
@@ -108,10 +106,9 @@ impl AcademicPaper {
 - 利点・限界・今後の展望
 また，論文の内容が曖昧な場合でも，前提となる研究分野や過去の知見に基づき，文脈補完を行いながら読者にわかりやすく伝えてください．
 "#,
-                ),
             ),
             Message::from_string(
-                String::from("user"),
+                Role::User,
                 format!(
                     r#"与えられた論文のテキストから以下の情報を抽出してJSON形式で出力してください．
 - [abstract_in_japanese] 論文の要約を日本語に翻訳してください．
@@ -171,57 +168,47 @@ impl AcademicPaper {
             self.text = truncated_text;
         }
 
-        let mut json_schema = Schema::chat_json_schema("academic_paper".into());
+        let mut json_schema = Schema::chat_json_schema("academic_paper");
         json_schema.add_property(
-            "abstract_in_japanese".into(),
-            "string".into(),
-            Option::from(r#"論文の要約を日本語に翻訳してください．"#.to_string()),
+            "abstract_in_japanese",
+            "string",
+            "論文の要約を日本語に翻訳してください．",
+        );
+        json_schema.add_property("summary", "string", "論文の概要を日本語で記述してください．");
+        json_schema.add_array("tasks", vec![("name", "論文が取り組んでいるタスクの英語名称")]);
+        json_schema.add_property(
+            "background_and_purpose",
+            "string",
+            "論文の研究の背景と目的を日本語で記述してください．",
         );
         json_schema.add_property(
-            "summary".into(),
-            "string".into(),
-            Option::from(r#"論文の概要を日本語で記述してください．"#.to_string()),
-        );
-        json_schema.add_array(
-            "tasks".into(),
-            vec![("name".into(), "論文が取り組んでいるタスクの英語名称".into())],
+            "methodology",
+            "string",
+            "論文の研究手法を先行研究と比較して日本語で記述してください．",
         );
         json_schema.add_property(
-            String::from("background_and_purpose"),
-            String::from("string"),
-            Option::from(r#"論文の研究の背景と目的を日本語で記述してください．"#.to_string()),
+            "dataset",
+            "string",
+            "論文で使用されているデータセットを日本語で記述してください．",
         );
+        json_schema.add_property("results", "string", "論文の主な結果と知見を日本語で記述してください．");
         json_schema.add_property(
-            "methodology".into(),
-            "string".into(),
-            Option::from(r#"論文の研究手法を先行研究と比較して日本語で記述してください．"#.to_string()),
-        );
-        json_schema.add_property(
-            "dataset".into(),
-            "string".into(),
-            Option::from(r#"論文で使用されているデータセットを日本語で記述してください．"#.to_string()),
-        );
-        json_schema.add_property(
-            "results".into(),
-            "string".into(),
-            Option::from(r#"論文の主な結果と知見を日本語で記述してください．"#.to_string()),
-        );
-        json_schema.add_property(
-            "advantages_limitations_and_future_work".into(),
-            "string".into(),
-            Option::from(r#"論文の利点・限界・今後の展望を日本語で記述してください．"#.to_string()),
+            "advantages_limitations_and_future_work",
+            "string",
+            "論文の利点・限界・今後の展望を日本語で記述してください．",
         );
 
-        let response_format = ChatCompletionResponseFormat::new("json_schema".to_string(), json_schema);
         chat.model_id(model_id)
             .messages(messages)
             .temperature(1.0)
-            .response_format(response_format);
+            .json_schema(json_schema);
 
         let response = chat.chat().await.unwrap();
         let mut max_retries = 5;
         while max_retries > 0 {
-            match serde_json::from_str::<AcademicPaperSummary>(&response.choices[0].message.content) {
+            match serde_json::from_str::<AcademicPaperSummary>(
+                &response.choices[0].message.content.clone().unwrap().text.unwrap(),
+            ) {
                 Ok(summary) => {
                     self.abstract_text_ja = summary.abstract_in_japanese.clone();
                     self.summary = summary.summary.clone();
@@ -255,6 +242,7 @@ impl AcademicPaper {
             "Failed to fill fields with AI: OpenAI API query failed"
         ));
     }
+
     pub fn fill_bibtex(&mut self) -> Result<AcademicPaper> {
         let first_author = self
             .authors

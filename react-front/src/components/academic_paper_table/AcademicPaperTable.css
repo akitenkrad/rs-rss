@@ -1,0 +1,334 @@
+/* ページ全体の背景をダークに統一 */
+body {
+    background: #1a1d23;
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* メインコンテナも背景に合わせて調整 */
+.academic-paper-table {
+    max-width: 100%;
+    margin: 0;
+    padding: 10px;
+    background: #1a1d23;
+    border-radius: 12px;
+    /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
+}
+
+.table-header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.table-header h2 {
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* 検索コンテナのスタイル */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 320px;
+    flex: 1;
+    max-width: 500px;
+}
+
+/* 検索入力フィールドのスタイル */
+.search-input {
+    width: 100%;
+    padding: 12px 20px;
+    padding-right: 45px;
+    padding-left: 45px;
+    border: 2px solid #2d3748;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #2d3748;
+    color: #e2e8f0;
+    transition: all 0.3s ease;
+    outline: none;
+    box-shadow: none;
+    position: relative;
+}
+
+.search-input:focus {
+    border-color: #3182ce;
+    background: #2a2f3a;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.search-input::placeholder {
+    color: #718096;
+    font-style: italic;
+}
+
+/* 検索アイコンを追加 */
+.search-container::before {
+    content: "🔍";
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #718096;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* クリアボタンのスタイル */
+.search-clear-button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.search-clear-button:hover {
+    background: #2c5282;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* 検索中のローディング表示 */
+.search-loading {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #3182ce;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.search-loading::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border: 2px solid #3182ce;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* テーブルアクション */
+.table-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.refresh-button {
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.refresh-button:hover {
+    background: #2c5282;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .academic-paper-table {
+        padding: 5px;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        min-width: unset;
+        max-width: unset;
+    }
+    
+    .search-input {
+        font-size: 16px; /* iOSでズームを防ぐ */
+    }
+}
+
+/* テーブルスタイル - ダークブルーフラットデザイン */
+.table-container {
+    background: #1a1d23;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #2d3748;
+    width: 100%;
+}
+
+.papers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.papers-table th {
+    background: #1a365d;
+    color: #e2e8f0;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease;
+    border-bottom: 2px solid #2c5282;
+}
+
+.papers-table th:hover {
+    background: #2c5282;
+}
+
+.papers-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #2d3748;
+    background: #1a1d23;
+    color: #e2e8f0;
+}
+
+.papers-table tbody tr:hover {
+    background: #2d3748;
+}
+
+.papers-table tbody tr:hover td {
+    background: #2d3748;
+}
+
+.table-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.paper-count {
+    font-weight: 500;
+}
+
+.search-info {
+    color: #3182ce;
+    font-weight: 500;
+}
+
+.loading, .error {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+}
+
+.retry-button {
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background 0.2s ease;
+}
+
+.retry-button:hover {
+    background: #2c5282;
+}
+
+.no-data {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+.view-button {
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.view-button:hover {
+    background: #2c5282;
+}
+
+.paper-link {
+    color: #63b3ed;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.paper-link:hover {
+    color: #90cdf4;
+    text-decoration: underline;
+}
+
+.sort-indicator {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #90cdf4;
+}
+
+/* テーブルセルの特定スタイル */
+.title-cell {
+    font-weight: 500;
+    text-align: left;
+}
+
+.keywords-cell {
+    text-align: left;
+}
+
+.authors-cell {
+    color: #a0aec0;
+    font-size: 13px;
+}
+
+.date-cell {
+    color: #cbd5e0;
+    font-size: 13px;
+}
+
+.actions-cell {
+    text-align: center;
+}
