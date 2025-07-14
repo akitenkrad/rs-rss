@@ -45,8 +45,6 @@ function WebArticleTable() {
             
             const nextOffset = offset + limit;
             const newArticles = await fetchArticlesData(searchKeyword, dateFrom, dateTo, nextOffset);
-    
-            console.log('Loaded articles:', newArticles.length);
 
             if (newArticles.length === 0) {
                 setHasMore(false);
@@ -64,7 +62,6 @@ function WebArticleTable() {
     const handleScroll = useCallback(() => {
         if (!tableContainerRef.current || isLoadingMore || !hasMore) return;
         const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
-        console.log('Scroll event triggered:', { scrollTop, scrollHeight, clientHeight, isLoadingMore, hasMore });
         
         if (scrollTop + clientHeight >= scrollHeight - 100) {
             console.log('Loading more articles...');
@@ -214,6 +211,41 @@ function WebArticleTable() {
         });
     };
 
+    // ステータスに応じたクラス名を取得する関数を追加
+    const getStatusBadgeClass = (status) => {
+        if (!status) return '';
+        
+        const statusLower = status.toLowerCase();
+        
+        switch (statusLower) {
+            case 'active':
+            case 'published':
+            case '公開':
+            case 'アクティブ':
+                return 'active';
+            case 'inactive':
+            case 'draft':
+            case '下書き':
+            case 'ドラフト':
+            case 'todo':
+                return 'draft';
+            case 'pending':
+            case '保留':
+            case '承認待ち':
+                return 'pending';
+            case 'archived':
+            case 'アーカイブ':
+            case 'done':
+            case 'finished':
+                return 'archived';
+            case 'error':
+            case 'エラー':
+                return 'error';
+            default:
+                return '';
+        }
+    };
+
     if (loading && !isSearching) {
         return (
             <div className="web-article-table-container" style={{ marginTop: '80px' }}>
@@ -302,6 +334,18 @@ function WebArticleTable() {
                 component={Paper} 
                 className="table-container"
                 ref={tableContainerRef}
+                sx={{ 
+                    flex: 1,
+                    overflowY: 'auto',
+                    '& .MuiTableHead-root .MuiTableCell-root': {
+                        position: 'sticky',
+                        top: 0,
+                        backgroundColor: '#1a365d',
+                        color: '#e2e8f0',
+                        borderBottom: '2px solid #2c5282',
+                        zIndex: 10
+                    }
+                }}
             >
                 <Table sx={{ minWidth: 650 }} aria-label="web articles table">
                     <TableHead>
@@ -311,12 +355,13 @@ function WebArticleTable() {
                             <TableCell className="table-header-cell">記事タイトル</TableCell>
                             <TableCell className="table-header-cell">要約</TableCell>
                             <TableCell className="table-header-cell">URL</TableCell>
+                            <TableCell className="table-header-cell">Status</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {articles.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="no-data">
+                                <TableCell colSpan={6} className="no-data">
                                     {searchKeyword || dateFrom || dateTo ? '検索結果がありません' : '記事データがありません'}
                                 </TableCell>
                             </TableRow>
@@ -351,12 +396,17 @@ function WebArticleTable() {
                                             記事を読む
                                         </a>
                                     </TableCell>
+                                    <TableCell className="status-cell">
+                                        <span className={`status-badge ${getStatusBadgeClass(article.status_name)}`}>
+                                            {article.status_name || '未設定'}
+                                        </span>
+                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
                         {isLoadingMore && (
                             <TableRow>
-                                <TableCell colSpan={5} className="loading-more">
+                                <TableCell colSpan={6} className="loading-more">
                                     <Typography>さらに読み込み中...</Typography>
                                 </TableCell>
                             </TableRow>

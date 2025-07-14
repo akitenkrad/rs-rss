@@ -7,7 +7,7 @@ use kernel::models::{
     web_article::{WebArticle, WebArticleListOptions, WebSite, WebSiteListOptions},
 };
 use serde::{Deserialize, Serialize};
-use shared::id::{WebArticleId, WebSiteId};
+use shared::id::{StatusId, WebArticleId, WebSiteId};
 
 const DEFAULT_LIMIT: i64 = 20;
 const fn default_limit() -> i64 {
@@ -90,6 +90,8 @@ pub struct WebArticleResponse {
     pub is_it_related: bool,
     pub is_new_product_related: bool,
     pub is_security_related: bool,
+    pub status_id: StatusId,
+    pub status_name: String,
 }
 
 impl From<WebArticle> for WebArticleResponse {
@@ -110,6 +112,7 @@ impl From<WebArticle> for WebArticleResponse {
             is_it_related,
             is_new_product_related,
             is_security_related,
+            status,
         } = article;
         Self {
             site_id: site.site_id,
@@ -129,6 +132,8 @@ impl From<WebArticle> for WebArticleResponse {
             is_it_related,
             is_new_product_related,
             is_security_related,
+            status_id: status.id,
+            status_name: status.name,
         }
     }
 }

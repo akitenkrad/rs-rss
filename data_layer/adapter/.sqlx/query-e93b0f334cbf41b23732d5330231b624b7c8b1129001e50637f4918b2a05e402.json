@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article as wa\n            JOIN web_site as ws ON wa.site_id = ws.site_id\n            WHERE wa.timestamp BETWEEN $1 AND $2\n            ORDER BY wa.timestamp DESC",
+  "query": "\n            SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related,\n                wa.status_id,\n                s.name AS status_name\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            JOIN status AS s ON wa.status_id = s.status_id\n            ORDER BY wa.timestamp DESC\n            LIMIT $1\n            OFFSET $2",
   "describe": {
     "columns": [
       {
@@ -87,12 +87,22 @@
         "ordinal": 16,
         "name": "is_it_related",
         "type_info": "Bool"
+      },
+      {
+        "ordinal": 17,
+        "name": "status_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 18,
+        "name": "status_name",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Date",
-        "Date"
+        "Int8",
+        "Int8"
       ]
     },
     "nullable": [
@@ -112,8 +122,10 @@
       false,
       false,
       false,
+      false,
+      true,
       false
     ]
   },
-  "hash": "02278279b0b8748992b3ef151ba40a729568402b047d9c3e36e393756a532a86"
+  "hash": "e93b0f334cbf41b23732d5330231b624b7c8b1129001e50637f4918b2a05e402"
 }

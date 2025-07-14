@@ -16,6 +16,7 @@ body {
     margin-top: 80px;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 120px); /* 全体の高さを固定 */
 }
 
 .page-title {
@@ -34,6 +35,15 @@ body {
     flex-wrap: wrap;
     gap: 16px;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: #1a1d23;
+    z-index: 20;
+    padding: 20px 0;
+    margin: -20px -20px 24px -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-bottom: 1px solid #2d3748;
 }
 
 .table-header h2 {
@@ -284,6 +294,7 @@ body {
     flex: 1;
     overflow-y: auto;
     margin-bottom: 20px;
+    max-height: none !important; /* 最大高さ制限を削除 */
 }
 
 .table-container::-webkit-scrollbar {
@@ -311,6 +322,9 @@ body {
     padding: 12px 8px !important;
     border-bottom: 2px solid #2c5282 !important;
     transition: background 0.2s ease !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
 }
 
 .table-header-cell:hover {
@@ -369,6 +383,7 @@ body {
 .article-summary {
     color: #a0aec0 !important;
     line-height: 1.5 !important;
+    line-clamp: 3 !important;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -409,6 +424,15 @@ body {
     color: #a0aec0;
     font-size: 14px;
     flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    background: #1a1d23;
+    z-index: 20;
+    padding: 16px 0;
+    margin: 16px -20px -20px -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-top: 1px solid #2d3748;
 }
 
 .article-count {
@@ -485,6 +509,9 @@ body {
     background: #1a365d !important;
     color: #e2e8f0 !important;
     border-bottom: 2px solid #2c5282 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
 }
 
 .table-container .MuiTableBody-root .MuiTableRow-root:hover {
@@ -494,6 +521,53 @@ body {
 .table-container .MuiTableBody-root .MuiTableCell-root {
     background: inherit !important;
     color: #e2e8f0 !important;
+}
+
+/* ステータスバッジ */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 60px;
+    color: white;
+    background-color: #666;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge.active {
+    background-color: #4caf50;
+}
+
+.status-badge.inactive {
+    background-color: #f44336;
+}
+
+.status-badge.pending {
+    background-color: #ff9800;
+}
+
+.status-badge.draft {
+    background-color: #2196f3;
+}
+
+.status-badge.archived {
+    background-color: #9e9e9e;
+}
+
+.status-badge.published {
+    background-color: #4caf50;
+}
+
+.status-badge.error {
+    background-color: #f44336;
+}
+
+.status-cell {
+    text-align: center;
+    padding: 8px 16px;
 }
 
 /* レスポンシブデザイン */

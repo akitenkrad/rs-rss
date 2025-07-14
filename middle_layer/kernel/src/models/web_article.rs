@@ -7,6 +7,7 @@ use openai_tools::{
 };
 use serde::{Deserialize, Serialize};
 use shared::{
+    common::Status,
     errors::{AppError, AppResult},
     id::{WebArticleId, WebSiteId},
 };
@@ -60,6 +61,7 @@ pub struct WebArticle {
     pub is_ai_related: bool,
     pub is_security_related: bool,
     pub is_it_related: bool,
+    pub status: Status,
 }
 
 impl WebArticle {

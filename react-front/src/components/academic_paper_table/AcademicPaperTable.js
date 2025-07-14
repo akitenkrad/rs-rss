@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mockPapers from '../../sample_data/academicPaperTables.json';
+import mockPapers from '../../sample_data/academicPapers.json';
 import './AcademicPaperTable.css';
 
 const AcademicPaperTable = () => {

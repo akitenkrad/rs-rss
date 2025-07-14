@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            WHERE wa.url = $1",
+  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related,\n                wa.status_id,\n                s.name AS status_name\n            FROM web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            JOIN status AS s ON wa.status_id = s.status_id\n            WHERE wa.url = $1",
   "describe": {
     "columns": [
       {
@@ -87,6 +87,16 @@
         "ordinal": 16,
         "name": "is_it_related",
         "type_info": "Bool"
+      },
+      {
+        "ordinal": 17,
+        "name": "status_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 18,
+        "name": "status_name",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
@@ -111,8 +121,10 @@
       false,
       false,
       false,
+      false,
+      true,
       false
     ]
   },
-  "hash": "1af9f1454d2f4802ffe153b2d24963ec728b58166b07faa25e04452a8db25b2a"
+  "hash": "4102038d62e73102dc90a3c2be6c9a33995a51f6e88cafad39d3140a096da134"
 }

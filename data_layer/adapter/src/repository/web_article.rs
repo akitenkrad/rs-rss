@@ -188,9 +188,12 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             WHERE wa.url = $1"#,
             web_article.url
         )
@@ -293,6 +296,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.is_ai_related,
             web_article.is_security_related,
             web_article.is_it_related,
+            web_article.status.clone(),
         ))
     }
     async fn select_todays_web_articles(&self) -> AppResult<Vec<WebArticle>> {
@@ -317,10 +321,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article as wa
             JOIN web_site as ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             WHERE wa.timestamp BETWEEN $1 AND $2
             ORDER BY wa.timestamp DESC"#,
             today,
@@ -359,10 +366,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             WHERE wa.article_id = $1
             ORDER BY wa.timestamp DESC"#,
             Uuid::from_str(id).unwrap()
@@ -397,10 +407,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             WHERE wa.title LIKE $1 OR wa.description LIKE $1 OR wa.summary LIKE $1
             ORDER BY wa.timestamp DESC"#,
             format!("%{}%", keyword)
@@ -430,10 +443,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             WHERE wa.url = $1
             ORDER BY wa.timestamp DESC"#,
             url
@@ -468,6 +484,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                     web_article.is_ai_related,
                     web_article.is_security_related,
                     web_article.is_it_related,
+                    web_article.status,
                 );
                 self.create_web_article(&mut web_article.clone()).await
             }
@@ -493,10 +510,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             ORDER BY wa.timestamp DESC
             "#
         )
@@ -531,10 +551,13 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 wa.is_new_academic_paper_related,
                 wa.is_ai_related,
                 wa.is_security_related,
-                wa.is_it_related
+                wa.is_it_related,
+                wa.status_id,
+                s.name AS status_name
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            JOIN status AS s ON wa.status_id = s.status_id
             ORDER BY wa.timestamp DESC
             LIMIT $1
             OFFSET $2"#,
@@ -602,7 +625,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
 mod tests {
     use super::*;
     use crate::database::ConnectionPool;
-    use shared::id::{WebArticleId, WebSiteId};
+    use shared::{
+        common::Status,
+        id::{WebArticleId, WebSiteId},
+    };
 
     #[sqlx::test]
     async fn test_website_crud(pool: sqlx::PgPool) {
@@ -688,6 +714,7 @@ mod tests {
             false,
             false,
             false,
+            Status::default(),
         );
 
         // Create

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            ORDER BY wa.timestamp DESC\n            LIMIT $1\n            OFFSET $2",
+  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related,\n                wa.status_id,\n                s.name AS status_name\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            JOIN status AS s ON wa.status_id = s.status_id\n            WHERE wa.title LIKE $1 OR wa.description LIKE $1 OR wa.summary LIKE $1\n            ORDER BY wa.timestamp DESC",
   "describe": {
     "columns": [
       {
@@ -87,12 +87,21 @@
         "ordinal": 16,
         "name": "is_it_related",
         "type_info": "Bool"
+      },
+      {
+        "ordinal": 17,
+        "name": "status_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 18,
+        "name": "status_name",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Int8",
-        "Int8"
+        "Text"
       ]
     },
     "nullable": [
@@ -112,8 +121,10 @@
       false,
       false,
       false,
+      false,
+      true,
       false
     ]
   },
-  "hash": "4df9c06562ac563e6c0de9a51577833ffee8e81714e52f17d66b662ba73c2c82"
+  "hash": "6285f906392497b95c96f7d29ef07932030d6daa518205ede7983f5fa5b6a2d9"
 }

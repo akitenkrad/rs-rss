@@ -1,7 +1,10 @@
 use chrono::NaiveDate;
 use derive_new::new;
 use kernel::models::web_article::{WebArticle, WebSite};
-use shared::id::{WebArticleId, WebSiteId};
+use shared::{
+    common::Status,
+    id::{StatusId, WebArticleId, WebSiteId},
+};
 use sqlx::FromRow;
 
 #[derive(Debug, Clone, new, FromRow)]
@@ -49,6 +52,8 @@ pub struct WebArticleRecord {
     pub is_ai_related: bool,
     pub is_security_related: bool,
     pub is_it_related: bool,
+    pub status_id: StatusId,
+    pub status_name: String,
 }
 
 impl From<WebArticle> for WebArticleRecord {
@@ -69,6 +74,7 @@ impl From<WebArticle> for WebArticleRecord {
             is_ai_related,
             is_security_related,
             is_it_related,
+            status,
         } = web_article;
         Self {
             site_id: site.site_id,
@@ -88,6 +94,8 @@ impl From<WebArticle> for WebArticleRecord {
             is_ai_related,
             is_security_related,
             is_it_related,
+            status_id: status.id,
+            status_name: status.name,
         }
     }
 }
@@ -112,6 +120,8 @@ impl From<WebArticleRecord> for WebArticle {
             is_ai_related,
             is_security_related,
             is_it_related,
+            status_id,
+            status_name,
         } = web_article_record;
         Self {
             site: WebSite {
@@ -133,6 +143,10 @@ impl From<WebArticleRecord> for WebArticle {
             is_ai_related,
             is_security_related,
             is_it_related,
+            status: Status {
+                id: status_id,
+                name: status_name,
+            },
         }
     }
 }
