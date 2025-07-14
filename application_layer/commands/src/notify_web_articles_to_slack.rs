@@ -18,7 +18,7 @@ async fn select_todays_articles() -> Vec<WebArticle> {
     let registry = Arc::new(AppRegistryImpl::new(db));
 
     let web_article_registry = registry.web_article_repository();
-    let articles = match web_article_registry.select_todays_articles().await {
+    let articles = match web_article_registry.select_todays_web_articles().await {
         Ok(articles) => articles,
         Err(err) => {
             tracing::error!("Failed to select today's articles: {}", err);

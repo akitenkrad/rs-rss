@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                site_id,\n                article_id,\n                title,\n                description,\n                url,\n                timestamp,\n                text,\n                html,\n                summary,\n                is_new_technology_related,\n                is_new_product_related,\n                is_new_academic_paper_related,\n                is_ai_related,\n                is_security_related,\n                is_it_related\n            FROM \n                web_article\n            WHERE url = $1",
+  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            WHERE wa.url = $1",
   "describe": {
     "columns": [
       {
@@ -10,71 +10,81 @@
       },
       {
         "ordinal": 1,
-        "name": "article_id",
-        "type_info": "Uuid"
+        "name": "site_name",
+        "type_info": "Varchar"
       },
       {
         "ordinal": 2,
-        "name": "title",
+        "name": "site_url",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
+        "name": "article_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 4,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
         "name": "description",
         "type_info": "Text"
       },
       {
-        "ordinal": 4,
+        "ordinal": 6,
         "name": "url",
         "type_info": "Varchar"
       },
       {
-        "ordinal": 5,
+        "ordinal": 7,
         "name": "timestamp",
         "type_info": "Date"
       },
       {
-        "ordinal": 6,
+        "ordinal": 8,
         "name": "text",
         "type_info": "Text"
       },
       {
-        "ordinal": 7,
+        "ordinal": 9,
         "name": "html",
         "type_info": "Text"
       },
       {
-        "ordinal": 8,
+        "ordinal": 10,
         "name": "summary",
         "type_info": "Text"
       },
       {
-        "ordinal": 9,
+        "ordinal": 11,
         "name": "is_new_technology_related",
         "type_info": "Bool"
       },
       {
-        "ordinal": 10,
+        "ordinal": 12,
         "name": "is_new_product_related",
         "type_info": "Bool"
       },
       {
-        "ordinal": 11,
+        "ordinal": 13,
         "name": "is_new_academic_paper_related",
         "type_info": "Bool"
       },
       {
-        "ordinal": 12,
+        "ordinal": 14,
         "name": "is_ai_related",
         "type_info": "Bool"
       },
       {
-        "ordinal": 13,
+        "ordinal": 15,
         "name": "is_security_related",
         "type_info": "Bool"
       },
       {
-        "ordinal": 14,
+        "ordinal": 16,
         "name": "is_it_related",
         "type_info": "Bool"
       }
@@ -85,7 +95,9 @@
       ]
     },
     "nullable": [
-      true,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -102,5 +114,5 @@
       false
     ]
   },
-  "hash": "0588d9ad75ded4131a9face3f19236db2a494894cac0acdaf30ec2815512a4e1"
+  "hash": "ee339470c03a498285187a9034110e1e79906c9d6814e60aad78f9ee7a7dc4b0"
 }

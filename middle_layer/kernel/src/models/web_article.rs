@@ -190,3 +190,9 @@ pub struct WebSiteListOptions {
     pub limit: i64,
     pub offset: i64,
 }
+
+#[derive(Debug, Clone, new)]
+pub struct WebArticleListOptions {
+    pub limit: i64,
+    pub offset: i64,
+}

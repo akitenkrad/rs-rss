@@ -42,7 +42,7 @@ pub trait AcademicPaperRepository: Send + Sync {
     async fn select_academic_paper_by_title(&self, title: &str) -> AppResult<Vec<AcademicPaper>>;
     async fn select_all_academic_papers(&self) -> AppResult<Vec<AcademicPaper>>;
     async fn select_academic_papers_by_keyword(&self, keyword: &str) -> AppResult<Vec<AcademicPaper>>;
-    async fn select_all_academic_papers_paginated(
+    async fn select_paginated_academic_papers(
         &self,
         options: AcademicPaperListOptions,
     ) -> AppResult<PaginatedList<AcademicPaper>>;

@@ -3,6 +3,7 @@ import './App.css';
 import AcademicPaperDetail from './components/academic_paper_detail/AcademicPaperDetail';
 import AcademicPaperTable from './components/academic_paper_table/AcademicPaperTable';
 import Header from './components/header/Header';
+import WebArticleTable from './components/web_article_table/WebArticleTable';
 import logo from './logo.svg';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                     } />
                     <Route path="/papers" element={<AcademicPaperTable />} />
                     <Route path="/papers/:paper_id" element={<AcademicPaperDetail />} />
+                    <Route path="/articles" element={<WebArticleTable />} />
                 </Routes>
             </div>
         </Router>

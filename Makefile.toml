@@ -7,8 +7,16 @@ env_files = [".env"]
 # ===== Build tasks =====
 [tasks.compose-up-postgres]
 extend = "set-env"
-args = ["compose", "up", "-d", "postgres"]
-command = "docker"
+script = '''#!/bin/bash
+docker compose up -d postgres
+s=0
+until docker compose exec postgres pg_isready; do
+  echo "Waiting for Postgres to be ready... ($s secs)"
+  sleep 3
+  s=$((s + 3))
+done
+echo "Postgres is ready!"
+'''
 
 [tasks.migrate]
 extend = "set-env"
@@ -48,6 +56,12 @@ extend = "set-env"
 args = ["compose", "build", "--pull", "--no-cache", "--progress=plain"]
 command = "docker"
 dependencies = ["before-build"]
+
+[tasks.compose-down]
+extend = "set-env"
+script = '''#!/bin/bash
+docker compose down
+'''
 
 # ===== Test tasks =====
 [tasks.nextest]
@@ -90,13 +104,27 @@ args = ["fmt", "--option", "reorder_keys=true"]
 command = "taplo"
 install_crate = { crate_name = "taplo-cli", binary = "taplo-cli", test_arg = "--help" }
 
-[tasks.backup-db]
+[tasks.psql]
 extend = "set-env"
-dependencies = ["compose-up-postgres"]
-script = '''
-#!/bin/bash
-docker compose exec postgres pg_dump -U ${DATABASE_USERNAME} -d ${DATABASE_NAME} > target/backup.postgres.dump
+script = '''#!/bin/bash
+docker compose exec postgres psql -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}
 '''
+
+[tasks.dump-database]
+extend = "set-env"
+command = "docker"
+dependencies = ["compose-up-postgres"]
+args = [
+  "compose",
+  "run",
+  "--rm",
+  "--entrypoint=\"\"",
+  "postgres",
+  "pg_dump",
+  "--dbname=postgresql://postgres:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}",
+  "--format=p",
+  "--file=/data/backup.postgres.sql",
+]
 
 # ====== Documentation tasks ======
 [tasks.doc]

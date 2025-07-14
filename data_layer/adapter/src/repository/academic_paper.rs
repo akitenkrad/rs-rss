@@ -721,7 +721,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         Ok(academic_papers)
     }
-    async fn select_all_academic_papers_paginated(
+    async fn select_paginated_academic_papers(
         &self,
         options: AcademicPaperListOptions,
     ) -> AppResult<PaginatedList<AcademicPaper>> {

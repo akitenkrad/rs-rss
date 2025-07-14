@@ -6,7 +6,7 @@ use garde::Validate;
 use registry::AppRegistry;
 use shared::errors::AppResult;
 
-pub async fn get_academic_papers(
+pub async fn select_paginated_academic_papers(
     State(registry): State<AppRegistry>,
     Query(query): Query<AcademicPaperListQuery>,
 ) -> AppResult<Json<AcademicPaperListResponse>> {
@@ -14,13 +14,13 @@ pub async fn get_academic_papers(
 
     registry
         .academic_paper_repository()
-        .select_all_academic_papers_paginated(query.into())
+        .select_paginated_academic_papers(query.into())
         .await
         .map(AcademicPaperListResponse::from)
         .map(Json)
 }
 
-pub async fn get_academic_paper_by_id(
+pub async fn select_academic_papers_by_id(
     State(registry): State<AppRegistry>,
     Query(query): Query<AcademicPaperIdQuery>,
 ) -> AppResult<Json<AcademicPaperResponse>> {

@@ -1,0 +1,182 @@
+[
+    {
+        "id": 1,
+        "timestamp": "2025-07-13",
+        "site_name": "TechCrunch",
+        "site_url": "https://techcrunch.com",
+        "title": "Latest AI Developments in 2025",
+        "summary": "A comprehensive overview of the latest artificial intelligence developments and their impact on various industries.",
+        "url": "https://techcrunch.com/ai-developments-2025"
+    },
+    {
+        "id": 2,
+        "timestamp": "2025-07-12",
+        "site_name": "The Verge",
+        "site_url": "https://theverge.com",
+        "title": "Web Development Trends",
+        "summary": "Exploring the newest trends in web development including React, Next.js, and modern CSS frameworks.",
+        "url": "https://theverge.com/web-development-trends"
+    },
+    {
+        "id": 3,
+        "timestamp": "2025-07-11",
+        "site_name": "Hacker News",
+        "site_url": "https://news.ycombinator.com",
+        "title": "Open Source Projects to Watch",
+        "summary": "A curated list of open source projects that are gaining traction in the developer community.",
+        "url": "https://news.ycombinator.com/open-source-projects"
+    },
+    {
+        "id": 4,
+        "timestamp": "2025-07-10",
+        "site_name": "MIT Technology Review",
+        "site_url": "https://technologyreview.com",
+        "title": "React 18 Performance Improvements",
+        "summary": "Deep dive into the performance improvements and new features introduced in React 18.",
+        "url": "https://technologyreview.com/react-18-performance"
+    },
+    {
+        "id": 5,
+        "timestamp": "2025-07-09",
+        "site_name": "Wired",
+        "site_url": "https://wired.com",
+        "title": "Machine Learning in Healthcare",
+        "summary": "How machine learning is revolutionizing healthcare and medical diagnosis.",
+        "url": "https://wired.com/ml-healthcare"
+    },
+    {
+        "id": 6,
+        "timestamp": "2025-07-08",
+        "site_name": "GitHub Blog",
+        "site_url": "https://github.blog",
+        "title": "GitHub Copilot Updates",
+        "summary": "Latest updates and improvements to GitHub Copilot AI assistant.",
+        "url": "https://github.blog/copilot-updates"
+    },
+    {
+        "id": 7,
+        "timestamp": "2025-07-07",
+        "site_name": "Stack Overflow Blog",
+        "site_url": "https://stackoverflow.blog",
+        "title": "Developer Survey 2025 Results",
+        "summary": "Insights from the annual developer survey including popular technologies and salary trends.",
+        "url": "https://stackoverflow.blog/developer-survey-2025"
+    },
+    {
+        "id": 8,
+        "timestamp": "2025-07-06",
+        "site_name": "Ars Technica",
+        "site_url": "https://arstechnica.com",
+        "title": "Quantum Computing Breakthrough",
+        "summary": "Scientists achieve new milestone in quantum computing with error correction improvements.",
+        "url": "https://arstechnica.com/quantum-computing-breakthrough"
+    },
+    {
+        "id": 9,
+        "timestamp": "2025-07-05",
+        "site_name": "IEEE Spectrum",
+        "site_url": "https://spectrum.ieee.org",
+        "title": "Neural Networks and Edge Computing",
+        "summary": "How neural networks are being optimized for edge computing devices and IoT applications.",
+        "url": "https://spectrum.ieee.org/neural-networks-edge-computing"
+    },
+    {
+        "id": 10,
+        "timestamp": "2025-07-04",
+        "site_name": "Dev.to",
+        "site_url": "https://dev.to",
+        "title": "TypeScript Best Practices 2025",
+        "summary": "Modern TypeScript patterns and best practices for building scalable applications.",
+        "url": "https://dev.to/typescript-best-practices-2025"
+    },
+    {
+        "id": 11,
+        "timestamp": "2025-07-03",
+        "site_name": "VentureBeat",
+        "site_url": "https://venturebeat.com",
+        "title": "Cloud Security Challenges",
+        "summary": "Addressing the evolving security challenges in cloud computing and multi-cloud environments.",
+        "url": "https://venturebeat.com/cloud-security-challenges"
+    },
+    {
+        "id": 12,
+        "timestamp": "2025-07-02",
+        "site_name": "ZDNet",
+        "site_url": "https://zdnet.com",
+        "title": "Blockchain Technology in Supply Chain",
+        "summary": "How blockchain is transforming supply chain management and improving transparency.",
+        "url": "https://zdnet.com/blockchain-supply-chain"
+    },
+    {
+        "id": 13,
+        "timestamp": "2025-07-01",
+        "site_name": "InfoWorld",
+        "site_url": "https://infoworld.com",
+        "title": "Microservices Architecture Patterns",
+        "summary": "Essential patterns and practices for designing robust microservices architectures.",
+        "url": "https://infoworld.com/microservices-architecture-patterns"
+    },
+    {
+        "id": 14,
+        "timestamp": "2025-06-30",
+        "site_name": "CIO",
+        "site_url": "https://cio.com",
+        "title": "Digital Transformation Strategies",
+        "summary": "Strategic approaches to digital transformation in enterprise environments.",
+        "url": "https://cio.com/digital-transformation-strategies"
+    },
+    {
+        "id": 15,
+        "timestamp": "2025-06-29",
+        "site_name": "ComputerWorld",
+        "site_url": "https://computerworld.com",
+        "title": "DevOps Culture and Tools",
+        "summary": "Building a strong DevOps culture and selecting the right tools for continuous integration.",
+        "url": "https://computerworld.com/devops-culture-tools"
+    },
+    {
+        "id": 16,
+        "timestamp": "2025-06-28",
+        "site_name": "TechRepublic",
+        "site_url": "https://techrepublic.com",
+        "title": "Cybersecurity Trends 2025",
+        "summary": "Emerging cybersecurity threats and defense strategies for the modern enterprise.",
+        "url": "https://techrepublic.com/cybersecurity-trends-2025"
+    },
+    {
+        "id": 17,
+        "timestamp": "2025-06-27",
+        "site_name": "Smashing Magazine",
+        "site_url": "https://smashingmagazine.com",
+        "title": "Modern CSS Grid Techniques",
+        "summary": "Advanced CSS Grid layouts and techniques for responsive web design.",
+        "url": "https://smashingmagazine.com/modern-css-grid-techniques"
+    },
+    {
+        "id": 18,
+        "timestamp": "2025-06-26",
+        "site_name": "A List Apart",
+        "site_url": "https://alistapart.com",
+        "title": "Accessibility in Modern Web Apps",
+        "summary": "Best practices for building accessible web applications that work for everyone.",
+        "url": "https://alistapart.com/accessibility-modern-web-apps"
+    },
+    {
+        "id": 19,
+        "timestamp": "2025-06-25",
+        "site_name": "CSS-Tricks",
+        "site_url": "https://css-tricks.com",
+        "title": "JavaScript Performance Optimization",
+        "summary": "Techniques for optimizing JavaScript performance in modern web applications.",
+        "url": "https://css-tricks.com/javascript-performance-optimization"
+    },
+    {
+        "id": 20,
+        "timestamp": "2025-06-24",
+        "site_name": "Netlify Blog",
+        "site_url": "https://netlify.com",
+        "title": "JAMstack Architecture Benefits",
+        "summary": "Understanding the benefits of JAMstack architecture for modern web development.",
+        "url": "https://netlify.com/blog/jamstack-architecture-benefits"
+    }
+]

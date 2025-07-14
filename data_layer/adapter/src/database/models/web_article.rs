@@ -33,6 +33,8 @@ pub struct PaginatedWebSiteRecord {
 #[derive(Debug, Clone, new, FromRow)]
 pub struct WebArticleRecord {
     pub site_id: WebSiteId,
+    pub site_name: String,
+    pub site_url: String,
     pub article_id: WebArticleId,
     pub title: String,
     pub description: String,
@@ -70,6 +72,8 @@ impl From<WebArticle> for WebArticleRecord {
         } = web_article;
         Self {
             site_id: site.site_id,
+            site_name: site.name,
+            site_url: site.url,
             article_id,
             title,
             description,
@@ -92,6 +96,8 @@ impl From<WebArticleRecord> for WebArticle {
     fn from(web_article_record: WebArticleRecord) -> Self {
         let WebArticleRecord {
             site_id,
+            site_name,
+            site_url,
             article_id,
             title,
             description,
@@ -110,8 +116,8 @@ impl From<WebArticleRecord> for WebArticle {
         Self {
             site: WebSite {
                 site_id,
-                name: String::new(),
-                url: String::new(),
+                name: site_name,
+                url: site_url,
             },
             article_id,
             title,

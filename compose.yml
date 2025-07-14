@@ -27,17 +27,23 @@ services:
       - server
   postgres:
     image: postgres:latest
+    user: root
     env_file:
       - .env
     volumes:
       - postgres:/var/lib/postgresql/data
+      - data:/data:cached
     ports:
       - 5432:5432
     environment:
       POSTGRES_DB: rsrss
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      # PGDATA: /var/lib/postgresql/data
+      PGDATA: /data/postgres/data
 
 volumes:
   postgres:
+    external: true
+  data:
     external: true

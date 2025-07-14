@@ -7,7 +7,7 @@ use derive_new::new;
 use kernel::{
     models::{
         list::PaginatedList,
-        web_article::{WebArticle, WebSite, WebSiteListOptions},
+        web_article::{WebArticle, WebArticleListOptions, WebSite, WebSiteListOptions},
     },
     repository::web_article::{WebArticleRepository, WebSiteRepository},
 };
@@ -172,22 +172,26 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         let existing_article = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
-            FROM web_article WHERE url = $1"#,
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
+            FROM web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            WHERE wa.url = $1"#,
             web_article.url
         )
         .fetch_all(self.db.inner_ref())
@@ -291,30 +295,33 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.is_it_related,
         ))
     }
-    async fn select_todays_articles(&self) -> AppResult<Vec<WebArticle>> {
+    async fn select_todays_web_articles(&self) -> AppResult<Vec<WebArticle>> {
         let today = chrono::Local::now().date_naive();
         let tomorrow = today + chrono::Duration::days(1);
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
             FROM 
-                web_article
-            WHERE timestamp BETWEEN $1 AND $2"#,
+                web_article as wa
+            JOIN web_site as ws ON wa.site_id = ws.site_id
+            WHERE wa.timestamp BETWEEN $1 AND $2"#,
             today,
             tomorrow
         )
@@ -358,24 +365,27 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
             FROM 
-                web_article
-            WHERE article_id = $1"#,
+                web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            WHERE wa.article_id = $1"#,
             Uuid::from_str(id).unwrap()
         )
         .fetch_all(self.db.inner_ref())
@@ -392,24 +402,27 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
             FROM 
-                web_article
-            WHERE title LIKE $1 OR description LIKE $1 OR summary LIKE $1"#,
+                web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            WHERE wa.title LIKE $1 OR wa.description LIKE $1 OR wa.summary LIKE $1"#,
             format!("%{}%", keyword)
         )
         .fetch_all(self.db.inner_ref())
@@ -421,24 +434,27 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
             FROM 
-                web_article
-            WHERE url = $1"#,
+                web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            WHERE wa.url = $1"#,
             url
         )
         .fetch_all(self.db.inner_ref())
@@ -476,32 +492,78 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             }
         }
     }
-    async fn select_all_articles(&self) -> AppResult<Vec<WebArticle>> {
+    async fn select_all_web_articles(&self) -> AppResult<Vec<WebArticle>> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
             r#"SELECT
-                site_id,
-                article_id,
-                title,
-                description,
-                url,
-                timestamp,
-                text,
-                html,
-                summary,
-                is_new_technology_related,
-                is_new_product_related,
-                is_new_academic_paper_related,
-                is_ai_related,
-                is_security_related,
-                is_it_related
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
             FROM 
-                web_article"#
+                web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            "#
         )
         .fetch_all(self.db.inner_ref())
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
+    }
+    async fn select_paginated_web_articles(
+        &self,
+        options: WebArticleListOptions,
+    ) -> AppResult<PaginatedList<WebArticle>> {
+        let WebArticleListOptions { limit, offset } = options;
+        let rows = sqlx::query_as!(
+            WebArticleRecord,
+            r#"
+            SELECT
+                ws.site_id AS site_id,
+                ws.name AS site_name,
+                ws.url AS site_url,
+                wa.article_id,
+                wa.title,
+                wa.description,
+                wa.url,
+                wa.timestamp,
+                wa.text,
+                wa.html,
+                wa.summary,
+                wa.is_new_technology_related,
+                wa.is_new_product_related,
+                wa.is_new_academic_paper_related,
+                wa.is_ai_related,
+                wa.is_security_related,
+                wa.is_it_related
+            FROM 
+                web_article AS wa
+            JOIN web_site AS ws ON wa.site_id = ws.site_id
+            LIMIT $1
+            OFFSET $2"#,
+            limit,
+            offset
+        )
+        .fetch_all(self.db.inner_ref())
+        .await
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+        let total = rows.len() as i64;
+        let items = rows.into_iter().map(WebArticle::from).collect::<Vec<WebArticle>>();
+        Ok(PaginatedList::<WebArticle>::new(total, limit, offset, items))
     }
     async fn update_web_article(&self, web_article: WebArticle) -> AppResult<()> {
         sqlx::query!(
@@ -655,23 +717,23 @@ mod tests {
         assert_article_eq(&web_article, &records);
         let records = repo.select_web_articles_by_keyword("Test").await.unwrap();
         assert_article_eq(&web_article, &records[0]);
-        let records = repo.select_todays_articles().await.unwrap();
+        let records = repo.select_todays_web_articles().await.unwrap();
         assert_article_eq(&web_article, &records[0]);
-        let records = repo.select_all_articles().await.unwrap();
+        let records = repo.select_all_web_articles().await.unwrap();
         assert_eq!(records.len(), 1);
 
         // Update
         let mut web_article = records[0].clone();
         web_article.title = "Updated Article".to_string();
         repo.update_web_article(web_article.clone()).await.unwrap();
-        let updated_records = repo.select_all_articles().await.unwrap();
+        let updated_records = repo.select_all_web_articles().await.unwrap();
         assert_eq!(updated_records[0].title, "Updated Article");
 
         // Delete
         repo.delete_web_article(&updated_records[0].article_id.to_string())
             .await
             .unwrap();
-        let records_after_delete = repo.select_all_articles().await.unwrap();
+        let records_after_delete = repo.select_all_web_articles().await.unwrap();
         assert_eq!(records_after_delete.len(), 0);
 
         // Clean up the website
