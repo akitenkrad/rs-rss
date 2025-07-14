@@ -1,4 +1,7 @@
-/* ページ全体の背景をダークに統一 */
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
 body {
     background: #1a1d23;
     color: #e2e8f0;
@@ -7,7 +10,10 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* メインコンテナも背景に合わせて調整 */
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
 .academic-paper-table {
     max-width: 100%;
     margin: 0;
@@ -15,7 +21,6 @@ body {
     background: #1a1d23;
     border-radius: 12px;
     margin-top: 80px;
-    /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
 }
 
 .table-header {
@@ -34,7 +39,10 @@ body {
     font-weight: 600;
 }
 
-/* 検索コンテナのスタイル */
+/* ==========================================================================
+   Search
+   ========================================================================== */
+
 .search-container {
     position: relative;
     display: flex;
@@ -45,7 +53,18 @@ body {
     max-width: 500px;
 }
 
-/* 検索入力フィールドのスタイル */
+.search-container::before {
+    content: "🔍";
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #718096;
+    z-index: 1;
+    pointer-events: none;
+}
+
 .search-input {
     width: 100%;
     padding: 12px 20px;
@@ -59,7 +78,6 @@ body {
     transition: all 0.3s ease;
     outline: none;
     box-shadow: none;
-    position: relative;
 }
 
 .search-input:focus {
@@ -73,20 +91,6 @@ body {
     font-style: italic;
 }
 
-/* 検索アイコンを追加 */
-.search-container::before {
-    content: "🔍";
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    color: #718096;
-    z-index: 1;
-    pointer-events: none;
-}
-
-/* クリアボタンのスタイル */
 .search-clear-button {
     position: absolute;
     right: 12px;
@@ -113,7 +117,6 @@ body {
     transform: translateY(-50%) scale(1.05);
 }
 
-/* 検索中のローディング表示 */
 .search-loading {
     position: absolute;
     right: 50px;
@@ -143,13 +146,17 @@ body {
     }
 }
 
-/* テーブルアクション */
+/* ==========================================================================
+   Table Actions
+   ========================================================================== */
+
 .table-actions {
     display: flex;
     gap: 8px;
 }
 
-.refresh-button {
+.refresh-button,
+.retry-button {
     background: #2b6cb0;
     color: white;
     border: none;
@@ -162,32 +169,19 @@ body {
     box-shadow: none;
 }
 
-.refresh-button:hover {
+.refresh-button:hover,
+.retry-button:hover {
     background: #2c5282;
 }
 
-/* レスポンシブデザイン */
-@media (max-width: 768px) {
-    .academic-paper-table {
-        padding: 5px;
-    }
-    
-    .table-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .search-container {
-        min-width: unset;
-        max-width: unset;
-    }
-    
-    .search-input {
-        font-size: 16px; /* iOSでズームを防ぐ */
-    }
+.retry-button {
+    margin-top: 16px;
 }
 
-/* テーブルスタイル - ダークブルーフラットデザイン */
+/* ==========================================================================
+   Table
+   ========================================================================== */
+
 .table-container {
     background: #1a1d23;
     border-radius: 8px;
@@ -235,84 +229,10 @@ body {
     background: #2d3748;
 }
 
-.table-footer {
-    margin-top: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #a0aec0;
-    font-size: 14px;
-}
+/* ==========================================================================
+   Table Cell Styles
+   ========================================================================== */
 
-.paper-count {
-    font-weight: 500;
-}
-
-.search-info {
-    color: #3182ce;
-    font-weight: 500;
-}
-
-.loading, .error {
-    text-align: center;
-    padding: 40px;
-    color: #a0aec0;
-}
-
-.retry-button {
-    background: #2b6cb0;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: background 0.2s ease;
-}
-
-.retry-button:hover {
-    background: #2c5282;
-}
-
-.no-data {
-    text-align: center;
-    color: #a0aec0;
-    font-style: italic;
-}
-
-.view-button {
-    background: #3182ce;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background 0.2s ease;
-}
-
-.view-button:hover {
-    background: #2c5282;
-}
-
-.paper-link {
-    color: #63b3ed;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.paper-link:hover {
-    color: #90cdf4;
-    text-decoration: underline;
-}
-
-.sort-indicator {
-    margin-left: 8px;
-    font-size: 12px;
-    color: #90cdf4;
-}
-
-/* テーブルセルの特定スタイル */
 .title-cell {
     font-weight: 500;
     text-align: left;
@@ -334,4 +254,107 @@ body {
 
 .actions-cell {
     text-align: center;
+}
+
+/* ==========================================================================
+   Table Footer
+   ========================================================================== */
+
+.table-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.paper-count {
+    font-weight: 500;
+}
+
+.search-info {
+    color: #3182ce;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.view-button {
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s ease;
+}
+
+.view-button:hover {
+    background: #2c5282;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+.paper-link {
+    color: #63b3ed;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.paper-link:hover {
+    color: #90cdf4;
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.sort-indicator {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #90cdf4;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+}
+
+.no-data {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .academic-paper-table {
+        padding: 5px;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        min-width: unset;
+        max-width: unset;
+    }
+    
+    .search-input {
+        font-size: 16px; /* iOSでズームを防ぐ */
+    }
 }
