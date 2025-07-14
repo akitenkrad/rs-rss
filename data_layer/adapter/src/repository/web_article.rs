@@ -321,7 +321,8 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article as wa
             JOIN web_site as ws ON wa.site_id = ws.site_id
-            WHERE wa.timestamp BETWEEN $1 AND $2"#,
+            WHERE wa.timestamp BETWEEN $1 AND $2
+            ORDER BY wa.timestamp DESC"#,
             today,
             tomorrow
         )
@@ -330,33 +331,10 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .map_err(|e| shared::errors::AppError::SqlxError(e))
         .unwrap();
 
-        let sites = sqlx::query_as!(
-            WebSiteRecord,
-            r#"SELECT
-                site_id,
-                name,
-                url
-            FROM 
-                web_site"#
-        )
-        .fetch_all(self.db.inner_ref())
-        .await
-        .map_err(|e| shared::errors::AppError::SqlxError(e))
-        .unwrap();
-
-        let web_articles: Vec<WebArticle> = rows
-            .into_iter()
-            .map(|row| {
-                let site = sites
-                    .iter()
-                    .find(|s| s.site_id == row.site_id)
-                    .map(|s| WebSite::from(s.clone()))
-                    .unwrap_or_else(|| WebSite::new(WebSiteId::new(), "Unknown".to_string(), "Unknown".to_string()));
-                let mut article = WebArticle::from(row);
-                article.site = site;
-                article
-            })
-            .collect();
+        let web_articles: Vec<WebArticle> = rows.into_iter().map(WebArticle::from).collect();
+        if web_articles.is_empty() {
+            return Err(AppError::RecordNotFound(sqlx::Error::RowNotFound));
+        }
 
         Ok(web_articles)
     }
@@ -385,7 +363,8 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
-            WHERE wa.article_id = $1"#,
+            WHERE wa.article_id = $1
+            ORDER BY wa.timestamp DESC"#,
             Uuid::from_str(id).unwrap()
         )
         .fetch_all(self.db.inner_ref())
@@ -422,7 +401,8 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
-            WHERE wa.title LIKE $1 OR wa.description LIKE $1 OR wa.summary LIKE $1"#,
+            WHERE wa.title LIKE $1 OR wa.description LIKE $1 OR wa.summary LIKE $1
+            ORDER BY wa.timestamp DESC"#,
             format!("%{}%", keyword)
         )
         .fetch_all(self.db.inner_ref())
@@ -454,7 +434,8 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
-            WHERE wa.url = $1"#,
+            WHERE wa.url = $1
+            ORDER BY wa.timestamp DESC"#,
             url
         )
         .fetch_all(self.db.inner_ref())
@@ -516,6 +497,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            ORDER BY wa.timestamp DESC
             "#
         )
         .fetch_all(self.db.inner_ref())
@@ -523,6 +505,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
+
     async fn select_paginated_web_articles(
         &self,
         options: WebArticleListOptions,
@@ -552,6 +535,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             FROM 
                 web_article AS wa
             JOIN web_site AS ws ON wa.site_id = ws.site_id
+            ORDER BY wa.timestamp DESC
             LIMIT $1
             OFFSET $2"#,
             limit,

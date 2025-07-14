@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            WHERE wa.url = $1",
+  "query": "\n            SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            ORDER BY wa.timestamp DESC\n            LIMIT $1\n            OFFSET $2",
   "describe": {
     "columns": [
       {
@@ -91,7 +91,8 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Int8",
+        "Int8"
       ]
     },
     "nullable": [
@@ -114,5 +115,5 @@
       false
     ]
   },
-  "hash": "ee339470c03a498285187a9034110e1e79906c9d6814e60aad78f9ee7a7dc4b0"
+  "hash": "4df9c06562ac563e6c0de9a51577833ffee8e81714e52f17d66b662ba73c2c82"
 }

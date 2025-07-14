@@ -31,7 +31,6 @@ services:
     env_file:
       - .env
     volumes:
-      - postgres:/var/lib/postgresql/data
       - data:/data:cached
     ports:
       - 5432:5432
@@ -43,7 +42,5 @@ services:
       PGDATA: /data/postgres/data
 
 volumes:
-  postgres:
-    external: true
   data:
     external: true

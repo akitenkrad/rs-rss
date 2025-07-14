@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            LIMIT $1\n            OFFSET $2",
+  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article AS wa\n            JOIN web_site AS ws ON wa.site_id = ws.site_id\n            ORDER BY wa.timestamp DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -90,10 +90,7 @@
       }
     ],
     "parameters": {
-      "Left": [
-        "Int8",
-        "Int8"
-      ]
+      "Left": []
     },
     "nullable": [
       false,
@@ -115,5 +112,5 @@
       false
     ]
   },
-  "hash": "1fdc953f0e7ff0b29e7ec6a4b502e4f692b984b42c76148a7289c683ffe5ac62"
+  "hash": "29e27ad5d8ad9217090bb75989f9991ad092535f3086bf68a04126039a8a66e0"
 }

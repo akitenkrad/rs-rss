@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article as wa\n            JOIN web_site as ws ON wa.site_id = ws.site_id\n            WHERE wa.timestamp BETWEEN $1 AND $2",
+  "query": "SELECT\n                ws.site_id AS site_id,\n                ws.name AS site_name,\n                ws.url AS site_url,\n                wa.article_id,\n                wa.title,\n                wa.description,\n                wa.url,\n                wa.timestamp,\n                wa.text,\n                wa.html,\n                wa.summary,\n                wa.is_new_technology_related,\n                wa.is_new_product_related,\n                wa.is_new_academic_paper_related,\n                wa.is_ai_related,\n                wa.is_security_related,\n                wa.is_it_related\n            FROM \n                web_article as wa\n            JOIN web_site as ws ON wa.site_id = ws.site_id\n            WHERE wa.timestamp BETWEEN $1 AND $2\n            ORDER BY wa.timestamp DESC",
   "describe": {
     "columns": [
       {
@@ -115,5 +115,5 @@
       false
     ]
   },
-  "hash": "5c5cb9c0b5d5c56d7301608b3972939ebda11afd663283c378b113a21860a260"
+  "hash": "02278279b0b8748992b3ef151ba40a729568402b047d9c3e36e393756a532a86"
 }
