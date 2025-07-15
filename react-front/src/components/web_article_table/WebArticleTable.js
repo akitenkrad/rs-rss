@@ -6,7 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import webArticlesSampleData from '../../sample_data/webArticles.json';
 import './WebArticleTable.css';
 
@@ -22,6 +22,7 @@ function WebArticleTable() {
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const tableContainerRef = useRef(null);
 
     useEffect(() => {
@@ -246,6 +247,49 @@ function WebArticleTable() {
         }
     };
 
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const sortedArticles = React.useMemo(() => {
+        let sortableArticles = [...articles];
+        if (sortConfig.key) {
+            sortableArticles.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+                
+                // 日付の場合は Date オブジェクトで比較
+                if (sortConfig.key === 'timestamp') {
+                    aValue = aValue ? new Date(aValue) : new Date(0);
+                    bValue = bValue ? new Date(bValue) : new Date(0);
+                }
+                
+                // 文字列の場合は小文字で比較
+                if (typeof aValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                }
+                
+                // null/undefined の場合は空文字として扱う
+                if (aValue == null) aValue = '';
+                if (bValue == null) bValue = '';
+                
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableArticles;
+    }, [articles, sortConfig]);
+
     if (loading && !isSearching) {
         return (
             <div className="web-article-table-container" style={{ marginTop: '80px' }}>
@@ -276,7 +320,12 @@ function WebArticleTable() {
     }
 
     return (
-        <div className="web-article-table-container" style={{ marginTop: '80px' }}>
+        <div className="web-article-table-container" style={{ 
+            marginTop: '80px',
+            height: 'calc(100vh - 80px)',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <div className="table-header">
                 <h2>Web記事一覧</h2>
                 <div className="filters-container">
@@ -336,7 +385,8 @@ function WebArticleTable() {
                 ref={tableContainerRef}
                 sx={{ 
                     flex: 1,
-                    overflowY: 'auto',
+                    height: 'calc(100vh - 200px)',
+                    overflow: 'auto',
                     '& .MuiTableHead-root .MuiTableCell-root': {
                         position: 'sticky',
                         top: 0,
@@ -350,23 +400,78 @@ function WebArticleTable() {
                 <Table sx={{ minWidth: 650 }} aria-label="web articles table">
                     <TableHead>
                         <TableRow className="table-header">
-                            <TableCell className="table-header-cell">日付</TableCell>
-                            <TableCell className="table-header-cell">サイト名</TableCell>
-                            <TableCell className="table-header-cell">記事タイトル</TableCell>
-                            <TableCell className="table-header-cell">要約</TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('timestamp')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                日付
+                                {sortConfig.key === 'timestamp' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('site_name')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                サイト名
+                                {sortConfig.key === 'site_name' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('title')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                記事タイトル
+                                {sortConfig.key === 'title' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('summary')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                要約
+                                {sortConfig.key === 'summary' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
                             <TableCell className="table-header-cell">URL</TableCell>
-                            <TableCell className="table-header-cell">Status</TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('status_name')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                Status
+                                {sortConfig.key === 'status_name' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {articles.length === 0 ? (
+                        {sortedArticles.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="no-data">
                                     {searchKeyword || dateFrom || dateTo ? '検索結果がありません' : '記事データがありません'}
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            articles.map((article) => (
+                            sortedArticles.map((article) => (
                                 <TableRow key={article.id} className="table-row">
                                     <TableCell className="date-cell">
                                         {formatDate(article.timestamp || '')}

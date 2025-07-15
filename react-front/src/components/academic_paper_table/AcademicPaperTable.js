@@ -1,3 +1,11 @@
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mockPapers from '../../sample_data/academicPapers.json';
@@ -26,41 +34,14 @@ const AcademicPaperTable = () => {
     // 検索キーワードが変更されたときの処理（デバウンス付き）
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
-            if (searchKeyword !== '') {
-                fetchPapers(searchKeyword);
-            } else {
-                fetchPapers();
-            }
+            fetchPapers(searchKeyword);
         }, 500); // 500ms の遅延でAPIを呼び出し
 
         return () => clearTimeout(debounceTimer);
     }, [searchKeyword]);
 
-    // スクロールイベントハンドラー
-    const handleScroll = useCallback(() => {
-        if (!tableContainerRef.current || isLoadingMore || !hasMore) return;
-
-        const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
-        
-        // スクロール位置が底から100px以内に到達した場合
-        if (scrollTop + clientHeight >= scrollHeight - 100) {
-            loadMorePapers();
-        }
-    }, [isLoadingMore, hasMore]);
-
-    // スクロールイベントリスナーの登録
-    useEffect(() => {
-        const tableContainer = tableContainerRef.current;
-        if (tableContainer) {
-            tableContainer.addEventListener('scroll', handleScroll);
-            return () => {
-                tableContainer.removeEventListener('scroll', handleScroll);
-            };
-        }
-    }, [handleScroll]);
-
-    // 追加データの読み込み
-    const loadMorePapers = async () => {
+    // loadMorePapers関数を先に定義
+    const loadMorePapers = useCallback(async () => {
         if (isLoadingMore || !hasMore) return;
 
         try {
@@ -80,7 +61,30 @@ const AcademicPaperTable = () => {
         } finally {
             setIsLoadingMore(false);
         }
-    };
+    }, [isLoadingMore, hasMore, offset, limit, searchKeyword]);
+
+    // スクロールイベントハンドラー
+    const handleScroll = useCallback(() => {
+        if (!tableContainerRef.current || isLoadingMore || !hasMore) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
+        
+        // スクロール位置が底から100px以内に到達した場合
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+            loadMorePapers();
+        }
+    }, [isLoadingMore, hasMore, loadMorePapers]);
+
+    // スクロールイベントリスナーの登録
+    useEffect(() => {
+        const tableContainer = tableContainerRef.current;
+        if (tableContainer) {
+            tableContainer.addEventListener('scroll', handleScroll);
+            return () => {
+                tableContainer.removeEventListener('scroll', handleScroll);
+            };
+        }
+    }, [handleScroll]);
 
     // データ取得のロジックを分離
     const fetchPapersData = async (keyword = '', currentOffset = 0) => {
@@ -176,10 +180,31 @@ const AcademicPaperTable = () => {
         let sortablePapers = [...papers];
         if (sortConfig.key) {
             sortablePapers.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+                
+                // キーワード配列の場合は最初のキーワードで比較
+                if (sortConfig.key === 'keywords') {
+                    aValue = (a.keywords && a.keywords.length > 0) ? a.keywords[0] : '';
+                    bValue = (b.keywords && b.keywords.length > 0) ? b.keywords[0] : '';
+                }
+                
+                // 日付の場合は Date オブジェクトで比較
+                if (sortConfig.key === 'published_date') {
+                    aValue = aValue ? new Date(aValue) : new Date(0);
+                    bValue = bValue ? new Date(bValue) : new Date(0);
+                }
+                
+                // 文字列の場合は小文字で比較
+                if (typeof aValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                }
+                
+                if (aValue < bValue) {
                     return sortConfig.direction === 'asc' ? -1 : 1;
                 }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
+                if (aValue > bValue) {
                     return sortConfig.direction === 'asc' ? 1 : -1;
                 }
                 return 0;
@@ -229,7 +254,12 @@ const AcademicPaperTable = () => {
     if (loading && !isSearching) {
         return (
             <div className="academic-paper-table" style={{ marginTop: '80px' }}>
-                <div className="loading">論文データを読み込み中...</div>
+                <div className="table-header">
+                    <h2>論文一覧</h2>
+                </div>
+                <div className="loading-message">
+                    <Typography>論文データを読み込み中...</Typography>
+                </div>
             </div>
         );
     }
@@ -237,16 +267,26 @@ const AcademicPaperTable = () => {
     if (error) {
         return (
             <div className="academic-paper-table" style={{ marginTop: '80px' }}>
-                <div className="error">エラー: {error}</div>
-                <button onClick={() => fetchPapers(searchKeyword)} className="retry-button">
-                    再試行
-                </button>
+                <div className="table-header">
+                    <h2>論文一覧</h2>
+                </div>
+                <div className="error-message">
+                    <Typography color="error">エラー: {error}</Typography>
+                    <button onClick={() => fetchPapers(searchKeyword)} className="retry-button">
+                        再試行
+                    </button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="academic-paper-table" style={{ marginTop: '80px' }}>
+        <div className="academic-paper-table" style={{ 
+            marginTop: '80px',
+            height: 'calc(100vh - 80px)',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <div className="table-header">
                 <h2>論文一覧</h2>
                 <div className="search-container">
@@ -276,71 +316,89 @@ const AcademicPaperTable = () => {
                 </div>
             </div>
             
-            <div 
+            <TableContainer 
+                component={Paper} 
                 className="table-container"
                 ref={tableContainerRef}
+                sx={{ 
+                    flex: 1,
+                    height: 'calc(100vh - 200px)', // ヘッダーとフッターを除いた高さ
+                    overflow: 'auto',
+                    '& .MuiTableHead-root .MuiTableCell-root': {
+                        position: 'sticky',
+                        top: 0,
+                        backgroundColor: '#1a365d',
+                        color: '#e2e8f0',
+                        borderBottom: '2px solid #2c5282',
+                        zIndex: 10
+                    }
+                }}
             >
-                <table className="papers-table">
-                    <thead>
-                        <tr>
-                            <th 
+                <Table sx={{ minWidth: 650 }} aria-label="academic papers table">
+                    <TableHead>
+                        <TableRow className="table-header">
+                            <TableCell 
+                                className="table-header-cell sortable-header"
                                 onClick={() => handleSort('title')}
-                                className={sortConfig.key === 'title' ? 'sorted' : ''}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Title
                                 {sortConfig.key === 'title' && (
                                     <span className="sort-indicator">
-                                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
                                     </span>
                                 )}
-                            </th>
-                            <th 
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
                                 onClick={() => handleSort('keywords')}
-                                className={sortConfig.key === 'keywords' ? 'sorted' : ''}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Keywords
                                 {sortConfig.key === 'keywords' && (
                                     <span className="sort-indicator">
-                                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
                                     </span>
                                 )}
-                            </th>
-                            <th 
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
                                 onClick={() => handleSort('primary_category')}
-                                className={sortConfig.key === 'primary_category' ? 'sorted' : ''}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Category
                                 {sortConfig.key === 'primary_category' && (
                                     <span className="sort-indicator">
-                                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
                                     </span>
                                 )}
-                            </th>
-                            <th 
+                            </TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
                                 onClick={() => handleSort('published_date')}
-                                className={sortConfig.key === 'published_date' ? 'sorted' : ''}
+                                style={{ cursor: 'pointer' }}
                             >
                                 Published Date
                                 {sortConfig.key === 'published_date' && (
                                     <span className="sort-indicator">
-                                        {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
                                     </span>
                                 )}
-                            </th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                            </TableCell>
+                            <TableCell className="table-header-cell">Details</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
                         {sortedPapers.length === 0 ? (
-                            <tr>
-                                <td colSpan="5" className="no-data">
+                            <TableRow>
+                                <TableCell colSpan={5} className="no-data">
                                     {searchKeyword ? '検索結果がありません' : '論文データがありません'}
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             sortedPapers.map((paper) => (
-                                <tr key={paper.paper_id}>
-                                    <td className="title-cell">
+                                <TableRow key={paper.paper_id} className="table-row">
+                                    <TableCell className="title-cell">
                                         <a 
                                             href={paper.url} 
                                             target="_blank" 
@@ -349,39 +407,39 @@ const AcademicPaperTable = () => {
                                         >
                                             {truncateText(paper.title, 60)}
                                         </a>
-                                    </td>
-                                    <td className="keywords-cell">
+                                    </TableCell>
+                                    <TableCell className="keywords-cell">
                                         {renderKeywords(paper.keywords)}
-                                    </td>
-                                    <td className="category-cell">
+                                    </TableCell>
+                                    <TableCell className="category-cell">
                                         <span className="category-badge">
                                             {formatPrimaryCategory(paper.primary_category)}
                                         </span>
-                                    </td>
-                                    <td className="date-cell">
+                                    </TableCell>
+                                    <TableCell className="date-cell">
                                         {formatDate(paper.published_date)}
-                                    </td>
-                                    <td className="actions-cell">
+                                    </TableCell>
+                                    <TableCell className="actions-cell">
                                         <button 
                                             className="view-button"
                                             onClick={() => handleViewDetail(paper.paper_id)}
                                         >
                                             ➡︎
                                         </button>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
                         {isLoadingMore && (
-                            <tr>
-                                <td colSpan="5" className="loading-more">
-                                    さらに読み込み中...
-                                </td>
-                            </tr>
+                            <TableRow>
+                                <TableCell colSpan={5} className="loading-more">
+                                    <Typography>さらに読み込み中...</Typography>
+                                </TableCell>
+                            </TableRow>
                         )}
-                    </tbody>
-                </table>
-            </div>
+                    </TableBody>
+                </Table>
+            </TableContainer>
             
             <div className="table-footer">
                 <span className="paper-count">

@@ -94,8 +94,8 @@ function Header() {
     };
 
     const menuItems = [
-        { text: 'Papers', path: '/papers' },
-        { text: 'Articles', path: '/articles' }
+        { text: 'Academic Papers', path: '/papers' },
+        { text: 'Web Articles', path: '/articles' }
     ];
 
     return (
@@ -152,8 +152,10 @@ function Header() {
                 anchor="left"
                 open={drawerOpen}
                 onClose={toggleDrawer(false)}
-                PaperProps={{
-                    className: 'sidebar'
+                slotProps={{
+                    paper: {
+                        className: 'sidebar'
+                    }
                 }}
                 ModalProps={{
                     BackdropProps: {
@@ -175,8 +177,10 @@ function Header() {
                             >
                                 <ListItemText 
                                     primary={item.text} 
-                                    primaryTypographyProps={{
-                                        className: 'menu-text'
+                                    slotProps={{
+                                        primary: {
+                                            className: 'menu-text'
+                                        }
                                     }}
                                 />
                             </ListItemButton>
