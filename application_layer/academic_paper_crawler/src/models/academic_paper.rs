@@ -235,8 +235,9 @@ impl From<AcademicPaperResource> for AcademicPaper {
             abstract_text_ja: String::new(),
             text: text
                 .into_iter()
-                .map(|s| format!("# {}\n\n{}\n\n", s.title, s.content))
-                .collect(),
+                .map(|s| format!("# {}\n\n{}", s.title, s.content))
+                .collect::<Vec<String>>()
+                .join("\n\n"),
             url,
             doi: match arxiv_paper.as_ref() {
                 Some(p) => p.doi.clone(),
