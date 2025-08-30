@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import { academicPapersApi, handleApiError, llmApi } from '../api/Api';
 import MermaidRenderer from '../MermaidRenderer';
 import './AcademicPaperDetail.css';
 
@@ -38,6 +39,10 @@ const mockPaperDetail = {
     url: 'https://arxiv.org/abs/1706.03762',
     published_date: '2017-06-12',
     journal: 'Advances in Neural Information Processing Systems',
+    primary_category: 'cs.CL',
+    citation_count: 78542,
+    reference_count: 42,
+    influential_citation_count: 12456,
     keywords: ['Attention Mechanism', 'Transformer', 'Neural Machine Translation', 'Deep Learning', 'Natural Language Processing'],
     background_and_purpose: 'Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures.',
     methodology: 'The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU, ByteNet and ConvS2S, all of which use convolutional neural networks as basic building block, computing hidden representations in parallel for all input and output positions. In these models, the number of operations required to relate signals from two arbitrary input or output positions grows in the distance between positions, linearly for ConvS2S and logarithmically for ByteNet.',
@@ -123,15 +128,13 @@ const AcademicPaperDetail = () => {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 setPaper(mockPaperDetail);
             } else {
-                const response = await fetch(`http://localhost:8080/api/v1/academic_paper/paper?paper_id=${paperId}`);
-                if (!response.ok) {
-                    throw new Error('論文の詳細情報の取得に失敗しました');
-                }
-                const data = await response.json();
-                setPaper(data);
+                const paperData = await academicPapersApi.getById(paperId);
+                setPaper(paperData);
             }
         } catch (err) {
-            setError(err.message);
+            console.error('論文詳細取得エラー:', err);
+            const apiError = handleApiError(err);
+            setError(apiError.message || '論文の詳細情報の取得に失敗しました');
         } finally {
             setLoading(false);
         }
@@ -146,8 +149,36 @@ const AcademicPaperDetail = () => {
         });
     };
 
+    const formatNumber = (number) => {
+        if (number === null || number === undefined) return '-';
+        return number.toLocaleString('ja-JP');
+    };
+
     const handleBackToList = () => {
         navigate('/papers');
+    };
+
+    const handleUpdatePaper = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            if (process.env.NODE_ENV === 'development') {
+                // 開発環境では単純にリロード
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await fetchPaperDetail(paper_id);
+            } else {
+                // 本番環境では実際のAPI呼び出し
+                const updatedPaper = await academicPapersApi.update(paper_id);
+                setPaper(updatedPaper);
+            }
+        } catch (err) {
+            console.error('論文更新エラー:', err);
+            const apiError = handleApiError(err);
+            setError(apiError.message || '論文の更新に失敗しました');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleKeywordClick = (keyword) => {
@@ -233,37 +264,21 @@ const AcademicPaperDetail = () => {
         
         setIsGeneratingEditMemo(prev => ({ ...prev, [memoId]: true }));
         try {
-            // TODO: 実際のLLM APIエンドポイントに置き換える
-            const response = await fetch('/api/llm/generate-memo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    paper_id: paper_id,
-                    prompt: currentText,
-                    paper_context: {
-                        title: paper.title,
-                        abstract: paper.abstract_text,
-                        authors: paper.authors.map(a => a.name),
-                        keywords: paper.keywords
-                    }
-                })
-            });
+            const result = await llmApi.generateMemo(paper, currentText);
+            const enhancedText = `${currentText}
 
-            if (response.ok) {
-                const result = await response.json();
-                const enhancedText = `${currentText}\n\n--- AIによる追加情報 ---\n${result.memo}`;
-                setEditingMemoTexts(prev => ({ ...prev, [memoId]: enhancedText }));
-            } else {
-                // 開発環境用のダミーレスポンス
-                const enhancedText = `${currentText}\n\n--- AIによる追加情報 ---\nこの論文は自然言語処理の分野で革新的なTransformerアーキテクチャを提案しており、従来のRNNベースのモデルを大幅に上回る性能を示しています。特に注目すべき点は、並列処理が可能になったことで訓練時間が大幅に短縮された点です。\n\nユーザーのメモ内容に関連して、さらに詳しく分析すると、この研究の意義は機械翻訳だけでなく、後の多くのNLPタスクの基盤となったことです。`;
-                setEditingMemoTexts(prev => ({ ...prev, [memoId]: enhancedText }));
-            }
+--- AIによる追加情報 ---
+${result.memo}`;
+            setEditingMemoTexts(prev => ({ ...prev, [memoId]: enhancedText }));
         } catch (err) {
             console.error('LLMメモ生成エラー:', err);
-            // エラー時もダミーデータを追加（開発用）
-            const enhancedText = `${currentText}\n\n--- AIによる追加情報（エラー発生時のダミー） ---\nTransformerアーキテクチャの革新性について詳しく分析すると、Self-Attentionメカニズムにより長距離依存関係を効率的に捉えることができるようになりました。`;
+            // エラー時はダミーデータを追加（開発用）
+            const enhancedText = `${currentText}
+
+--- AIによる追加情報（ダミー） ---
+この論文は自然言語処理の分野で革新的なTransformerアーキテクチャを提案しており、従来のRNNベースのモデルを大幅に上回る性能を示しています。特に注目すべき点は、並列処理が可能になったことで訓練時間が大幅に短縮された点です。
+
+ユーザーのメモ内容に関連して、さらに詳しく分析すると、この研究の意義は機械翻訳だけでなく、後の多くのNLPタスクの基盤となったことです。`;
             setEditingMemoTexts(prev => ({ ...prev, [memoId]: enhancedText }));
         } finally {
             setIsGeneratingEditMemo(prev => ({ ...prev, [memoId]: false }));
@@ -275,36 +290,17 @@ const AcademicPaperDetail = () => {
         
         setIsGeneratingLlmMemo(true);
         try {
-            // TODO: 実際のLLM APIエンドポイントに置き換える
-            const response = await fetch('/api/llm/generate-memo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    paper_id: paper_id,
-                    prompt: newMemoText,
-                    paper_context: {
-                        title: paper.title,
-                        abstract: paper.abstract_text,
-                        authors: paper.authors.map(a => a.name),
-                        keywords: paper.keywords
-                    }
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                setNewMemoText(result.memo);
-            } else {
-                // 開発環境用のダミーレスポンス
-                const enhancedMemo = `${newMemoText}\n\n--- AIによる追加情報 ---\nこの論文は自然言語処理の分野で革新的なTransformerアーキテクチャを提案しており、従来のRNNベースのモデルを大幅に上回る性能を示しています。特に注目すべき点は、並列処理が可能になったことで訓練時間が大幅に短縮された点です。\n\nユーザーのメモ内容に関連して、さらに詳しく分析すると、この研究の意義は機械翻訳だけでなく、後の多くのNLPタスクの基盤となったことです。`;
-                setNewMemoText(enhancedMemo);
-            }
+            const result = await llmApi.generateMemo(paper, newMemoText);
+            setNewMemoText(result.memo);
         } catch (err) {
             console.error('LLMメモ生成エラー:', err);
-            // エラー時もダミーデータを追加（開発用）
-            const enhancedMemo = `${newMemoText}\n\n--- AIによる追加情報（エラー発生時のダミー） ---\nTransformerアーキテクチャの革新性について詳しく分析すると、Self-Attentionメカニズムにより長距離依存関係を効率的に捉えることができるようになりました。`;
+            // エラー時はダミーデータを追加（開発用）
+            const enhancedMemo = `${newMemoText}
+
+--- AIによる追加情報（ダミー） ---
+この論文は自然言語処理の分野で革新的なTransformerアーキテクチャを提案しており、従来のRNNベースのモデルを大幅に上回る性能を示しています。特に注目すべき点は、並列処理が可能になったことで訓練時間が大幅に短縮された点です。
+
+ユーザーのメモ内容に関連して、さらに詳しく分析すると、この研究の意義は機械翻訳だけでなく、後の多くのNLPタスクの基盤となったことです。`;
             setNewMemoText(enhancedMemo);
         } finally {
             setIsGeneratingLlmMemo(false);
@@ -348,10 +344,13 @@ const AcademicPaperDetail = () => {
 
             <div className="paper-header">
                 <h1 className="paper-title">{paper.title}</h1>
-                <div className="paper-meta">
-                    <span className="published-date">{formatDate(paper.published_date)}</span>
-                    <span className="journal">{paper.journal.name}</span>
-                </div>
+                <button 
+                    onClick={handleUpdatePaper} 
+                    className="update-button"
+                    disabled={loading}
+                >
+                    {loading ? 'UPDATING...' : 'UPDATE PAPER'}
+                </button>
             </div>
 
             <div className="paper-content">
@@ -408,18 +407,51 @@ const AcademicPaperDetail = () => {
                         </div>
                     </div>
 
-                    <div className="links-section">
-                        <h2>Links</h2>
-                        <div className="links-divider"></div>
-                        <div className="links-container">
-                            <a 
-                                href={paper.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="paper-link-button"
-                            >
-                                Read Paper
-                            </a>
+                    <div className="meta-data-section">
+                        <h2>Meta Data</h2>
+                        <div className="meta-data-divider"></div>
+                        
+                        <div className="meta-data-content">
+                            <div className="meta-info-grid">
+                                <div className="meta-info-item">
+                                    <span className="meta-label">Published Date</span>
+                                    <span className="meta-value published-date">{formatDate(paper.published_date)}</span>
+                                </div>
+                                <div className="meta-info-item">
+                                    <span className="meta-label">Journal</span>
+                                    <span className="meta-value journal">{paper.journal.name}</span>
+                                </div>
+                                <div className="meta-info-item">
+                                    <span className="meta-label">Primary Category</span>
+                                    <span className="meta-value primary-category">{paper.primary_category || 'N/A'}</span>
+                                </div>
+                                <div className="meta-info-item">
+                                    <span className="meta-label">Paper Link</span>
+                                    <a 
+                                        href={paper.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="meta-value paper-link"
+                                    >
+                                        Read Paper
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div className="citation-metrics-grid">
+                                <div className="metric-card">
+                                    <span className="metric-label">Citation Count</span>
+                                    <span className="metric-value">{formatNumber(paper.citation_count)}</span>
+                                </div>
+                                <div className="metric-card">
+                                    <span className="metric-label">Reference Count</span>
+                                    <span className="metric-value">{formatNumber(paper.reference_count)}</span>
+                                </div>
+                                <div className="metric-card">
+                                    <span className="metric-label">Influential Citations</span>
+                                    <span className="metric-value">{formatNumber(paper.influential_citation_count)}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

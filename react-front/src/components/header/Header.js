@@ -13,6 +13,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Header.css';
 
 const Search = styled('div')(({ theme }) => ({
@@ -65,6 +66,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 function Header() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
 
     const toggleDrawer = (open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -93,8 +95,14 @@ function Header() {
         executeSearch();
     };
 
+    const handleMenuItemClick = (path) => {
+        navigate(path);
+        setDrawerOpen(false); // メニューを閉じる
+    };
+
     const menuItems = [
         { text: 'Academic Papers', path: '/papers' },
+        { text: 'Add New Paper', path: '/papers/add' },
         { text: 'Web Articles', path: '/articles' }
     ];
 
@@ -170,9 +178,10 @@ function Header() {
                     {menuItems.map((item) => (
                         <ListItem key={item.text} disablePadding className="menu-item">
                             <ListItemButton 
-                                component="a" 
-                                href={item.path}
-                                onClick={toggleDrawer(false)}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleMenuItemClick(item.path);
+                                }}
                                 className="menu-item-button"
                             >
                                 <ListItemText 

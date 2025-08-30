@@ -5,6 +5,8 @@ use thiserror::Error;
 pub enum AppError {
     #[error("{0}")]
     Unprocessable(String),
+    #[error("{0}")]
+    InternalServerError(String),
 
     // from anyhow
     #[error("Error: {0}")]
@@ -23,6 +25,10 @@ pub enum AppError {
     RecordNotFound(#[source] sqlx::Error),
     #[error("Database Error - sqlx core error: {0}")]
     SqlxCoreError(#[source] sqlx_core::error::Error),
+
+    // from redis errors
+    #[error("Redis Error: {0}")]
+    RedisError(#[from] redis::RedisError),
 
     // from uuid errors
     #[error("Uuid Error: {0}")]
@@ -47,27 +53,30 @@ pub enum AppError {
     ScrapeError(String),
 }
 
+fn app_error_to_status_code(error: &AppError) -> StatusCode {
+    match error {
+        AppError::Unprocessable(_) => StatusCode::UNPROCESSABLE_ENTITY,
+        AppError::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::AnyhowError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::EntityNotFound(_) => StatusCode::NOT_FOUND,
+        AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
+        AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::RecordNotFound(_) => StatusCode::NOT_FOUND,
+        AppError::SqlxCoreError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::RedisError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::ConvertToUuidError(_) => StatusCode::BAD_REQUEST,
+        AppError::RssParseError(_) => StatusCode::BAD_REQUEST,
+        AppError::RequestError(_) => StatusCode::BAD_REQUEST,
+        AppError::ParseError(_) => StatusCode::BAD_REQUEST,
+        AppError::JsonParseError(_) => StatusCode::BAD_REQUEST,
+        AppError::ScrapeError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-        let status_code = match self {
-            AppError::Unprocessable(_) => {
-                tracing::error!("Unprocessable entity error: {}", self);
-                StatusCode::UNPROCESSABLE_ENTITY
-            }
-            AppError::AnyhowError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::EntityNotFound(_) => StatusCode::NOT_FOUND,
-            AppError::ValidationError(_) => StatusCode::BAD_REQUEST,
-            AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::RecordNotFound(_) => StatusCode::NOT_FOUND,
-            AppError::SqlxCoreError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            AppError::ConvertToUuidError(_) => StatusCode::BAD_REQUEST,
-            AppError::RssParseError(_) => StatusCode::BAD_REQUEST,
-            AppError::RequestError(_) => StatusCode::BAD_REQUEST,
-            AppError::ParseError(_) => StatusCode::BAD_REQUEST,
-            AppError::JsonParseError(_) => StatusCode::BAD_REQUEST,
-            AppError::ScrapeError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        };
+        let status_code = app_error_to_status_code(&self);
         status_code.into_response()
     }
 }

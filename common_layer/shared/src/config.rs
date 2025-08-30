@@ -2,6 +2,7 @@ use anyhow::Result;
 
 pub struct AppConfig {
     pub database: DatabaseConfig,
+    pub redis: RedisConfig,
 }
 
 impl AppConfig {
@@ -13,7 +14,11 @@ impl AppConfig {
             password: std::env::var("DATABASE_PASSWORD")?,
             database: std::env::var("DATABASE_NAME")?,
         };
-        Ok(Self { database })
+        let redis = RedisConfig {
+            host: std::env::var("REDIS_HOST")?,
+            port: std::env::var("REDIS_PORT")?.parse()?,
+        };
+        Ok(Self { database, redis })
     }
 }
 
@@ -23,4 +28,9 @@ pub struct DatabaseConfig {
     pub username: String,
     pub password: String,
     pub database: String,
+}
+
+pub struct RedisConfig {
+    pub host: String,
+    pub port: u16,
 }

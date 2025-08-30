@@ -46,7 +46,7 @@ dotenvy = "0.15.7"
 fast_html2md = "0.0.48"
 feed-parser = "1.0.12"
 fxhash = "0.2.1"
-garde = { version = "0.22.0", features = ["derive", "email"] }
+garde = { version = "0.22.0", features = ["derive", "email", "url"] }
 indicatif = "0.18.0"
 kernel = { path = "./middle_layer/kernel" }
 keyword-tools = { git = "https://github.com/akitenkrad/keywords", branch = "main" }
@@ -78,6 +78,7 @@ tokio = { version = "1.47.1", default-features = false, features = [
   "macros",
 ] }
 tokio-test = "0.4.4"
+tokio-stream = "0.1.17"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 tracing = { version = "0.1.41", features = ["log"] }
@@ -86,24 +87,33 @@ url = "2.5.7"
 urlencoding = "2.1.3"
 uuid = { version = "1.18.0", features = ["v4", "serde"] }
 web_article_crawler = { path = "./application_layer/web_article_crawler" }
+redis = { version = "0.32.5", features = [
+  "tokio-rustls-comp",
+  "r2d2",
+  "json",
+  "aio",
+] }
+test-log = { version = "0.2.18", features = ["trace"] }
+futures-core = "0.3.31"
+futures-util = "0.3.31"
 
 [dependencies]
-academic_paper_crawler.workspace = true
-adapter.workspace = true
-anyhow.workspace = true
-axum.workspace = true
-chrono.workspace = true
-clap.workspace = true
-api.workspace = true
-dotenvy.workspace = true
-kernel.workspace = true
-registry.workspace = true
-shared.workspace = true
-tokio.workspace = true
-tower.workspace = true
-tower-http.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
-web_article_crawler.workspace = true
-commands.workspace = true
-sqlx.workspace = true
+academic_paper_crawler = { workspace = true }
+adapter = { workspace = true }
+anyhow = { workspace = true }
+axum = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+api = { workspace = true }
+dotenvy = { workspace = true }
+kernel = { workspace = true }
+registry = { workspace = true }
+shared = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+web_article_crawler = { workspace = true }
+commands = { workspace = true }
+sqlx = { workspace = true }

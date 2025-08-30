@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mockPapers from '../../sample_data/academicPapers.json';
+import { academicPapersApi, handleApiError } from '../api/Api';
 import './AcademicPaperTable.css';
 
 const AcademicPaperTable = () => {
@@ -108,20 +109,24 @@ const AcademicPaperTable = () => {
             const end = start + limit;
             return filteredPapers.slice(start, end);
         } else {
-            // 本番環境：APIを呼び出し
-            const url = new URL('http://localhost:8080/api/v1/academic_paper/all');
-            if (keyword) {
-                url.searchParams.append('keyword', keyword);
+            // 本番環境：APIクライアントを使用
+            try {
+                const params = {
+                    limit: limit.toString(),
+                    offset: currentOffset.toString()
+                };
+                
+                if (keyword) {
+                    const results = await academicPapersApi.search(keyword, params);
+                    return results.items || results || [];
+                } else {
+                    const results = await academicPapersApi.getAll(params);
+                    return results.items || results || [];
+                }
+            } catch (error) {
+                const apiError = handleApiError(error);
+                throw new Error(apiError.message || '論文データの取得に失敗しました');
             }
-            url.searchParams.append('limit', limit.toString());
-            url.searchParams.append('offset', currentOffset.toString());
-            
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('論文データの取得に失敗しました');
-            }
-            const results = await response.json();
-            return results.items || [];
         }
     };
 

@@ -1,0 +1,371 @@
+/* ==========================================================================
+   Add Academic Paper Component Styles - Flat Design
+   ========================================================================== */
+
+.add-paper-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px;
+    min-height: 100vh;
+    background: #f8f9fa;
+    color: #2d3748;
+}
+
+/* Header Styles */
+.add-paper-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.add-paper-header h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1a202c;
+}
+
+.add-paper-header p {
+    font-size: 1.1rem;
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+/* Form Styles */
+.add-paper-form {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2d3748;
+}
+
+.required {
+    color: #e53e3e;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #2d3748;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-input::placeholder {
+    color: #a0aec0;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3182ce;
+}
+
+.form-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f7fafc;
+}
+
+.form-help {
+    display: block;
+    font-size: 0.875rem;
+    color: #718096;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Error Message */
+.error-message {
+    padding: 12px 16px;
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    border-radius: 6px;
+    color: #c53030;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 32px;
+}
+
+.reset-btn,
+.submit-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reset-btn {
+    background: #ffffff;
+    color: #4a5568;
+    border-color: #e2e8f0;
+}
+
+.reset-btn:hover:not(:disabled) {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.submit-btn {
+    background: #3182ce;
+    color: #ffffff;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #2c5282;
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success Message */
+.success-message {
+    text-align: center;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 48px 32px;
+    border: 1px solid #e2e8f0;
+}
+
+.success-message h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 8px;
+}
+
+.success-message p {
+    color: #4a5568;
+    font-size: 1rem;
+}
+
+/* Progress Indicator Styles */
+.progress-container {
+    margin: 24px 0;
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3182ce, #2b77cb);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.3) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: #3182ce;
+}
+
+.progress-message {
+    color: #4a5568;
+    font-style: italic;
+    text-align: right;
+    flex: 1;
+    margin-left: 16px;
+}
+
+/* Paper Info Styles for Success State */
+.paper-info {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f0fff4;
+    border: 1px solid #9ae6b4;
+    border-radius: 8px;
+}
+
+.paper-info h3 {
+    margin: 0 0 12px 0;
+    color: #22543d;
+    font-size: 1.1rem;
+}
+
+.paper-info p {
+    margin: 8px 0;
+    color: #2d3748;
+    line-height: 1.5;
+}
+
+.paper-info strong {
+    font-weight: 600;
+    color: #1a202c;
+}
+
+/* Help Section */
+.help-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.help-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.help-section li {
+    padding: 8px 0;
+    color: #4a5568;
+    line-height: 1.5;
+    position: relative;
+    padding-left: 20px;
+}
+
+.help-section li::before {
+    content: "•";
+    color: #3182ce;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .add-paper-container {
+        padding: 20px;
+    }
+
+    .add-paper-header h1 {
+        font-size: 2rem;
+    }
+
+    .add-paper-form {
+        padding: 24px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .reset-btn,
+    .submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .add-paper-container {
+        padding: 16px;
+    }
+
+    .add-paper-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .add-paper-form {
+        padding: 20px;
+    }
+
+    .form-input {
+        font-size: 16px; /* iOS zoom prevention */
+    }
+}

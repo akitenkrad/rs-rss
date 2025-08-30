@@ -200,3 +200,46 @@ impl From<AcademicPaperListQuery> for AcademicPaperListOptions {
 pub struct AcademicPaperIdQuery {
     pub paper_id: String,
 }
+
+#[derive(Debug, Clone, Deserialize, Serialize, Validate, new)]
+pub struct AcademicPaperCreateRequest {
+    #[garde(length(min = 1))]
+    pub title: String,
+    #[garde(url)]
+    pub pdf_url: String,
+}
+
+impl From<AcademicPaperCreateRequest> for AcademicPaper {
+    fn from(request: AcademicPaperCreateRequest) -> Self {
+        let AcademicPaperCreateRequest { title, pdf_url } = request;
+        Self {
+            paper_id: AcademicPaperId::default(),
+            ss_id: String::new(),
+            arxiv_id: String::new(),
+            title,
+            abstract_text: String::new(),
+            abstract_text_ja: String::new(),
+            authors: vec![],
+            tasks: vec![],
+            primary_category: String::new(),
+            published_date: chrono::Local::now().naive_local().date(),
+            journal: Journal {
+                journal_id: JournalId::default(),
+                name: String::new(),
+            },
+            text: String::new(),
+            url: pdf_url,
+            doi: String::new(),
+            citation_count: 0,
+            reference_count: 0,
+            influential_citation_count: 0,
+            bibtex: String::new(),
+            summary: String::new(),
+            background_and_purpose: String::new(),
+            methodology: String::new(),
+            dataset: String::new(),
+            results: String::new(),
+            advantages_limitations_and_future_work: String::new(),
+        }
+    }
+}

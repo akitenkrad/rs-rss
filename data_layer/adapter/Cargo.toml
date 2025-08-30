@@ -6,11 +6,17 @@ publish.workspace = true
 version.workspace = true
 
 [dependencies]
-anyhow.workspace = true
-async-trait.workspace = true
-chrono.workspace = true
-derive-new.workspace = true
-kernel.workspace = true
-shared.workspace = true
-sqlx.workspace = true
-uuid.workspace = true
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+derive-new = { workspace = true }
+kernel = { workspace = true }
+shared = { workspace = true }
+sqlx = { workspace = true }
+uuid = { workspace = true }
+redis = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+test-log = { workspace = true }
+tokio = { workspace = true }

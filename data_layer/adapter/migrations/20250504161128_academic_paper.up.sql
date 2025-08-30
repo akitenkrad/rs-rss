@@ -20,6 +20,14 @@ CREATE TABLE IF NOT EXISTS task (
     updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
 );
 
+CREATE TABLE IF NOT EXISTS keyword (
+    keyword_id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    category VARCHAR(255) NOT NULL DEFAULT '',
+    name VARCHAR(255) NOT NULL DEFAULT '',
+    created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
+);
+
 CREATE TABLE IF NOT EXISTS academic_paper (
     paper_id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     ss_id VARCHAR(255) NOT NULL DEFAULT '',
@@ -48,6 +56,14 @@ CREATE TABLE IF NOT EXISTS academic_paper (
     updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
 );
 
+CREATE TABLE IF NOT EXISTS paper_note (
+    paper_note_id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
+    note TEXT NOT NULL DEFAULT '',
+    note_timestamp TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
+    created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP(3)
+);
+
 CREATE TABLE IF NOT EXISTS author_paper_relation (
     author_id UUID NOT NULL REFERENCES author (author_id),
     paper_id UUID NOT NULL REFERENCES academic_paper (paper_id),
@@ -58,6 +74,18 @@ CREATE TABLE IF NOT EXISTS task_paper_relation (
     task_id UUID NOT NULL REFERENCES task (task_id),
     paper_id UUID NOT NULL REFERENCES academic_paper (paper_id),
     PRIMARY KEY (task_id, paper_id)
+);
+
+CREATE TABLE IF NOT EXISTS paper_keyword_relation (
+    paper_id UUID NOT NULL REFERENCES academic_paper (paper_id),
+    keyword_id UUID NOT NULL REFERENCES keyword (keyword_id),
+    PRIMARY KEY (paper_id, keyword_id)
+);
+
+CREATE TABLE IF NOT EXISTS paper_note_relation (
+    paper_id UUID NOT NULL REFERENCES academic_paper (paper_id),
+    paper_note_id UUID NOT NULL REFERENCES paper_note (paper_note_id),
+    PRIMARY KEY (paper_id, paper_note_id)
 );
 
 -- 2. create triggers
@@ -76,6 +104,11 @@ CREATE OR REPLACE TRIGGER task_set_updated_at_trigger
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
 
+CREATE OR REPLACE TRIGGER keyword_set_updated_at_trigger
+    BEFORE UPDATE ON keyword
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+
 CREATE OR REPLACE TRIGGER author_paper_relation_set_updated_at_trigger
     BEFORE UPDATE ON author_paper_relation
     FOR EACH ROW
@@ -88,5 +121,15 @@ CREATE OR REPLACE TRIGGER task_paper_relation_set_updated_at_trigger
 
 CREATE OR REPLACE TRIGGER academic_paper_set_updated_at_trigger
     BEFORE UPDATE ON academic_paper
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+
+CREATE OR REPLACE TRIGGER paper_keyword_relation_set_updated_at_trigger
+    BEFORE UPDATE ON paper_keyword_relation
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+
+CREATE OR REPLACE TRIGGER paper_note_set_updated_at_trigger
+    BEFORE UPDATE ON paper_note
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
