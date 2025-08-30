@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM task_paper_relation WHERE paper_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2be115af0248de95b76ef963d8318a52a0e456fa599bed90ad48e2042e46f3c6"
+}

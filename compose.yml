@@ -30,16 +30,15 @@ services:
     user: root
     env_file:
       - .env
-    volumes:
-      - data:/data:cached
     ports:
       - 5432:5432
     environment:
       POSTGRES_DB: rsrss
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      PGDATA: /data/postgres/data
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
-  data:
-    external: true
+  pgdata:
