@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mockPapers from '../../sample_data/academicPapers.json';
+import { academicPapers } from '../../sample_data';
 import { academicPapersApi, handleApiError } from '../api/Api';
 import './AcademicPaperTable.css';
 
@@ -93,9 +93,9 @@ const AcademicPaperTable = () => {
             // 開発環境：モックデータを使用
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            let filteredPapers = mockPapers;
+            let filteredPapers = academicPapers;
             if (keyword) {
-                filteredPapers = mockPapers.filter(paper => 
+                filteredPapers = academicPapers.filter(paper => 
                     paper.title.toLowerCase().includes(keyword.toLowerCase()) ||
                     paper.abstract.toLowerCase().includes(keyword.toLowerCase()) ||
                     paper.journal.toLowerCase().includes(keyword.toLowerCase()) ||

@@ -5,51 +5,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import { mockPaperDetail } from '../../sample_data';
 import { academicPapersApi, handleApiError, llmApi } from '../api/Api';
 import MermaidRenderer from '../MermaidRenderer';
 import './AcademicPaperDetail.css';
-
-// 開発用ダミーデータ
-const mockPaperDetail = {
-    id: 1,
-    title: 'Attention Is All You Need',
-    authors: [
-        {
-            name: 'Ashish Vaswani',
-            h_index: 45,
-            link: 'https://scholar.google.com/citations?user=example1'
-        },
-        {
-            name: 'Noam Shazeer',
-            h_index: 38,
-            link: 'https://scholar.google.com/citations?user=example2'
-        },
-        {
-            name: 'Niki Parmar',
-            h_index: 25,
-            link: 'https://scholar.google.com/citations?user=example3'
-        },
-        {
-            name: 'Jakob Uszkoreit',
-            h_index: 28,
-            link: 'https://scholar.google.com/citations?user=example4'
-        }
-    ],
-    abstract_text: 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train.',
-    url: 'https://arxiv.org/abs/1706.03762',
-    published_date: '2017-06-12',
-    journal: 'Advances in Neural Information Processing Systems',
-    primary_category: 'cs.CL',
-    citation_count: 78542,
-    reference_count: 42,
-    influential_citation_count: 12456,
-    keywords: ['Attention Mechanism', 'Transformer', 'Neural Machine Translation', 'Deep Learning', 'Natural Language Processing'],
-    background_and_purpose: 'Recurrent neural networks, long short-term memory and gated recurrent neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures.',
-    methodology: 'The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU, ByteNet and ConvS2S, all of which use convolutional neural networks as basic building block, computing hidden representations in parallel for all input and output positions. In these models, the number of operations required to relate signals from two arbitrary input or output positions grows in the distance between positions, linearly for ConvS2S and logarithmically for ByteNet.',
-    dataset: 'We trained on the standard WMT 2014 English-German dataset consisting of about 4.5 million sentence pairs. We also used the larger WMT 2014 English-French dataset consisting of 36M sentences and split tokens into a 32000 word-piece vocabulary.',
-    results: 'We evaluate our models on two machine translation tasks: WMT 2014 English-to-German and WMT 2014 English-to-French. For the smaller English-German dataset, we achieved a BLEU score of 28.4, which is competitive with the best previously reported results. For the larger English-French dataset, we achieved a BLEU score of 41.8, establishing a new state-of-the-art.',
-    future_works: 'We plan to extend the Transformer to problems involving input and output modalities other than text, such as images, audio and video. Making generation less sequential is another research goals of ours. We also plan to investigate local, restricted attention mechanisms to efficiently handle very long sequences.'
-};
 
 const AcademicPaperDetail = () => {
     const { paper_id } = useParams();
@@ -58,6 +17,9 @@ const AcademicPaperDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
+    
+    // 本文の折りたたみ状態
+    const [isFullTextExpanded, setIsFullTextExpanded] = useState(false);
     
     // メモ関連のstate
     const [memos, setMemos] = useState([]);
@@ -152,6 +114,29 @@ const AcademicPaperDetail = () => {
     const formatNumber = (number) => {
         if (number === null || number === undefined) return '-';
         return number.toLocaleString('ja-JP');
+    };
+
+    const handleCopyBibtex = async () => {
+        try {
+            await navigator.clipboard.writeText(paper.bibtex);
+            // 成功時の視覚的フィードバック（オプション）
+            console.log('Bibtex copied to clipboard');
+            // TODO: トースト通知やボタンの一時的な状態変更を追加可能
+        } catch (err) {
+            console.error('Failed to copy bibtex: ', err);
+            // フォールバック: 古いブラウザ対応
+            const textArea = document.createElement('textarea');
+            textArea.value = paper.bibtex;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                console.log('Bibtex copied to clipboard (fallback)');
+            } catch (fallbackErr) {
+                console.error('Fallback copy failed: ', fallbackErr);
+            }
+            document.body.removeChild(textArea);
+        }
     };
 
     const handleBackToList = () => {
@@ -452,6 +437,20 @@ ${result.memo}`;
                                     <span className="metric-value">{formatNumber(paper.influential_citation_count)}</span>
                                 </div>
                             </div>
+                            
+                            <div className="bibtex-section">
+                                <span className="meta-label">Bibtex</span>
+                                <div className="bibtex-container">
+                                    <pre className="bibtex-text">{paper.bibtex}</pre>
+                                    <button 
+                                        className="copy-bibtex-btn"
+                                        onClick={handleCopyBibtex}
+                                        title="Copy Bibtex to clipboard"
+                                    >
+                                        📋 Copy
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -487,6 +486,58 @@ ${result.memo}`;
                         <h3>Future Works</h3>
                         <div className="section-divider"></div>
                         <p className="content-text">{paper.advantages_limitations_and_future_work}</p>
+                    </div>
+                </section>
+
+                <section className="full-text-section">
+                    <div className="full-text-header">
+                        <h2>Full Text</h2>
+                        <button 
+                            className={`expand-button ${isFullTextExpanded ? 'expanded' : ''}`}
+                            onClick={() => setIsFullTextExpanded(!isFullTextExpanded)}
+                        >
+                            {isFullTextExpanded ? 'Collapse' : 'Expand'} Full Text
+                            <span className={`expand-icon ${isFullTextExpanded ? 'rotated' : ''}`}>▼</span>
+                        </button>
+                    </div>
+                    <div className="full-text-divider"></div>
+                    
+                    <div className={`full-text-content ${isFullTextExpanded ? 'expanded' : 'collapsed'}`}>
+                        {paper.text && typeof paper.text === 'string' && paper.text.length > 0 ? (
+                            <div className="text-sections">
+                                <div className="text-section">
+                                    <ReactMarkdown
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                        components={{
+                                            code: CodeBlock
+                                        }}
+                                    >
+                                        {paper.text}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
+                        ) : paper.text && Array.isArray(paper.text) && paper.text.length > 0 ? (
+                            <div className="text-sections">
+                                {paper.text.map((section, index) => (
+                                    <div key={index} className="text-section">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                                            components={{
+                                                code: CodeBlock
+                                            }}
+                                        >
+                                            {section}
+                                        </ReactMarkdown>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="no-text-message">
+                                <p>Full text is not available for this paper.</p>
+                            </div>
+                        )}
                     </div>
                 </section>
 

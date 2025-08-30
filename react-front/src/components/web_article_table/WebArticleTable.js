@@ -7,7 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import webArticlesSampleData from '../../sample_data/webArticles.json';
+import { webArticles } from '../../sample_data';
 import './WebArticleTable.css';
 
 function WebArticleTable() {
@@ -91,7 +91,7 @@ function WebArticleTable() {
         
         if (isDevelopment) {
             // 開発環境: モックデータを使用
-            filteredArticles = [...webArticlesSampleData];
+            filteredArticles = [...webArticles];
             
             // キーワードでフィルタリング
             if (keyword) {

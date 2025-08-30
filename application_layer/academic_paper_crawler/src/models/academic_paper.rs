@@ -233,7 +233,10 @@ impl From<AcademicPaperResource> for AcademicPaper {
                 None => String::new(),
             },
             abstract_text_ja: String::new(),
-            text: text.into_iter().map(|s| s.content).collect(),
+            text: text
+                .into_iter()
+                .map(|s| format!("# {}\n\n{}", s.title, s.content))
+                .collect(),
             url,
             doi: match arxiv_paper.as_ref() {
                 Some(p) => p.doi.clone(),

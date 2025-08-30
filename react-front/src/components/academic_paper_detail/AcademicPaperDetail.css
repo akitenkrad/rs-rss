@@ -1258,6 +1258,62 @@ body {
     text-decoration: underline;
 }
 
+/* Bibtex specific styles */
+.bibtex-section {
+    margin-top: 30px;
+}
+
+.bibtex-container {
+    position: relative;
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 8px;
+}
+
+.bibtex-text {
+    color: #e2e8f0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.copy-bibtex-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.copy-bibtex-btn:hover {
+    background: #2b6cb0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(49, 130, 206, 0.3);
+}
+
+.copy-bibtex-btn:active {
+    transform: translateY(0);
+}
+
 /* ==========================================================================
    Citation Metrics
    ========================================================================== */
@@ -1313,6 +1369,20 @@ body {
         padding: 15px;
     }
     
+    .bibtex-container {
+        padding: 12px;
+    }
+    
+    .bibtex-text {
+        font-size: 0.8rem;
+        max-height: 150px;
+    }
+    
+    .copy-bibtex-btn {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
     .citation-metrics-grid {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -1324,5 +1394,232 @@ body {
     
     .metric-value {
         font-size: 1.5rem;
+    }
+}
+
+/* ==========================================================================
+   Full Text Section
+   ========================================================================== */
+
+.full-text-section {
+    margin-bottom: 30px;
+}
+
+.full-text-section h2 {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin: 0;
+    font-weight: 600;
+    text-align: left;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.full-text-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 20px;
+}
+
+.full-text-divider {
+    height: 2px;
+    background: linear-gradient(to right, #3182ce, #2b6cb0, transparent);
+    margin-bottom: 20px;
+    border-radius: 1px;
+}
+
+.expand-button {
+    background: #374151;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    min-width: 140px;
+}
+
+.expand-button:hover {
+    background: #4a5568;
+    border-color: #3182ce;
+    transform: translateY(-1px);
+}
+
+.expand-button.expanded {
+    background: #3182ce;
+    border-color: #2b6cb0;
+}
+
+.expand-icon {
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.expand-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.full-text-content {
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.full-text-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+}
+
+.full-text-content.expanded {
+    max-height: none;
+    opacity: 1;
+    margin-top: 0;
+}
+
+.text-sections {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    padding: 24px;
+    max-height: 600px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.text-section {
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.text-section:last-child {
+    margin-bottom: 0;
+}
+
+.text-section h1 {
+    color: #4a90e2;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3182ce;
+    text-align: left;
+}
+
+.text-section h2 {
+    color: #63b3ed;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+    text-align: left;
+}
+
+.text-section h3 {
+    color: #90cdf4;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 20px 0 10px 0;
+    text-align: left;
+}
+
+.text-section p {
+    color: #e2e8f0;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.text-section ul,
+.text-section ol {
+    color: #e2e8f0;
+    margin: 16px 0;
+    padding-left: 24px;
+    text-align: left;
+}
+
+.text-section li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.text-section code {
+    background: #1a202c;
+    color: #f7fafc;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.text-section pre {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+.text-section blockquote {
+    border-left: 4px solid #3182ce;
+    background: #2a4365;
+    margin: 16px 0;
+    padding: 12px 16px;
+    font-style: italic;
+    color: #cbd5e0;
+    text-align: left;
+}
+
+.no-text-message {
+    text-align: center;
+    padding: 40px;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* Responsive Design for Full Text */
+@media (max-width: 768px) {
+    .full-text-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .expand-button {
+        justify-content: center;
+    }
+    
+    .text-sections {
+        padding: 16px;
+        max-height: 400px;
+    }
+    
+    .text-section h1 {
+        font-size: 1.5rem;
+    }
+    
+    .text-section h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .text-sections {
+        padding: 12px;
+        max-height: 300px;
+    }
+    
+    .expand-button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 }
