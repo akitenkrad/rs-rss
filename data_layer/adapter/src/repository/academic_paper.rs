@@ -16,19 +16,20 @@ use shared::{
     id::{AcademicPaperId, AuthorId, JournalId, TaskId},
     utils::levenshtein_dist,
 };
+use sqlx::{Postgres as Pg, Transaction as T};
 use std::str::FromStr;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, new)]
 pub struct AuthorRepositoryImpl {
-    db: ConnectionPool,
+    pub db: ConnectionPool,
 }
 
 #[async_trait]
 impl AuthorRepository for AuthorRepositoryImpl {
-    async fn create_author(&self, author: Author) -> AppResult<Author> {
+    async fn create_author(&self, tx: &mut T<'_, Pg>, author: Author) -> AppResult<Author> {
         // Check if the author already exists by ss_id
-        if let Ok(existing_author) = self.select_author_by_ssid(&author.ss_id).await {
+        if let Ok(existing_author) = self.select_author_by_ssid(tx, &author.ss_id).await {
             return Ok(existing_author);
         }
 
@@ -44,7 +45,7 @@ impl AuthorRepository for AuthorRepositoryImpl {
             author.name,
             author.h_index
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -55,41 +56,45 @@ impl AuthorRepository for AuthorRepositoryImpl {
             h_index: author.h_index,
         })
     }
-    async fn select_author_by_id(&self, id: &str) -> AppResult<Author> {
+    async fn select_author_by_id(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<Author> {
         let author = sqlx::query_as!(
             Author,
             r#"SELECT author_id, ss_id, name, h_index FROM author WHERE author_id = $1"#,
             Uuid::from_str(id)?
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(author)
     }
-    async fn select_author_by_ssid(&self, ss_id: &str) -> AppResult<Author> {
+    async fn select_author_by_ssid(&self, tx: &mut T<'_, Pg>, ss_id: &str) -> AppResult<Author> {
         let author = sqlx::query_as!(
             Author,
             r#"SELECT author_id, ss_id, name, h_index FROM author WHERE ss_id = $1"#,
             ss_id
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(author)
     }
-    async fn select_all_authors(&self) -> AppResult<Vec<Author>> {
+    async fn select_all_authors(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<Author>> {
         let authors = sqlx::query_as!(Author, r#"SELECT author_id, ss_id, name, h_index FROM author"#)
-            .fetch_all(self.db.inner_ref())
+            .fetch_all(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(authors)
     }
-    async fn select_all_authors_paginated(&self, options: AuthorListOptions) -> AppResult<PaginatedList<Author>> {
+    async fn select_all_authors_paginated(
+        &self,
+        tx: &mut T<'_, Pg>,
+        options: AuthorListOptions,
+    ) -> AppResult<PaginatedList<Author>> {
         let total_count = sqlx::query_scalar!(r#"SELECT COUNT(*) FROM author"#)
-            .fetch_one(self.db.inner_ref())
+            .fetch_one(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?
             .expect("Total count should not be None");
@@ -102,7 +107,7 @@ impl AuthorRepository for AuthorRepositoryImpl {
             options.limit as i64,
             options.offset as i64
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -114,9 +119,9 @@ impl AuthorRepository for AuthorRepositoryImpl {
         ))
     }
 
-    async fn delete_author(&self, id: &str) -> AppResult<()> {
+    async fn delete_author(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<()> {
         sqlx::query!(r#"DELETE FROM author WHERE author_id = $1"#, Uuid::from_str(id)?)
-            .execute(self.db.inner_ref())
+            .execute(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -126,14 +131,14 @@ impl AuthorRepository for AuthorRepositoryImpl {
 
 #[derive(Debug, Clone, new)]
 pub struct TaskRepositoryImpl {
-    db: ConnectionPool,
+    pub db: ConnectionPool,
 }
 
 #[async_trait]
 impl TaskRepository for TaskRepositoryImpl {
-    async fn create_task(&self, task: Task) -> AppResult<Task> {
+    async fn create_task(&self, tx: &mut T<'_, Pg>, task: Task) -> AppResult<Task> {
         // Check if the task already exists by name
-        if let Ok(existing_task) = self.select_task_by_name(&task.name).await {
+        if let Ok(existing_task) = self.select_task_by_name(tx, &task.name).await {
             return Ok(existing_task);
         }
 
@@ -145,7 +150,7 @@ impl TaskRepository for TaskRepositoryImpl {
             RETURNING task_id"#,
             task.name
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -154,37 +159,37 @@ impl TaskRepository for TaskRepositoryImpl {
             name: task.name,
         })
     }
-    async fn select_task_by_id(&self, id: &str) -> AppResult<Task> {
+    async fn select_task_by_id(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<Task> {
         let task = sqlx::query_as!(
             Task,
             r#"SELECT task_id, name FROM task WHERE task_id = $1"#,
             Uuid::from_str(id)?
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(task)
     }
-    async fn select_task_by_name(&self, name: &str) -> AppResult<Task> {
+    async fn select_task_by_name(&self, tx: &mut T<'_, Pg>, name: &str) -> AppResult<Task> {
         let task = sqlx::query_as!(Task, r#"SELECT task_id, name FROM task WHERE name = $1"#, name)
-            .fetch_one(self.db.inner_ref())
+            .fetch_one(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(task)
     }
-    async fn select_all_tasks(&self) -> AppResult<Vec<Task>> {
+    async fn select_all_tasks(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<Task>> {
         let tasks = sqlx::query_as!(Task, r#"SELECT task_id, name FROM task"#)
-            .fetch_all(self.db.inner_ref())
+            .fetch_all(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(tasks)
     }
-    async fn delete_task(&self, id: &str) -> AppResult<()> {
+    async fn delete_task(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<()> {
         sqlx::query!(r#"DELETE FROM task WHERE task_id = $1"#, Uuid::from_str(id)?)
-            .execute(self.db.inner_ref())
+            .execute(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -194,14 +199,14 @@ impl TaskRepository for TaskRepositoryImpl {
 
 #[derive(Debug, Clone, new)]
 pub struct JournalRepositoryImpl {
-    db: ConnectionPool,
+    pub db: ConnectionPool,
 }
 
 #[async_trait]
 impl JournalRepository for JournalRepositoryImpl {
-    async fn create_journal(&self, journal: Journal) -> AppResult<Journal> {
+    async fn create_journal(&self, tx: &mut T<'_, Pg>, journal: Journal) -> AppResult<Journal> {
         // Check if the journal already exists by name
-        if let Ok(existing_journal) = self.select_journal_by_name(&journal.name).await {
+        if let Ok(existing_journal) = self.select_journal_by_name(tx, &journal.name).await {
             return Ok(existing_journal);
         }
 
@@ -213,7 +218,7 @@ impl JournalRepository for JournalRepositoryImpl {
             RETURNING journal_id"#,
             journal.name
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -222,37 +227,37 @@ impl JournalRepository for JournalRepositoryImpl {
             name: journal.name,
         })
     }
-    async fn select_journal_by_id(&self, id: &str) -> AppResult<Journal> {
+    async fn select_journal_by_id(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<Journal> {
         let journal = sqlx::query_as!(
             Journal,
             r#"SELECT journal_id, name FROM journal WHERE journal_id = $1"#,
             Uuid::from_str(id)?
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(journal)
     }
-    async fn select_journal_by_name(&self, name: &str) -> AppResult<Journal> {
+    async fn select_journal_by_name(&self, tx: &mut T<'_, Pg>, name: &str) -> AppResult<Journal> {
         let journal = sqlx::query_as!(Journal, r#"SELECT journal_id, name FROM journal WHERE name = $1"#, name)
-            .fetch_one(self.db.inner_ref())
+            .fetch_one(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(journal)
     }
-    async fn select_all_journals(&self) -> AppResult<Vec<Journal>> {
+    async fn select_all_journals(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<Journal>> {
         let journals = sqlx::query_as!(Journal, r#"SELECT journal_id, name FROM journal"#)
-            .fetch_all(self.db.inner_ref())
+            .fetch_all(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
         Ok(journals)
     }
-    async fn delete_journal(&self, id: &str) -> AppResult<()> {
+    async fn delete_journal(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<()> {
         sqlx::query!(r#"DELETE FROM journal WHERE journal_id = $1"#, Uuid::from_str(id)?)
-            .execute(self.db.inner_ref())
+            .execute(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 
@@ -262,14 +267,18 @@ impl JournalRepository for JournalRepositoryImpl {
 
 #[derive(Debug, Clone, new)]
 pub struct AcademicPaperRepositoryImpl {
-    db: ConnectionPool,
+    pub db: ConnectionPool,
 }
 
 #[async_trait]
 impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
-    async fn create_academic_paper(&self, academic_paper: AcademicPaper) -> AppResult<AcademicPaper> {
+    async fn create_academic_paper(
+        &self,
+        tx: &mut T<'_, Pg>,
+        academic_paper: AcademicPaper,
+    ) -> AppResult<AcademicPaper> {
         // Check if the academic paper already exists by ss_id
-        if let Ok(existing_paper) = self.select_academic_paper_by_title(&academic_paper.title).await {
+        if let Ok(existing_paper) = self.select_academic_paper_by_title(tx, &academic_paper.title).await {
             for paper in existing_paper {
                 let lev_dist = levenshtein_dist(&paper.title, &academic_paper.title);
                 if lev_dist < 2 {
@@ -279,39 +288,40 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             }
         }
 
-        // If the academic paper does not exist, insert a new record
-        // Check if the authors exist, if not, create them
-        let mut authors: Vec<Author> = vec![];
-        for author in &academic_paper.authors {
-            let author = AuthorRepositoryImpl::new(self.db.clone())
-                .create_author(author.clone())
+        {
+            // If the academic paper does not exist, insert a new record
+            // Check if the authors exist, if not, create them
+            let mut authors: Vec<Author> = vec![];
+            for author in &academic_paper.authors {
+                let author = AuthorRepositoryImpl::new(self.db.clone())
+                    .create_author(tx, author.clone())
+                    .await?;
+                authors.push(author);
+            }
+
+            // Check if the journal exists, if not, create it
+            let journal = JournalRepositoryImpl::new(self.db.clone())
+                .create_journal(tx, academic_paper.journal.clone())
                 .await?;
-            authors.push(author);
-        }
 
-        // Check if the journal exists, if not, create it
-        let journal = JournalRepositoryImpl::new(self.db.clone())
-            .create_journal(academic_paper.journal.clone())
-            .await?;
+            // Check if the tasks exist, if not, create them
+            let mut tasks: Vec<Task> = vec![];
+            for task in &academic_paper.tasks {
+                let task = TaskRepositoryImpl::new(self.db.clone())
+                    .create_task(tx, task.clone())
+                    .await?;
+                tasks.push(task);
+            }
 
-        // Check if the tasks exist, if not, create them
-        let mut tasks: Vec<Task> = vec![];
-        for task in &academic_paper.tasks {
-            let task = TaskRepositoryImpl::new(self.db.clone())
-                .create_task(task.clone())
-                .await?;
-            tasks.push(task);
-        }
+            // get status of the academic paper
+            let status_id = sqlx::query!(r#"SELECT status_id FROM status WHERE name = 'todo'"#,)
+                .fetch_one(&mut **tx)
+                .await
+                .map_err(|e| shared::errors::AppError::SqlxError(e))?
+                .status_id;
 
-        // get status of the academic paper
-        let status_id = sqlx::query!(r#"SELECT status_id FROM status WHERE name = 'todo'"#,)
-            .fetch_one(self.db.inner_ref())
-            .await
-            .map_err(|e| shared::errors::AppError::SqlxError(e))?
-            .status_id;
-
-        let res = sqlx::query!(
-            r#"INSERT INTO academic_paper (
+            let res = sqlx::query!(
+                r#"INSERT INTO academic_paper (
                 arxiv_id,
                 ss_id,
                 title,
@@ -335,107 +345,108 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 status_id
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             RETURNING paper_id"#,
-            academic_paper.arxiv_id,
-            academic_paper.ss_id,
-            academic_paper.title,
-            academic_paper.abstract_text,
-            academic_paper.abstract_text_ja,
-            Uuid::from(journal.journal_id),
-            academic_paper.primary_category,
-            academic_paper.citation_count,
-            academic_paper.influential_citation_count,
-            academic_paper.reference_count,
-            academic_paper.published_date,
-            academic_paper.url,
-            academic_paper.text,
-            academic_paper.bibtex,
-            academic_paper.summary,
-            academic_paper.background_and_purpose,
-            academic_paper.methodology,
-            academic_paper.dataset,
-            academic_paper.results,
-            academic_paper.advantages_limitations_and_future_work,
-            status_id
-        )
-        .fetch_one(self.db.inner_ref())
-        .await
-        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
-
-        // Insert authors and tasks into the join tables
-        for author in authors.iter() {
-            // Check if the author already exists in the relation
-            let exists = sqlx::query!(
-                r#"SELECT paper_id FROM author_paper_relation WHERE paper_id = $1 AND author_id = $2"#,
-                res.paper_id.clone(),
-                Uuid::from(author.author_id)
+                academic_paper.arxiv_id,
+                academic_paper.ss_id,
+                academic_paper.title,
+                academic_paper.abstract_text,
+                academic_paper.abstract_text_ja,
+                Uuid::from(journal.journal_id),
+                academic_paper.primary_category,
+                academic_paper.citation_count,
+                academic_paper.influential_citation_count,
+                academic_paper.reference_count,
+                academic_paper.published_date,
+                academic_paper.url,
+                academic_paper.text,
+                academic_paper.bibtex,
+                academic_paper.summary,
+                academic_paper.background_and_purpose,
+                academic_paper.methodology,
+                academic_paper.dataset,
+                academic_paper.results,
+                academic_paper.advantages_limitations_and_future_work,
+                status_id
             )
-            .fetch_optional(self.db.inner_ref())
+            .fetch_one(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
-            if exists.is_none() {
-                // If not, insert the relation
-                sqlx::query!(
-                    r#"INSERT INTO author_paper_relation (paper_id, author_id) VALUES ($1, $2)"#,
-                    res.paper_id,
+
+            // Insert authors and tasks into the join tables
+            for author in authors.iter() {
+                // Check if the author already exists in the relation
+                let exists = sqlx::query!(
+                    r#"SELECT paper_id FROM author_paper_relation WHERE paper_id = $1 AND author_id = $2"#,
+                    res.paper_id.clone(),
                     Uuid::from(author.author_id)
                 )
-                .execute(self.db.inner_ref())
+                .fetch_optional(&mut **tx)
                 .await
                 .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+                if exists.is_none() {
+                    // If not, insert the relation
+                    sqlx::query!(
+                        r#"INSERT INTO author_paper_relation (paper_id, author_id) VALUES ($1, $2)"#,
+                        res.paper_id,
+                        Uuid::from(author.author_id)
+                    )
+                    .execute(&mut **tx)
+                    .await
+                    .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+                }
             }
-        }
 
-        for task in tasks.iter() {
-            // Check if the task already exists in the relation
-            let exists = sqlx::query!(
-                r#"SELECT paper_id FROM task_paper_relation WHERE paper_id = $1 AND task_id = $2"#,
-                res.paper_id.clone(),
-                Uuid::from(task.task_id)
-            )
-            .fetch_optional(self.db.inner_ref())
-            .await
-            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
-            if exists.is_none() {
-                // If not, insert the relation
-                sqlx::query!(
-                    r#"INSERT INTO task_paper_relation (paper_id, task_id) VALUES ($1, $2)"#,
-                    res.paper_id,
+            for task in tasks.iter() {
+                // Check if the task already exists in the relation
+                let exists = sqlx::query!(
+                    r#"SELECT paper_id FROM task_paper_relation WHERE paper_id = $1 AND task_id = $2"#,
+                    res.paper_id.clone(),
                     Uuid::from(task.task_id)
                 )
-                .execute(self.db.inner_ref())
+                .fetch_optional(&mut **tx)
                 .await
                 .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+                if exists.is_none() {
+                    // If not, insert the relation
+                    sqlx::query!(
+                        r#"INSERT INTO task_paper_relation (paper_id, task_id) VALUES ($1, $2)"#,
+                        res.paper_id,
+                        Uuid::from(task.task_id)
+                    )
+                    .execute(&mut **tx)
+                    .await
+                    .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+                }
             }
-        }
 
-        Ok(AcademicPaper {
-            paper_id: AcademicPaperId::from(res.paper_id),
-            ss_id: academic_paper.ss_id,
-            arxiv_id: academic_paper.arxiv_id,
-            title: academic_paper.title,
-            abstract_text: academic_paper.abstract_text,
-            abstract_text_ja: academic_paper.abstract_text_ja,
-            authors: authors,
-            journal: journal,
-            tasks: tasks,
-            text: academic_paper.text,
-            url: academic_paper.url,
-            doi: academic_paper.doi,
-            published_date: academic_paper.published_date,
-            primary_category: academic_paper.primary_category,
-            citation_count: academic_paper.citation_count,
-            reference_count: academic_paper.reference_count,
-            influential_citation_count: academic_paper.influential_citation_count,
-            bibtex: academic_paper.bibtex,
-            summary: academic_paper.summary,
-            background_and_purpose: academic_paper.background_and_purpose,
-            methodology: academic_paper.methodology,
-            dataset: academic_paper.dataset,
-            results: academic_paper.results,
-            advantages_limitations_and_future_work: academic_paper.advantages_limitations_and_future_work,
-        })
+            Ok(AcademicPaper {
+                paper_id: AcademicPaperId::from(res.paper_id),
+                ss_id: academic_paper.ss_id,
+                arxiv_id: academic_paper.arxiv_id,
+                title: academic_paper.title,
+                abstract_text: academic_paper.abstract_text,
+                abstract_text_ja: academic_paper.abstract_text_ja,
+                authors: authors,
+                journal: journal,
+                tasks: tasks,
+                text: academic_paper.text,
+                url: academic_paper.url,
+                doi: academic_paper.doi,
+                published_date: academic_paper.published_date,
+                primary_category: academic_paper.primary_category,
+                citation_count: academic_paper.citation_count,
+                reference_count: academic_paper.reference_count,
+                influential_citation_count: academic_paper.influential_citation_count,
+                bibtex: academic_paper.bibtex,
+                summary: academic_paper.summary,
+                background_and_purpose: academic_paper.background_and_purpose,
+                methodology: academic_paper.methodology,
+                dataset: academic_paper.dataset,
+                results: academic_paper.results,
+                advantages_limitations_and_future_work: academic_paper.advantages_limitations_and_future_work,
+            })
+        }
     }
-    async fn fill_fields(&self, academic_paper: &mut AcademicPaper) -> AppResult<()> {
+    async fn fill_fields(&self, tx: &mut T<'_, Pg>, academic_paper: &mut AcademicPaper) -> AppResult<()> {
         // Fill authors
         let authors = sqlx::query_as!(
             AuthorRecord,
@@ -444,7 +455,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             WHERE author_paper_relation.paper_id = $1"#,
             Uuid::from(academic_paper.paper_id)
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
         academic_paper.authors = authors.into_iter().map(Author::from).collect();
@@ -455,7 +466,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             r#"SELECT journal_id, name FROM journal WHERE journal_id = $1"#,
             Uuid::from(academic_paper.journal.journal_id)
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
         academic_paper.journal = Journal::from(journal);
@@ -468,14 +479,14 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             WHERE task_paper_relation.paper_id = $1"#,
             Uuid::from(academic_paper.paper_id)
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
         academic_paper.tasks = tasks.into_iter().map(Task::from).collect();
 
         Ok(())
     }
-    async fn select_todays_articles(&self) -> AppResult<Vec<AcademicPaper>> {
+    async fn select_todays_articles(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<AcademicPaper>> {
         let current_date = chrono::Local::now().date_naive();
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
@@ -506,7 +517,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper WHERE published_date = $1"#,
             &current_date
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
@@ -514,13 +525,13 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         // fill fields
         for paper in papers.iter() {
             let mut academic_paper = AcademicPaper::from(paper.clone());
-            self.fill_fields(&mut academic_paper).await?;
+            self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
 
         Ok(academic_papers)
     }
-    async fn select_academic_paper_by_arxiv_id(&self, arxiv_id: &str) -> AppResult<AcademicPaper> {
+    async fn select_academic_paper_by_arxiv_id(&self, tx: &mut T<'_, Pg>, arxiv_id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -550,15 +561,15 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper WHERE arxiv_id = $1"#,
             arxiv_id
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
         let mut academic_paper = AcademicPaper::from(paper);
-        self.fill_fields(&mut academic_paper).await?;
+        self.fill_fields(tx, &mut academic_paper).await?;
         Ok(academic_paper)
     }
-    async fn select_academic_paper_by_ss_id(&self, ss_id: &str) -> AppResult<AcademicPaper> {
+    async fn select_academic_paper_by_ss_id(&self, tx: &mut T<'_, Pg>, ss_id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -588,15 +599,15 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper WHERE ss_id = $1"#,
             ss_id
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
         let mut academic_paper = AcademicPaper::from(paper);
-        self.fill_fields(&mut academic_paper).await?;
+        self.fill_fields(tx, &mut academic_paper).await?;
         Ok(academic_paper)
     }
-    async fn select_academic_paper_by_id(&self, id: &str) -> AppResult<AcademicPaper> {
+    async fn select_academic_paper_by_id(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -626,15 +637,15 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper WHERE paper_id = $1"#,
             Uuid::from_str(id)?
         )
-        .fetch_one(self.db.inner_ref())
+        .fetch_one(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
         let mut academic_paper = AcademicPaper::from(paper);
-        self.fill_fields(&mut academic_paper).await?;
+        self.fill_fields(tx, &mut academic_paper).await?;
         Ok(academic_paper)
     }
-    async fn select_academic_paper_by_title(&self, title: &str) -> AppResult<Vec<AcademicPaper>> {
+    async fn select_academic_paper_by_title(&self, tx: &mut T<'_, Pg>, title: &str) -> AppResult<Vec<AcademicPaper>> {
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -664,7 +675,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper WHERE title ILIKE $1"#,
             format!("%{}%", title)
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
@@ -672,13 +683,13 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         // fill fields
         for paper in papers.iter() {
             let mut academic_paper = AcademicPaper::from(paper.clone());
-            self.fill_fields(&mut academic_paper).await?;
+            self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
 
         Ok(academic_papers)
     }
-    async fn select_all_academic_papers(&self) -> AppResult<Vec<AcademicPaper>> {
+    async fn select_all_academic_papers(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<AcademicPaper>> {
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -707,7 +718,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 advantages_limitations_and_future_work
             FROM academic_paper"#
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
@@ -715,7 +726,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         // fill fields
         for paper in papers.iter() {
             let mut academic_paper = AcademicPaper::from(paper.clone());
-            self.fill_fields(&mut academic_paper).await?;
+            self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
 
@@ -723,10 +734,11 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
     }
     async fn select_paginated_academic_papers(
         &self,
+        tx: &mut T<'_, Pg>,
         options: AcademicPaperListOptions,
     ) -> AppResult<PaginatedList<AcademicPaper>> {
         let total_count = sqlx::query_scalar!(r#"SELECT COUNT(*) FROM academic_paper"#)
-            .fetch_one(self.db.inner_ref())
+            .fetch_one(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?
             .expect("Total count should not be None");
@@ -763,7 +775,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             options.limit as i64,
             options.offset as i64
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
@@ -771,7 +783,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         // fill fields
         for paper in papers.iter() {
             let mut academic_paper = AcademicPaper::from(paper.clone());
-            self.fill_fields(&mut academic_paper).await?;
+            self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
 
@@ -782,7 +794,11 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             academic_papers,
         ))
     }
-    async fn select_academic_papers_by_keyword(&self, keyword: &str) -> AppResult<Vec<AcademicPaper>> {
+    async fn select_academic_papers_by_keyword(
+        &self,
+        tx: &mut T<'_, Pg>,
+        keyword: &str,
+    ) -> AppResult<Vec<AcademicPaper>> {
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -817,7 +833,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             "#,
             format!("%{}%", keyword)
         )
-        .fetch_all(self.db.inner_ref())
+        .fetch_all(&mut **tx)
         .await
         .map_err(|e| AppError::EntityNotFound(e.to_string()))?;
 
@@ -825,15 +841,33 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         // fill fields
         for paper in papers.iter() {
             let mut academic_paper = AcademicPaper::from(paper.clone());
-            self.fill_fields(&mut academic_paper).await?;
+            self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
 
         Ok(academic_papers)
     }
-    async fn delete_academic_paper(&self, id: &str) -> AppResult<()> {
+    async fn delete_academic_paper(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<()> {
+        // Delete related records first (foreign key constraints)
+        sqlx::query!(
+            r#"DELETE FROM author_paper_relation WHERE paper_id = $1"#,
+            Uuid::from_str(id)?
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+        sqlx::query!(
+            r#"DELETE FROM task_paper_relation WHERE paper_id = $1"#,
+            Uuid::from_str(id)?
+        )
+        .execute(&mut **tx)
+        .await
+        .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+        // Delete the academic paper
         sqlx::query!(r#"DELETE FROM academic_paper WHERE paper_id = $1"#, Uuid::from_str(id)?)
-            .execute(self.db.inner_ref())
+            .execute(&mut **tx)
             .await
             .map_err(|e| shared::errors::AppError::SqlxError(e))?;
 

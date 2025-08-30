@@ -10,7 +10,12 @@ extend = "set-env"
 script = '''#!/bin/bash
 docker compose up -d postgres
 s=0
+timeout=60
 until docker compose exec postgres pg_isready; do
+  if [ $s -ge $timeout ]; then
+    echo "Error: Postgres failed to start within ${timeout} seconds. Exiting..."
+    exit 1
+  fi
   echo "Waiting for Postgres to be ready... ($s secs)"
   sleep 3
   s=$((s + 3))

@@ -101,7 +101,7 @@ function Header() {
     return (
         <>
             <AppBar position="fixed">
-                <Container maxWidth="xl">
+                <Container maxWidth="100%">
                     <Toolbar disableGutters>
                         <IconButton
                             size="large"

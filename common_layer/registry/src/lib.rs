@@ -13,6 +13,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AppRegistryImpl {
+    pub db: ConnectionPool,
     health_check_repository: Arc<dyn HealthCheckRepository>,
     web_article_repository: Arc<dyn WebArticleRepository>,
     web_site_repository: Arc<dyn WebSiteRepository>,
@@ -32,6 +33,7 @@ impl AppRegistryImpl {
         let journal_repository = Arc::new(JournalRepositoryImpl::new(db.clone()));
         let task_repository = Arc::new(TaskRepositoryImpl::new(db.clone()));
         Self {
+            db,
             health_check_repository,
             web_article_repository,
             web_site_repository,
@@ -67,6 +69,7 @@ impl AppRegistryImpl {
 
 #[mockall::automock]
 pub trait AppRegistryExt {
+    fn db(&self) -> &ConnectionPool;
     fn health_check_repository(&self) -> Arc<dyn HealthCheckRepository>;
     fn web_article_repository(&self) -> Arc<dyn WebArticleRepository>;
     fn web_site_repository(&self) -> Arc<dyn WebSiteRepository>;
@@ -77,6 +80,9 @@ pub trait AppRegistryExt {
 }
 
 impl AppRegistryExt for AppRegistryImpl {
+    fn db(&self) -> &ConnectionPool {
+        &self.db
+    }
     fn health_check_repository(&self) -> Arc<dyn HealthCheckRepository> {
         self.health_check_repository.clone()
     }

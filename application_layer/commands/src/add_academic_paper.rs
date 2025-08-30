@@ -72,9 +72,21 @@ pub async fn add_academic_paper(args: &AddAcademicPaperArgs) {
     let db = connect_database_with(&config.database);
     let registry = Arc::new(AppRegistryImpl::new(db));
 
+    let mut tx = registry
+        .db
+        .inner_ref()
+        .begin()
+        .await
+        .expect("Failed to begin transaction");
     let academic_paper_repository = registry.academic_paper_repository();
-    match academic_paper_repository.create_academic_paper(paper).await {
-        Ok(_) => tracing::info!("Successfully added academic paper"),
-        Err(e) => tracing::error!("Failed to add academic paper: {}", e),
+    match academic_paper_repository.create_academic_paper(&mut tx, paper).await {
+        Ok(_) => {
+            tracing::info!("Successfully added academic paper");
+            tx.commit().await.expect("Failed to commit transaction");
+        }
+        Err(e) => {
+            tracing::error!("Failed to add academic paper: {}", e);
+            tx.rollback().await.expect("Failed to rollback transaction");
+        }
     }
 }

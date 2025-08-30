@@ -12,22 +12,28 @@ pub async fn select_paginated_academic_papers(
 ) -> AppResult<Json<AcademicPaperListResponse>> {
     query.validate()?;
 
-    registry
+    let mut tx = registry.db().inner_ref().begin().await?;
+    let result = registry
         .academic_paper_repository()
-        .select_paginated_academic_papers(query.into())
+        .select_paginated_academic_papers(&mut tx, query.into())
         .await
         .map(AcademicPaperListResponse::from)
-        .map(Json)
+        .map(Json);
+    tx.commit().await?;
+    result
 }
 
 pub async fn select_academic_papers_by_id(
     State(registry): State<AppRegistry>,
     Query(query): Query<AcademicPaperIdQuery>,
 ) -> AppResult<Json<AcademicPaperResponse>> {
-    registry
+    let mut tx = registry.db().inner_ref().begin().await?;
+    let result = registry
         .academic_paper_repository()
-        .select_academic_paper_by_id(query.paper_id.as_str())
+        .select_academic_paper_by_id(&mut tx, query.paper_id.as_str())
         .await
         .map(AcademicPaperResponse::from)
-        .map(Json)
+        .map(Json);
+    tx.commit().await?;
+    result
 }

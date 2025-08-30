@@ -18,9 +18,11 @@ pub enum AppError {
     #[error("Database Error: {0}")]
     DatabaseError(String),
     #[error("Database Error: {0}")]
-    SqlxError(#[source] sqlx::Error),
+    SqlxError(#[from] sqlx::Error),
     #[error("Database Error - record not found: {0}")]
     RecordNotFound(#[source] sqlx::Error),
+    #[error("Database Error - sqlx core error: {0}")]
+    SqlxCoreError(#[source] sqlx_core::error::Error),
 
     // from uuid errors
     #[error("Uuid Error: {0}")]
@@ -58,6 +60,7 @@ impl IntoResponse for AppError {
             AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::SqlxError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::RecordNotFound(_) => StatusCode::NOT_FOUND,
+            AppError::SqlxCoreError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::ConvertToUuidError(_) => StatusCode::BAD_REQUEST,
             AppError::RssParseError(_) => StatusCode::BAD_REQUEST,
             AppError::RequestError(_) => StatusCode::BAD_REQUEST,

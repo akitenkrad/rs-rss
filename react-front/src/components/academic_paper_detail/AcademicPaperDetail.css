@@ -221,21 +221,105 @@ body {
 .keywords-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 12px;
 }
 
 .keyword-tag {
-    background: #2b6cb0;
+    display: inline-flex;
+    align-items: center;
+    background: #3b82f6;
     color: #ffffff;
     padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 500;
-    transition: background-color 0.2s;
+    text-transform: capitalize;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
 }
 
 .keyword-tag:hover {
-    background: #3182ce;
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.keyword-tag:nth-child(2n) {
+    background: #ef4444;
+}
+
+.keyword-tag:nth-child(2n):hover {
+    background: #dc2626;
+}
+
+.keyword-tag:nth-child(3n) {
+    background: #10b981;
+}
+
+.keyword-tag:nth-child(3n):hover {
+    background: #059669;
+}
+
+.keyword-tag:nth-child(4n) {
+    background: #f59e0b;
+}
+
+.keyword-tag:nth-child(4n):hover {
+    background: #d97706;
+}
+
+.keyword-tag:nth-child(5n) {
+    background: #8b5cf6;
+}
+
+.keyword-tag:nth-child(5n):hover {
+    background: #7c3aed;
+}
+
+.keyword-tag:nth-child(6n) {
+    background: #06b6d4;
+}
+
+.keyword-tag:nth-child(6n):hover {
+    background: #0891b2;
+}
+
+.keyword-tag:nth-child(7n) {
+    background: #f97316;
+}
+
+.keyword-tag:nth-child(7n):hover {
+    background: #ea580c;
+}
+
+.keyword-tag:nth-child(8n) {
+    background: #ec4899;
+}
+
+.keyword-tag:nth-child(8n):hover {
+    background: #db2777;
+}
+
+.keyword-tag:active {
+    transform: translateY(0);
+    transition: transform 0.1s ease;
+}
+
+.keyword-tag:focus {
+    outline: 2px solid #60a5fa;
+    outline-offset: 2px;
+}
+
+.keyword-icon {
+    margin-right: 6px;
+    font-weight: 600;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.keyword-tag:hover .keyword-icon {
+    opacity: 1;
 }
 
 /* ==========================================================================
@@ -415,6 +499,12 @@ body {
     .links-container {
         justify-content: center;
     }
+    
+    .keyword-tag {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
 }
 
 /* Mobile */
@@ -457,4 +547,563 @@ body {
     .abstract-text {
         padding: 15px;
     }
+    
+    .keyword-tag {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 5px;
+    }
+    
+    .keyword-icon {
+        margin-right: 4px;
+    }
+}
+
+/* ==========================================================================
+   Memos Section
+   ========================================================================== */
+
+.memos-section {
+    background: #2d3748;
+    border-radius: 12px;
+    padding: 30px;
+    margin-top: 40px;
+    border: 1px solid #4a5568;
+}
+
+.memos-section h2 {
+    color: #e2e8f0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #4a5568;
+}
+
+/* メモ追加エリア */
+.memo-add-section {
+    margin-bottom: 30px;
+}
+
+.memo-add-buttons {
+    margin-bottom: 20px;
+}
+
+.add-memo-btn {
+    background: #3182ce;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-memo-btn:hover {
+    background: #2c5282;
+}
+
+/* フォーム共通スタイル */
+.memo-form {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+/* タブスタイル */
+.memo-tabs {
+    display: flex;
+    border-bottom: 2px solid #4a5568;
+    margin-bottom: 15px;
+}
+
+.memo-tab {
+    background: transparent;
+    color: #a0aec0;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.memo-tab:hover {
+    color: #e2e8f0;
+    background: #2d3748;
+}
+
+.memo-tab.active {
+    color: #3182ce;
+    border-bottom-color: #3182ce;
+    background: #2d3748;
+}
+
+.memo-tab-content {
+    min-height: 150px;
+}
+
+/* プレビュースタイル */
+.memo-preview {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 15px;
+    min-height: 120px;
+    max-height: 400px;
+    overflow-y: auto;
+    color: #e2e8f0;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.preview-placeholder {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* マークダウンレンダリングスタイル */
+.memo-preview h1,
+.memo-content h1 {
+    color: #e2e8f0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem 0;
+    border-bottom: 2px solid #4a5568;
+    padding-bottom: 0.25rem;
+    text-align: left;
+}
+
+.memo-preview h2,
+.memo-content h2 {
+    color: #e2e8f0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0.8rem 0 0.4rem 0;
+    text-align: left;
+}
+
+.memo-preview h3,
+.memo-content h3 {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.6rem 0 0.3rem 0;
+    text-align: left;
+}
+
+.memo-preview p,
+.memo-content p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.memo-preview ul,
+.memo-preview ol,
+.memo-content ul,
+.memo-content ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    text-align: left;
+}
+
+.memo-preview li,
+.memo-content li {
+    margin: 0.25rem 0;
+    text-align: left;
+}
+
+.memo-preview strong,
+.memo-content strong {
+    color: #f7fafc;
+    font-weight: 600;
+}
+
+.memo-preview em,
+.memo-content em {
+    color: #cbd5e0;
+    font-style: italic;
+}
+
+.memo-preview code,
+.memo-content code {
+    background: #1a202c;
+    color: #fbb6ce;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+.memo-preview pre,
+.memo-content pre {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    text-align: left;
+}
+
+.memo-preview pre code,
+.memo-content pre code {
+    background: transparent;
+    padding: 0;
+    color: #e2e8f0;
+    text-align: left;
+}
+
+.memo-preview blockquote,
+.memo-content blockquote {
+    border-left: 4px solid #3182ce;
+    background: #1a202c;
+    margin: 0.5rem 0;
+    padding: 0.5rem 1rem;
+    color: #cbd5e0;
+    text-align: left;
+}
+
+.memo-preview table,
+.memo-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5rem 0;
+    text-align: left;
+}
+
+.memo-preview th,
+.memo-preview td,
+.memo-content th,
+.memo-content td {
+    border: 1px solid #4a5568;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.memo-preview th,
+.memo-content th {
+    background: #2d3748;
+    font-weight: 600;
+}
+
+.memo-preview a,
+.memo-content a {
+    color: #63b3ed;
+    text-decoration: underline;
+}
+
+.memo-preview a:hover,
+.memo-content a:hover {
+    color: #90cdf4;
+}
+
+/* ソース表示スタイル */
+.memo-source {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 15px;
+    min-height: 120px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.memo-source pre {
+    margin: 0;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.memo-textarea,
+.memo-edit-textarea {
+    width: 100%;
+    background: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.memo-textarea:focus,
+.memo-edit-textarea:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 1px #3182ce;
+}
+
+.memo-form-buttons,
+.memo-edit-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.save-memo-btn,
+.save-edit-btn {
+    background: #38a169;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.save-memo-btn:hover,
+.save-edit-btn:hover {
+    background: #2f855a;
+}
+
+.save-memo-btn:disabled {
+    background: #4a5568;
+    cursor: not-allowed;
+}
+
+.cancel-memo-btn,
+.cancel-edit-btn {
+    background: #4a5568;
+    color: #e2e8f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.cancel-memo-btn:hover,
+.cancel-edit-btn:hover {
+    background: #2d3748;
+}
+
+.ask-ai-btn {
+    background: #805ad5;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ask-ai-btn:hover:not(:disabled) {
+    background: #6b46c1;
+}
+
+.ask-ai-btn:disabled {
+    background: #4a5568;
+    cursor: not-allowed;
+}
+
+/* メモ一覧 */
+.memos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.no-memos {
+    text-align: center;
+    color: #a0aec0;
+    font-style: italic;
+    padding: 40px 20px;
+    background: #1a202c;
+    border-radius: 8px;
+    border: 1px dashed #4a5568;
+}
+
+.memo-item {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    padding: 20px;
+    transition: border-color 0.2s;
+}
+
+.memo-item:hover {
+    border-color: #3182ce;
+}
+
+.memo-item.llm {
+    border-left: 4px solid #805ad5;
+}
+
+.memo-item.manual {
+    border-left: 4px solid #3182ce;
+}
+
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.memo-date {
+    color: #a0aec0;
+    font-size: 0.8rem;
+}
+
+.memo-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-memo-btn,
+.delete-memo-btn {
+    background: transparent;
+    color: #a0aec0;
+    border: 1px solid #4a5568;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.edit-memo-btn:hover {
+    background: #3182ce;
+    color: #ffffff;
+    border-color: #3182ce;
+}
+
+.delete-memo-btn:hover {
+    background: #e53e3e;
+    color: #ffffff;
+    border-color: #e53e3e;
+}
+
+.memo-content {
+    color: #e2e8f0;
+    line-height: 1.6;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.memo-content p {
+    margin: 0 0 10px 0;
+}
+
+.memo-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .memos-section {
+        padding: 20px;
+    }
+
+    .memo-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .memo-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .memo-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .memo-tab {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .memos-section {
+        padding: 15px;
+    }
+
+    .memo-form-buttons,
+    .memo-edit-buttons {
+        flex-direction: column;
+    }
+
+    .memo-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .edit-memo-btn,
+    .delete-memo-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .memo-tab {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        min-width: 60px;
+        text-align: center;
+    }
+    
+    .memo-preview,
+    .memo-source {
+        min-height: 100px;
+        max-height: 300px;
+    }
+}
+
+/* ==========================================================================
+   Mermaid Diagrams
+   ========================================================================== */
+
+.mermaid-diagram {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 16px 0;
+    padding: 20px;
+    background: #f7fafc;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.mermaid-error {
+    color: #e53e3e;
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 16px 0;
+    font-family: 'SFMono-Regular', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 14px;
+    text-align: left;
 }

@@ -6,15 +6,16 @@ publish.workspace = true
 version = "0.1.0"
 
 [dependencies]
-anyhow.workspace = true
-async-trait.workspace = true
-chrono.workspace = true
-derive-new.workspace = true
-dotenvy.workspace = true
-mockall.workspace = true
-openai-tools.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-shared.workspace = true
-tiktoken-rs.workspace = true
-tracing.workspace = true
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+derive-new = { workspace = true }
+dotenvy = { workspace = true }
+mockall = { workspace = true }
+openai-tools = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+shared = { workspace = true }
+tiktoken-rs = { workspace = true }
+tracing = { workspace = true }
+sqlx = { workspace = true }

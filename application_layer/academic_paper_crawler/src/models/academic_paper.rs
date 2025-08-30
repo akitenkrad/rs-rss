@@ -5,10 +5,7 @@ use arxiv_tools::{ArXiv, Paper as ArxivPaper, QueryParams as ArXivQueryParams};
 use chrono::{DateTime, NaiveDate};
 use derive_new::new;
 use kernel::models::academic_paper::{AcademicPaper, Author, Journal};
-use rsrpp::parser::{
-    parse,
-    structs::{ParserConfig, Section as RsrppSection},
-};
+use rsrpp::{config::ParserConfig, models::Section as RsrppSection, parser::parse};
 use serde::{Deserialize, Serialize};
 use shared::{
     id::{AcademicPaperId, AuthorId, JournalId},
