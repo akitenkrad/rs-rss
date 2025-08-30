@@ -235,7 +235,7 @@ impl From<AcademicPaperResource> for AcademicPaper {
             abstract_text_ja: String::new(),
             text: text
                 .into_iter()
-                .map(|s| format!("# {}\n\n{}", s.title, s.content))
+                .map(|s| format!("# {}\n\n{}\n\n", s.title, s.content))
                 .collect(),
             url,
             doi: match arxiv_paper.as_ref() {
