@@ -25,7 +25,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "prestart": "bash scripts/set-version.sh",
     "start": "react-scripts start",
+    "prebuild": "bash scripts/set-version.sh",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -12,7 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { alpha, styled } from '@mui/material/styles';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
 
@@ -66,7 +66,24 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 function Header() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [version, setVersion] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // バージョン情報を取得
+        const fetchVersion = async () => {
+            try {
+                // package.jsonからバージョンを取得
+                const packageVersion = process.env.REACT_APP_VERSION || '0.1.0';
+                setVersion(`v${packageVersion}`);
+            } catch (error) {
+                console.error('Failed to fetch version:', error);
+                setVersion('v0.1.0'); // フォールバック
+            }
+        };
+
+        fetchVersion();
+    }, []);
 
     const toggleDrawer = (open) => (event) => {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -137,7 +154,7 @@ function Header() {
                                 textDecoration: 'none',
                             }}
                         >
-                            DASHBOARD
+                            DASHBOARD{version && ` ${version}`}
                         </Typography>
                         <div style={{ flexGrow: 1 }} />
                         <Search>
