@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, Utc};
 use derive_new::new;
 use garde::Validate;
 use kernel::models::{
@@ -72,6 +72,8 @@ pub struct AcademicPaperResponse {
     pub tasks: Vec<TaskResponse>,
     pub primary_category: String,
     pub published_date: NaiveDate,
+    pub created_at: NaiveDate,
+    pub updated_at: NaiveDate,
     pub journal: JournalResponse,
     pub text: String,
     pub url: String,
@@ -98,14 +100,16 @@ impl From<AcademicPaper> for AcademicPaperResponse {
             abstract_text_ja: _,
             primary_category,
             published_date,
+            created_at,
+            updated_at,
             authors,
             tasks,
             journal,
             text,
             url,
             doi,
-            citation_count,
-            reference_count,
+            citations_count: citation_count,
+            references_count: reference_count,
             influential_citation_count,
             bibtex,
             summary,
@@ -126,6 +130,8 @@ impl From<AcademicPaper> for AcademicPaperResponse {
             tasks: tasks.into_iter().map(TaskResponse::from).collect(),
             primary_category,
             published_date,
+            created_at: created_at.date_naive(),
+            updated_at: updated_at.date_naive(),
             journal: JournalResponse::from(journal),
             text,
             url,
@@ -223,6 +229,8 @@ impl From<AcademicPaperCreateRequest> for AcademicPaper {
             tasks: vec![],
             primary_category: String::new(),
             published_date: chrono::Local::now().naive_local().date(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
             journal: Journal {
                 journal_id: JournalId::default(),
                 name: String::new(),
@@ -230,8 +238,8 @@ impl From<AcademicPaperCreateRequest> for AcademicPaper {
             text: String::new(),
             url: pdf_url,
             doi: String::new(),
-            citation_count: 0,
-            reference_count: 0,
+            citations_count: 0,
+            references_count: 0,
             influential_citation_count: 0,
             bibtex: String::new(),
             summary: String::new(),

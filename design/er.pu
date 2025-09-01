@@ -22,14 +22,21 @@ table(academic_paper) {
   column(status_id, "uuid", $fk=true, $nn=true)
   column(abstract, "text", $nn=true)
   column(abstract_ja, "text", $nn=true)
+  column(advantages_limitations_and_future_work, "text", $nn=true)
   column(arxiv_id, "character varying", $nn=true)
+  column(background_and_purpose, "text", $nn=true)
   column(bibtex, "text", $nn=true)
   column(citation_count, "integer", $nn=true)
+  column(dataset, "text", $nn=true)
+  column(doi, "text", $nn=true)
   column(influential_citation_count, "integer", $nn=true)
+  column(methodology, "text", $nn=true)
   column(primary_category, "character varying", $nn=true)
   column(published_date, "date", $nn=true)
   column(references_count, "integer", $nn=true)
+  column(results, "text", $nn=true)
   column(ss_id, "character varying", $nn=true)
+  column(summary, "text", $nn=true)
   column(text, "text", $nn=true)
   column(title, "text", $nn=true)
   column(url, "text", $nn=true)
@@ -59,6 +66,36 @@ table(journal) {
   column(updated_at, "timestamp with time zone")
 }
 
+table(keyword) {
+  column(keyword_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(category, "character varying", $nn=true)
+  column(name, "character varying", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(paper_keyword_relation) {
+  column(keyword_id, "uuid", $pk=true, $fk=true, $nn=true)
+  column(paper_id, "uuid", $pk=true, $fk=true, $nn=true)
+  ---
+}
+
+table(paper_note) {
+  column(paper_note_id, "uuid", $pk=true, $nn=true)
+  ---
+  column(note, "text", $nn=true)
+  column(created_at, "timestamp with time zone")
+  column(note_timestamp, "timestamp with time zone")
+  column(updated_at, "timestamp with time zone")
+}
+
+table(paper_note_relation) {
+  column(paper_id, "uuid", $pk=true, $fk=true, $nn=true)
+  column(paper_note_id, "uuid", $pk=true, $fk=true, $nn=true)
+  ---
+}
+
 table(status) {
   column(status_id, "uuid", $pk=true, $nn=true)
   ---
@@ -70,7 +107,7 @@ table(status) {
 table(task) {
   column(task_id, "uuid", $pk=true, $nn=true)
   ---
-  column(task_name, "character varying", $nn=true)
+  column(name, "character varying", $nn=true)
   column(created_at, "timestamp with time zone")
   column(updated_at, "timestamp with time zone")
 }
@@ -121,6 +158,14 @@ academic_paper }o--|| status
 author_paper_relation }o--|| author
 
 author_paper_relation }o--|| academic_paper
+
+paper_keyword_relation }o--|| academic_paper
+
+paper_keyword_relation }o--|| keyword
+
+paper_note_relation }o--|| academic_paper
+
+paper_note_relation }o--|| paper_note
 
 task_paper_relation }o--|| task
 

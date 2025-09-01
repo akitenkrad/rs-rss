@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{Datelike, NaiveDate};
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use derive_new::new;
 use openai_tools::{
     chat::request::ChatCompletion,
@@ -44,9 +44,11 @@ pub struct AcademicPaper {
     pub url: String,
     pub doi: String,
     pub published_date: NaiveDate,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
     pub primary_category: String,
-    pub citation_count: i32,
-    pub reference_count: i32,
+    pub citations_count: i32,
+    pub references_count: i32,
     pub influential_citation_count: i32,
     pub bibtex: String,
     pub summary: String,

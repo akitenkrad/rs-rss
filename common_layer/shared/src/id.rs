@@ -17,6 +17,10 @@ macro_rules! define_id {
             pub fn raw(self) -> uuid::Uuid {
                 self.0
             }
+
+            pub fn to_string(&self) -> String {
+                self.0.to_string()
+            }
         }
 
         impl Default for $id_type {
@@ -30,6 +34,12 @@ macro_rules! define_id {
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 Ok(Self(uuid::Uuid::parse_str(s)?))
+            }
+        }
+
+        impl From<String> for $id_type {
+            fn from(s: String) -> Self {
+                Self::from_str(&s).unwrap_or_default()
             }
         }
 
@@ -81,3 +91,4 @@ define_id!(AcademicPaperId);
 define_id!(AuthorPaperRelationId);
 define_id!(TaskPaperRelationId);
 define_id!(StatusId);
+define_id!(PaperNoteId);

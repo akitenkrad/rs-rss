@@ -53,8 +53,8 @@ pub async fn add_academic_paper(args: &AddAcademicPaperArgs) {
     tracing::info!("PDF URL: {}", paper.url);
     tracing::info!("Published Date: {}", paper.published_date);
     tracing::info!("DOI: {}", paper.doi);
-    tracing::info!("Reference Count: {}", paper.reference_count);
-    tracing::info!("Citation Count: {}", paper.citation_count);
+    tracing::info!("Reference Count: {}", paper.references_count);
+    tracing::info!("Citation Count: {}", paper.citations_count);
     tracing::info!("Influential Citation Count: {}", paper.influential_citation_count);
     tracing::info!("Primary Category: {}", paper.primary_category);
     tracing::info!("Authors: {:?}", paper.authors);

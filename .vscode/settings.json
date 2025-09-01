@@ -1,0 +1,11 @@
+{
+    "terminal.integrated.env.linux": {
+        "DATABASE_URL": "postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+    },
+    "terminal.integrated.env.osx": {
+        "DATABASE_URL": "postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+    },
+    "terminal.integrated.env.windows": {
+        "DATABASE_URL": "postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+    }
+}

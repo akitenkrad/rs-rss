@@ -13,7 +13,7 @@ use kernel::{
 };
 use shared::{
     errors::{AppError, AppResult},
-    id::{AcademicPaperId, AuthorId, JournalId, TaskId},
+    id::{AcademicPaperId, AuthorId, JournalId, StatusId, TaskId},
     utils::levenshtein_dist,
 };
 use sqlx::{Postgres as Pg, Transaction as T};
@@ -314,22 +314,24 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             }
 
             // get status of the academic paper
-            let status_id = sqlx::query!(r#"SELECT status_id FROM status WHERE name = 'todo'"#,)
-                .fetch_one(&mut **tx)
-                .await
-                .map_err(|e| shared::errors::AppError::SqlxError(e))?
-                .status_id;
+            let status_id: StatusId = StatusId::from(
+                sqlx::query!(r#"SELECT status_id FROM status WHERE name = 'todo'"#)
+                    .fetch_one(&mut **tx)
+                    .await
+                    .map_err(|e| shared::errors::AppError::SqlxError(e))?
+                    .status_id,
+            );
 
             let res = sqlx::query!(
                 r#"INSERT INTO academic_paper (
                 arxiv_id,
                 ss_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 journal_id,
                 primary_category,
-                citation_count,
+                citations_count,
                 influential_citation_count,
                 references_count,
                 published_date,
@@ -352,9 +354,9 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 academic_paper.abstract_text_ja,
                 Uuid::from(journal.journal_id),
                 academic_paper.primary_category,
-                academic_paper.citation_count,
+                academic_paper.citations_count,
                 academic_paper.influential_citation_count,
-                academic_paper.reference_count,
+                academic_paper.references_count,
                 academic_paper.published_date,
                 academic_paper.url,
                 academic_paper.text,
@@ -365,7 +367,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 academic_paper.dataset,
                 academic_paper.results,
                 academic_paper.advantages_limitations_and_future_work,
-                status_id
+                Uuid::from(status_id)
+            )
+            .fetch_one(&mut **tx)
+            .await
+            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+            let inserted_paper: AcademicPaperRecord = sqlx::query_as!(
+                AcademicPaperRecord,
+                r#"SELECT * FROM academic_paper WHERE paper_id = $1"#,
+                res.paper_id.clone()
             )
             .fetch_one(&mut **tx)
             .await
@@ -376,7 +387,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 // Check if the author already exists in the relation
                 let exists = sqlx::query!(
                     r#"SELECT paper_id FROM author_paper_relation WHERE paper_id = $1 AND author_id = $2"#,
-                    res.paper_id.clone(),
+                    Uuid::from(inserted_paper.paper_id),
                     Uuid::from(author.author_id)
                 )
                 .fetch_optional(&mut **tx)
@@ -386,7 +397,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                     // If not, insert the relation
                     sqlx::query!(
                         r#"INSERT INTO author_paper_relation (paper_id, author_id) VALUES ($1, $2)"#,
-                        res.paper_id,
+                        Uuid::from(inserted_paper.paper_id),
                         Uuid::from(author.author_id)
                     )
                     .execute(&mut **tx)
@@ -399,7 +410,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 // Check if the task already exists in the relation
                 let exists = sqlx::query!(
                     r#"SELECT paper_id FROM task_paper_relation WHERE paper_id = $1 AND task_id = $2"#,
-                    res.paper_id.clone(),
+                    Uuid::from(inserted_paper.paper_id),
                     Uuid::from(task.task_id)
                 )
                 .fetch_optional(&mut **tx)
@@ -409,7 +420,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                     // If not, insert the relation
                     sqlx::query!(
                         r#"INSERT INTO task_paper_relation (paper_id, task_id) VALUES ($1, $2)"#,
-                        res.paper_id,
+                        Uuid::from(inserted_paper.paper_id),
                         Uuid::from(task.task_id)
                     )
                     .execute(&mut **tx)
@@ -432,9 +443,11 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 url: academic_paper.url,
                 doi: academic_paper.doi,
                 published_date: academic_paper.published_date,
+                created_at: inserted_paper.created_at.unwrap(),
+                updated_at: inserted_paper.updated_at.unwrap(),
                 primary_category: academic_paper.primary_category,
-                citation_count: academic_paper.citation_count,
-                reference_count: academic_paper.reference_count,
+                citations_count: academic_paper.citations_count,
+                references_count: academic_paper.references_count,
                 influential_citation_count: academic_paper.influential_citation_count,
                 bibtex: academic_paper.bibtex,
                 summary: academic_paper.summary,
@@ -496,14 +509,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -540,14 +555,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -578,14 +595,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -616,14 +635,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -654,14 +675,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -698,14 +721,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -751,14 +776,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -807,14 +834,16 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 arxiv_id,
                 journal_id,
                 title,
-                abstract,
-                abstract_ja,
+                abstract_text,
+                abstract_text_ja,
                 text,
                 url,
                 doi,
                 published_date,
+                created_at,
+                updated_at,
                 primary_category,
-                citation_count,
+                citations_count,
                 references_count,
                 influential_citation_count,
                 status_id,
@@ -828,8 +857,8 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             FROM academic_paper
             WHERE 
                 title ILIKE $1
-                OR abstract ILIKE $1
-                OR abstract_ja ILIKE $1
+                OR abstract_text ILIKE $1
+                OR abstract_text_ja ILIKE $1
             "#,
             format!("%{}%", keyword)
         )

@@ -133,17 +133,23 @@ args = [
 
 # ====== Documentation tasks ======
 [tasks.doc]
+extend = "set-env"
 dependencies = ["pu2png"]
 
 [tasks.pu2png]
+extend = "set-env"
 args = ["design/pu2png.sh"]
 command = "bash"
 dependencies = ["generate-er"]
 
 [tasks.generate-er]
-args = ["design/generate-er.sh"]
-command = "bash"
+extend = "set-env"
 install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
+script = """
+#!/bin/bash
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+bash design/generate-er.sh
+"""
 
 # ====== Command tasks ======
 [tasks.help]
@@ -166,6 +172,10 @@ command = "docker"
 extend = "set-env"
 dependencies = ["before-build"]
 script = "docker compose up -d"
+
+[tasks.remove-dashboard]
+extend = "set-env"
+script = "docker compose down && docker volume rm -f rs-rss_pgdata"
 
 [tasks.collect-articles]
 extend = "set-env"

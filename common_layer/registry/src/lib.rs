@@ -2,11 +2,13 @@ use adapter::database::ConnectionPool;
 use adapter::repository::{
     academic_paper::{AcademicPaperRepositoryImpl, AuthorRepositoryImpl, JournalRepositoryImpl, TaskRepositoryImpl},
     health::HealthCheckRepositoryImpl,
+    paper_note::PaperNoteRepositoryImpl,
     web_article::{WebArticleRepositoryImpl, WebSiteRepositoryImpl},
 };
 use kernel::repository::{
     academic_paper::{AcademicPaperRepository, AuthorRepository, JournalRepository, TaskRepository},
     health::HealthCheckRepository,
+    paper_note::PaperNoteRepository,
     web_article::{WebArticleRepository, WebSiteRepository},
 };
 use std::sync::Arc;
@@ -21,6 +23,7 @@ pub struct AppRegistryImpl {
     author_repository: Arc<dyn AuthorRepository>,
     journal_repository: Arc<dyn JournalRepository>,
     task_repository: Arc<dyn TaskRepository>,
+    paper_note_repository: Arc<dyn PaperNoteRepository>,
 }
 
 impl AppRegistryImpl {
@@ -32,6 +35,7 @@ impl AppRegistryImpl {
         let author_repository = Arc::new(AuthorRepositoryImpl::new(db.clone()));
         let journal_repository = Arc::new(JournalRepositoryImpl::new(db.clone()));
         let task_repository = Arc::new(TaskRepositoryImpl::new(db.clone()));
+        let paper_note_repository = Arc::new(PaperNoteRepositoryImpl::new(db.clone()));
         Self {
             db,
             health_check_repository,
@@ -41,6 +45,7 @@ impl AppRegistryImpl {
             author_repository,
             journal_repository,
             task_repository,
+            paper_note_repository,
         }
     }
 
@@ -65,6 +70,9 @@ impl AppRegistryImpl {
     pub fn task_repository(&self) -> Arc<dyn TaskRepository> {
         self.task_repository.clone()
     }
+    pub fn paper_note_repository(&self) -> Arc<dyn PaperNoteRepository> {
+        self.paper_note_repository.clone()
+    }
 }
 
 #[mockall::automock]
@@ -77,6 +85,7 @@ pub trait AppRegistryExt {
     fn author_repository(&self) -> Arc<dyn AuthorRepository>;
     fn journal_repository(&self) -> Arc<dyn JournalRepository>;
     fn task_repository(&self) -> Arc<dyn TaskRepository>;
+    fn paper_note_repository(&self) -> Arc<dyn PaperNoteRepository>;
 }
 
 impl AppRegistryExt for AppRegistryImpl {
@@ -103,6 +112,9 @@ impl AppRegistryExt for AppRegistryImpl {
     }
     fn task_repository(&self) -> Arc<dyn TaskRepository> {
         self.task_repository.clone()
+    }
+    fn paper_note_repository(&self) -> Arc<dyn PaperNoteRepository> {
+        self.paper_note_repository.clone()
     }
 }
 

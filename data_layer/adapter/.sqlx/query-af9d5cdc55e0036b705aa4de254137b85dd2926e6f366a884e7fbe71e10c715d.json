@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM paper_note\n            WHERE paper_note_id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "af9d5cdc55e0036b705aa4de254137b85dd2926e6f366a884e7fbe71e10c715d"
+}

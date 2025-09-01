@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH inserted_note AS (\n                INSERT INTO paper_note (paper_note_id, note, note_timestamp)\n                VALUES ($1, $2, $3)\n                RETURNING paper_note_id, note, note_timestamp\n            ),\n            inserted_relation AS (\n                INSERT INTO paper_note_relation (paper_note_id, paper_id)\n                SELECT paper_note_id, $4 FROM inserted_note\n                RETURNING paper_note_id, paper_id\n            )\n            SELECT \n                n.paper_note_id,\n                n.note,\n                n.note_timestamp,\n                r.paper_id\n            FROM inserted_note n\n            INNER JOIN inserted_relation r ON n.paper_note_id = r.paper_note_id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "paper_note_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "note",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "note_timestamp",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "paper_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "488675c26f3bd92bd408858ed6f75b9e5f2eb73ed77143b94a82e8a04402c201"
+}

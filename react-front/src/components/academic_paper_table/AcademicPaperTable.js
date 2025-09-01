@@ -195,7 +195,7 @@ const AcademicPaperTable = () => {
                 }
                 
                 // 日付の場合は Date オブジェクトで比較
-                if (sortConfig.key === 'published_date') {
+                if (sortConfig.key === 'published_date' || sortConfig.key === 'updated_at') {
                     aValue = aValue ? new Date(aValue) : new Date(0);
                     bValue = bValue ? new Date(bValue) : new Date(0);
                 }
@@ -225,6 +225,18 @@ const AcademicPaperTable = () => {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    };
+
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     };
 
     const truncateText = (text, maxLength = 100) => {
@@ -390,13 +402,25 @@ const AcademicPaperTable = () => {
                                     </span>
                                 )}
                             </TableCell>
-                            <TableCell className="table-header-cell">Details</TableCell>
+                            <TableCell 
+                                className="table-header-cell sortable-header"
+                                onClick={() => handleSort('updated_at')}
+                                style={{ cursor: 'pointer' }}
+                            >
+                                Timestamp
+                                {sortConfig.key === 'updated_at' && (
+                                    <span className="sort-indicator">
+                                        {sortConfig.direction === 'asc' ? ' ▲' : ' ▼'}
+                                    </span>
+                                )}
+                            </TableCell>
+                            <TableCell className="table-header-cell">Link</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {sortedPapers.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="no-data">
+                                <TableCell colSpan={6} className="no-data">
                                     {searchKeyword ? '検索結果がありません' : '論文データがありません'}
                                 </TableCell>
                             </TableRow>
@@ -404,14 +428,12 @@ const AcademicPaperTable = () => {
                             sortedPapers.map((paper) => (
                                 <TableRow key={paper.paper_id} className="table-row">
                                     <TableCell className="title-cell">
-                                        <a 
-                                            href={paper.url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
+                                        <span 
                                             className="paper-link"
+                                            onClick={() => handleViewDetail(paper.paper_id)}
                                         >
                                             {truncateText(paper.title, 60)}
-                                        </a>
+                                        </span>
                                     </TableCell>
                                     <TableCell className="keywords-cell">
                                         {renderKeywords(paper.keywords)}
@@ -424,20 +446,25 @@ const AcademicPaperTable = () => {
                                     <TableCell className="date-cell">
                                         {formatDate(paper.published_date)}
                                     </TableCell>
+                                    <TableCell className="date-cell">
+                                        {formatDateTime(paper.updated_at)}
+                                    </TableCell>
                                     <TableCell className="actions-cell">
-                                        <button 
-                                            className="view-button"
-                                            onClick={() => handleViewDetail(paper.paper_id)}
+                                        <a 
+                                            href={paper.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="external-link-button"
                                         >
-                                            ➡︎
-                                        </button>
+                                            🔗
+                                        </a>
                                     </TableCell>
                                 </TableRow>
                             ))
                         )}
                         {isLoadingMore && (
                             <TableRow>
-                                <TableCell colSpan={5} className="loading-more">
+                                <TableCell colSpan={6} className="loading-more">
                                     <Typography>さらに読み込み中...</Typography>
                                 </TableCell>
                             </TableRow>

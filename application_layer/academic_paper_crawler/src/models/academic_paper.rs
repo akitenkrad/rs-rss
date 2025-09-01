@@ -2,7 +2,7 @@ use std::vec;
 
 use anyhow::Result;
 use arxiv_tools::{ArXiv, Paper as ArxivPaper, QueryParams as ArXivQueryParams};
-use chrono::{DateTime, NaiveDate};
+use chrono::{DateTime, NaiveDate, Utc};
 use derive_new::new;
 use kernel::models::academic_paper::{AcademicPaper, Author, Journal};
 use rsrpp::{config::ParserConfig, models::Section as RsrppSection, parser::parse};
@@ -249,12 +249,14 @@ impl From<AcademicPaperResource> for AcademicPaper {
                     .and_then(|p| p.publication_date.clone())
                     .unwrap_or_default(),
             ),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
             primary_category: match arxiv_paper.as_ref() {
                 Some(p) => p.primary_category.clone(),
                 None => String::default(),
             },
-            citation_count: ss_paper.as_ref().and_then(|p| p.citation_count).unwrap_or(0) as i32,
-            reference_count: ss_paper.as_ref().and_then(|p| p.reference_count).unwrap_or(0) as i32,
+            citations_count: ss_paper.as_ref().and_then(|p| p.citation_count).unwrap_or(0) as i32,
+            references_count: ss_paper.as_ref().and_then(|p| p.reference_count).unwrap_or(0) as i32,
             influential_citation_count: ss_paper
                 .as_ref()
                 .and_then(|p| p.influential_citation_count)
