@@ -890,6 +890,7 @@ body {
     min-height: 120px;
     max-height: 400px;
     overflow-y: auto;
+    text-align: left;
 }
 
 .memo-source pre {
@@ -900,6 +901,7 @@ body {
     color: #e2e8f0;
     white-space: pre-wrap;
     word-wrap: break-word;
+    text-align: left;
 }
 
 .memo-textarea,
@@ -914,6 +916,7 @@ body {
     line-height: 1.5;
     resize: vertical;
     font-family: inherit;
+    text-align: left;
 }
 
 .memo-textarea:focus,
@@ -1622,4 +1625,128 @@ body {
         padding: 6px 12px;
         font-size: 0.8rem;
     }
+}
+
+/* ==========================================================================
+   Ask-to-Agent Functionality
+   ========================================================================== */
+
+/* Agent response memo type */
+.memo-item.agent-response {
+    border-left: 4px solid #38b2ac;
+    background: rgba(56, 178, 172, 0.05);
+}
+
+/* Ask agent section */
+.memo-ask-agent-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #4a5568;
+}
+
+.ask-agent-btn {
+    background: linear-gradient(135deg, #38b2ac, #319795);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ask-agent-btn:hover {
+    background: linear-gradient(135deg, #319795, #2c7a7b);
+    transform: translateY(-1px);
+}
+
+.ask-agent-btn:active {
+    transform: translateY(0);
+}
+
+/* Ask agent form */
+.ask-agent-form {
+    margin-top: 12px;
+    background: #2d3748;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #4a5568;
+}
+
+.ask-agent-textarea {
+    width: 100%;
+    background: #1a202c;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+    border-radius: 6px;
+    padding: 12px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    transition: border-color 0.2s;
+}
+
+.ask-agent-textarea:focus {
+    outline: none;
+    border-color: #38b2ac;
+    box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.1);
+}
+
+.ask-agent-textarea::placeholder {
+    color: #a0aec0;
+}
+
+.ask-agent-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.submit-question-btn {
+    background: linear-gradient(135deg, #38b2ac, #319795);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.submit-question-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #319795, #2c7a7b);
+    transform: translateY(-1px);
+}
+
+.submit-question-btn:disabled {
+    background: #4a5568;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.cancel-ask-btn {
+    background: transparent;
+    color: #a0aec0;
+    border: 1px solid #4a5568;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.cancel-ask-btn:hover {
+    background: #4a5568;
+    color: #ffffff;
+    border-color: #4a5568;
 }

@@ -3,6 +3,7 @@ use crate::database::{
     ConnectionPool,
 };
 use async_trait::async_trait;
+use chrono::Utc;
 use derive_new::new;
 use kernel::{
     models::{
@@ -268,7 +269,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.url,
             web_article.text,
             web_article.html,
-            web_article.timestamp,
+            web_article.timestamp.naive_utc().date(),
             web_article.summary,
             web_article.is_new_technology_related,
             web_article.is_new_product_related,
@@ -300,7 +301,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         ))
     }
     async fn select_todays_web_articles(&self) -> AppResult<Vec<WebArticle>> {
-        let today = chrono::Local::now().date_naive();
+        let today = chrono::Local::now();
         let tomorrow = today + chrono::Duration::days(1);
         let rows = sqlx::query_as!(
             WebArticleRecord,
@@ -328,10 +329,9 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 web_article as wa
             JOIN web_site as ws ON wa.site_id = ws.site_id
             JOIN status AS s ON wa.status_id = s.status_id
-            WHERE wa.timestamp BETWEEN $1 AND $2
+            WHERE DATE(wa.timestamp) = DATE($1)
             ORDER BY wa.timestamp DESC"#,
-            today,
-            tomorrow
+            today.with_timezone(&chrono::Utc)
         )
         .fetch_all(self.db.inner_ref())
         .await
@@ -580,7 +580,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
                 url = $3,
                 text = $4,
                 html = $5,
-                timestamp = $6,
+                timestamp = DATE($6),
                 summary = $7,
                 is_new_technology_related = $8,
                 is_new_product_related = $9,
@@ -594,7 +594,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
             web_article.url,
             web_article.text,
             web_article.html,
-            web_article.timestamp,
+            web_article.timestamp.with_timezone(&chrono::Utc),
             web_article.summary,
             web_article.is_new_technology_related,
             web_article.is_new_product_related,
@@ -706,7 +706,7 @@ mod tests {
             "https://testarticle.com".to_string(),
             "Test Text".to_string(),
             "<HTML><TEST>test</TEST></HTML>".to_string(),
-            chrono::Local::now().date_naive(),
+            chrono::Local::now(),
             "Test Summary".to_string(),
             false,
             false,

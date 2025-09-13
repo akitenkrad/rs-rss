@@ -12,4 +12,6 @@ pub trait PaperNoteRepository: Send + Sync {
     async fn create_paper_note(&self, tx: &mut T<'_, Pg>, paper_note: PaperNote) -> AppResult<PaperNote>;
     async fn update_paper_note(&self, tx: &mut T<'_, Pg>, paper_note: PaperNote) -> AppResult<PaperNote>;
     async fn delete_paper_note(&self, tx: &mut T<'_, Pg>, paper_note_id: PaperNoteId) -> AppResult<()>;
+    async fn ask_to_agent(&self, tx: &mut T<'_, Pg>, paper_note_id: PaperNoteId, query: String)
+        -> AppResult<PaperNote>;
 }

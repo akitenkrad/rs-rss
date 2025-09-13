@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use chrono::NaiveDate;
+use chrono::{DateTime, Local};
 use derive_new::new;
 use kernel::models::paper_note::PaperNote;
 use serde::{Deserialize, Serialize};
@@ -9,7 +9,7 @@ use shared::id::{AcademicPaperId, PaperNoteId};
 pub struct PaperNoteResponse {
     pub paper_note_id: PaperNoteId,
     pub text: String,
-    pub note_timestamp: NaiveDate,
+    pub note_timestamp: DateTime<Local>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, new)]
@@ -52,7 +52,7 @@ impl From<PaperNote> for PaperNoteResponse {
 pub struct PaperNoteCreateRequest {
     pub paper_id: String,
     pub text: String,
-    pub note_timestamp: NaiveDate,
+    pub note_timestamp: DateTime<Local>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, new)]
@@ -75,7 +75,7 @@ pub struct PaperNoteUpdateRequest {
     pub paper_note_id: String,
     pub paper_id: String,
     pub text: String,
-    pub note_timestamp: NaiveDate,
+    pub note_timestamp: DateTime<Local>,
 }
 
 impl From<PaperNoteUpdateRequest> for PaperNote {
@@ -118,4 +118,10 @@ pub struct PaperNoteDeleteRequest {
 #[derive(Debug, Clone, Deserialize, Serialize, new)]
 pub struct PaperNoteDeleteResponse {
     pub status_code: usize,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, new)]
+pub struct PaperNoteAskToAgentRequest {
+    pub paper_note_id: PaperNoteId,
+    pub query: String,
 }

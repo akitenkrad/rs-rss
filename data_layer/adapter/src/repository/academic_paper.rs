@@ -3,6 +3,7 @@ use crate::database::{
     ConnectionPool,
 };
 use async_trait::async_trait;
+use chrono::{Local, TimeZone};
 use derive_new::new;
 use kernel::{
     models::{
@@ -357,7 +358,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 academic_paper.citations_count,
                 academic_paper.influential_citation_count,
                 academic_paper.references_count,
-                academic_paper.published_date,
+                academic_paper.published_date.naive_utc().date(),
                 academic_paper.url,
                 academic_paper.text,
                 academic_paper.bibtex,
@@ -443,8 +444,8 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 url: academic_paper.url,
                 doi: academic_paper.doi,
                 published_date: academic_paper.published_date,
-                created_at: inserted_paper.created_at.unwrap(),
-                updated_at: inserted_paper.updated_at.unwrap(),
+                created_at: Local.from_utc_datetime(&inserted_paper.created_at.unwrap().naive_local()),
+                updated_at: Local.from_utc_datetime(&inserted_paper.updated_at.unwrap().naive_local()),
                 primary_category: academic_paper.primary_category,
                 citations_count: academic_paper.citations_count,
                 references_count: academic_paper.references_count,
@@ -500,7 +501,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
         Ok(())
     }
     async fn select_todays_articles(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<AcademicPaper>> {
-        let current_date = chrono::Local::now().date_naive();
+        let current_date = chrono::Local::now();
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
             r#"SELECT
@@ -529,8 +530,8 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
                 dataset,
                 results,
                 advantages_limitations_and_future_work
-            FROM academic_paper WHERE published_date = $1"#,
-            &current_date
+            FROM academic_paper WHERE DATE(published_date) = DATE($1)"#,
+            current_date
         )
         .fetch_all(&mut **tx)
         .await

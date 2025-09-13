@@ -25,3 +25,4 @@ tracing-subscriber = { workspace = true }
 url = { workspace = true }
 uuid = { workspace = true }
 redis = { workspace = true }
+openai-tools = { workspace = true }

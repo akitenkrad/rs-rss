@@ -2,7 +2,7 @@ use std::vec;
 
 use anyhow::Result;
 use arxiv_tools::{ArXiv, Paper as ArxivPaper, QueryParams as ArXivQueryParams};
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Local, TimeZone, Utc};
 use derive_new::new;
 use kernel::models::academic_paper::{AcademicPaper, Author, Journal};
 use rsrpp::{config::ParserConfig, models::Section as RsrppSection, parser::parse};
@@ -22,14 +22,14 @@ pub struct Section {
     pub content: String,
 }
 
-fn datetime_from_str(date_str: &str) -> NaiveDate {
+fn datetime_from_str(date_str: &str) -> DateTime<Local> {
     if date_str.is_empty() {
-        return NaiveDate::from_ymd_opt(1970, 1, 1).unwrap_or_default(); // Fallback to a default date
+        return Local.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap(); // Fallback to a default date
     }
-    if DateTime::parse_from_rfc2822(stringify!(date_str)).is_ok() {
-        return DateTime::parse_from_rfc2822(date_str).unwrap().naive_utc().date();
-    } else if DateTime::parse_from_rfc3339(date_str).is_ok() {
-        return DateTime::parse_from_rfc3339(date_str).unwrap().naive_utc().date();
+    if let Ok(parsed) = DateTime::parse_from_rfc2822(date_str) {
+        return parsed.with_timezone(&Local);
+    } else if let Ok(parsed) = DateTime::parse_from_rfc3339(date_str) {
+        return parsed.with_timezone(&Local);
     }
 
     let mut date_str = date_str.to_string();
@@ -49,13 +49,13 @@ fn datetime_from_str(date_str: &str) -> NaiveDate {
         // Already in the correct format
     } else {
         eprintln!("WARNING: Date string does not match expected formats: {}", date_str);
-        return NaiveDate::from_ymd_opt(1970, 1, 1).unwrap_or_default(); // Fallback to a default date
+        return Local.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap(); // Fallback to a default date
     }
     match DateTime::parse_from_str(&date_str, "%Y-%m-%d %H:%M:%S%z") {
-        Ok(date) => date.naive_local().into(),
+        Ok(date) => date.with_timezone(&Local),
         Err(e) => {
             eprintln!("WARNING: Failed to parse date string: {}. Error: {}", date_str, e);
-            NaiveDate::from_ymd_opt(1970, 1, 1).unwrap_or_default() // Fallback to a default date
+            Local.with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap() // Fallback to a default date
         }
     }
 }
@@ -249,8 +249,8 @@ impl From<AcademicPaperResource> for AcademicPaper {
                     .and_then(|p| p.publication_date.clone())
                     .unwrap_or_default(),
             ),
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            created_at: Local::now(),
+            updated_at: Local::now(),
             primary_category: match arxiv_paper.as_ref() {
                 Some(p) => p.primary_category.clone(),
                 None => String::default(),

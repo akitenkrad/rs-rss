@@ -19,14 +19,14 @@ pub async fn collect_articles(_args: &CollectArticlesArgs) {
     tracing::info!("Starting to collect articles...");
     let mut sites: Vec<Box<dyn WebSiteResource>> = get_all_sites(&registry).await.unwrap();
     let mut articles = Vec::<WebArticle>::new();
-    let today = chrono::Local::now().date_naive();
+    let today = chrono::Local::now();
     let pb = create_progress_bar(sites.len() as usize, Some("Collecting articles".into()));
     for site in sites.iter_mut() {
         match site.get_articles().await {
             Ok(mut site_articles) => {
                 for article in site_articles.iter_mut() {
                     // Check if the article is from today
-                    if article.timestamp.date_naive() != today {
+                    if article.timestamp.date_naive() != today.date_naive() {
                         continue;
                     }
 

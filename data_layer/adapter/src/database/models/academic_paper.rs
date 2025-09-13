@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
 use derive_new::new;
 use kernel::models::academic_paper::{AcademicPaper, Author, Journal, Task};
 use shared::id::{AcademicPaperId, AuthorId, JournalId, StatusId, TaskId};
@@ -99,7 +99,7 @@ pub struct AcademicPaperRecord {
     pub text: String,
     pub url: String,
     pub doi: String,
-    pub published_date: NaiveDate,
+    pub published_date: NaiveDateTime,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub primary_category: String,
@@ -156,9 +156,9 @@ impl From<AcademicPaper> for AcademicPaperRecord {
             text,
             url,
             doi,
-            published_date,
-            created_at: Some(created_at),
-            updated_at: Some(updated_at),
+            published_date: published_date.naive_local(),
+            created_at: Some(created_at.to_utc()),
+            updated_at: Some(updated_at.to_utc()),
             primary_category,
             citations_count: citation_count,
             references_count,
@@ -216,9 +216,9 @@ impl From<AcademicPaperRecord> for AcademicPaper {
             text,
             url,
             doi,
-            published_date,
-            created_at: created_at.unwrap(),
-            updated_at: updated_at.unwrap(),
+            published_date: Local.from_local_datetime(&published_date).unwrap(),
+            created_at: Local.from_utc_datetime(&created_at.unwrap().naive_local()),
+            updated_at: Local.from_utc_datetime(&updated_at.unwrap().naive_local()),
             primary_category,
             citations_count: citation_count,
             references_count,

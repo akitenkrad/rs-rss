@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, Utc};
 use derive_new::new;
 use kernel::models::web_article::{WebArticle, WebSite};
 use shared::{
@@ -86,7 +86,7 @@ impl From<WebArticle> for WebArticleRecord {
             url,
             text,
             html,
-            timestamp,
+            timestamp: timestamp.naive_utc().date(),
             summary,
             is_new_technology_related,
             is_new_product_related,
@@ -135,7 +135,11 @@ impl From<WebArticleRecord> for WebArticle {
             url,
             text,
             html,
-            timestamp,
+            timestamp: timestamp
+                .and_hms_opt(0, 0, 0)
+                .unwrap()
+                .and_local_timezone(Local)
+                .unwrap(),
             summary,
             is_new_technology_related,
             is_new_product_related,

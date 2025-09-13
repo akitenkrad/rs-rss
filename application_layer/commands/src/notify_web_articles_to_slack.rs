@@ -26,8 +26,8 @@ async fn select_todays_articles() -> Vec<WebArticle> {
         }
     };
 
-    let today = chrono::Local::now().date_naive();
-    let yesterday = today.pred_opt().unwrap();
+    let today = chrono::Local::now();
+    let yesterday = today - chrono::Duration::days(1);
     articles
         .iter()
         .filter(|article| yesterday <= article.timestamp && article.timestamp <= today)

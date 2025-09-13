@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                pn.paper_note_id,\n                pn.note,\n                pn.note_timestamp,\n                pnr.paper_id\n            FROM paper_note pn\n            INNER JOIN paper_note_relation pnr ON pn.paper_note_id = pnr.paper_note_id\n            WHERE pn.paper_note_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "paper_note_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "note",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "note_timestamp",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "paper_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "21adb10d7997b386c94cb5b9f1619fcfbaf97f4d80c23f634e52f4ab7304701e"
+}

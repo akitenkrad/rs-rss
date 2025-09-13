@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                paper_id,\n                ss_id,\n                arxiv_id,\n                journal_id,\n                title,\n                abstract_text,\n                abstract_text_ja,\n                text,\n                url,\n                doi,\n                published_date,\n                created_at,\n                updated_at,\n                primary_category,\n                citations_count,\n                references_count,\n                influential_citation_count,\n                status_id,\n                bibtex,\n                summary,\n                background_and_purpose,\n                methodology,\n                dataset,\n                results,\n                advantages_limitations_and_future_work\n            FROM academic_paper WHERE published_date = $1",
+  "query": "SELECT\n                paper_id,\n                ss_id,\n                arxiv_id,\n                journal_id,\n                title,\n                abstract_text,\n                abstract_text_ja,\n                text,\n                url,\n                doi,\n                published_date,\n                created_at,\n                updated_at,\n                primary_category,\n                citations_count,\n                references_count,\n                influential_citation_count,\n                status_id,\n                bibtex,\n                summary,\n                background_and_purpose,\n                methodology,\n                dataset,\n                results,\n                advantages_limitations_and_future_work\n            FROM academic_paper WHERE DATE(published_date) = DATE($1)",
   "describe": {
     "columns": [
       {
@@ -131,7 +131,7 @@
     ],
     "parameters": {
       "Left": [
-        "Date"
+        "Timestamptz"
       ]
     },
     "nullable": [
@@ -162,5 +162,5 @@
       false
     ]
   },
-  "hash": "caed7f0e98d77d0821956847c64e070a8a39b76bbe06b8e5ad799ee777e5d122"
+  "hash": "6032f8946377ea7258b10df02543bf1e53347da20ecc05c99e4008234336c567"
 }

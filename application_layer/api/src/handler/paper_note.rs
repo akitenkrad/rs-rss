@@ -1,7 +1,7 @@
 use crate::models::paper_note::{
-    PaperNoteCreateRequest, PaperNoteCreateResponse, PaperNoteDeleteRequest, PaperNoteDeleteResponse,
-    PaperNoteResponse, PaperNoteSelectRequest, PaperNoteSelectResponse, PaperNoteUpdateRequest,
-    PaperNoteUpdateResponse,
+    PaperNoteAskToAgentRequest, PaperNoteCreateRequest, PaperNoteCreateResponse, PaperNoteDeleteRequest,
+    PaperNoteDeleteResponse, PaperNoteResponse, PaperNoteSelectRequest, PaperNoteSelectResponse,
+    PaperNoteUpdateRequest, PaperNoteUpdateResponse,
 };
 use axum::{
     extract::{Json, Query, State},
@@ -86,4 +86,19 @@ pub async fn delete_paper_note(
 
     let result = PaperNoteDeleteResponse::new(StatusCode::OK.as_u16() as usize);
     Ok(Json(result))
+}
+
+pub async fn ask_to_agent(
+    State(registry): State<AppRegistry>,
+    Json(body): Json<PaperNoteAskToAgentRequest>,
+) -> AppResult<Json<PaperNoteResponse>> {
+    let mut tx = registry.db().inner_ref().begin().await?;
+
+    let response = registry
+        .paper_note_repository()
+        .ask_to_agent(&mut tx, body.paper_note_id, body.query)
+        .await?;
+    tx.commit().await?;
+
+    Ok(Json(response.into()))
 }

@@ -23,9 +23,12 @@ done
 echo "Postgres is ready!"
 '''
 
+[tasks.up-database]
+run_task = [{ name = ["compose-up-postgres"] }]
+
 [tasks.migrate]
 extend = "set-env"
-dependencies = ["compose-up-postgres"]
+dependencies = ["up-database"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
@@ -48,7 +51,7 @@ cargo sqlx prepare
 [tasks.before-build]
 run_task = [{ name = ["sqlx-prepare"] }]
 
-[tasks.compose-build]
+[tasks.build-container]
 extend = "set-env"
 dependencies = ["before-build"]
 script = '''

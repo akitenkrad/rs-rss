@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
 use derive_new::new;
 use kernel::models::{academic_paper::AcademicPaper, paper_note::PaperNote};
 use shared::id::{AcademicPaperId, PaperNoteId};
@@ -24,7 +24,7 @@ impl From<PaperNote> for PaperNoteRecord {
             paper_note_id,
             paper_id: paper.paper_id,
             note,
-            note_timestamp: Some(note_timestamp.and_hms_opt(0, 0, 0).unwrap().and_utc()),
+            note_timestamp: Some(note_timestamp.with_timezone(&Utc)),
         }
     }
 }
@@ -44,7 +44,7 @@ impl From<PaperNoteRecord> for PaperNote {
                 ..Default::default()
             },
             note,
-            note_timestamp: note_timestamp.unwrap().date_naive(),
+            note_timestamp: note_timestamp.unwrap().with_timezone(&Local),
         }
     }
 }

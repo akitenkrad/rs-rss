@@ -74,7 +74,7 @@ impl From<WebArticleResource> for WebArticle {
             title,
             url: article_url,
             description,
-            timestamp: timestamp.date_naive(),
+            timestamp,
             text,
             html,
             ..Default::default()

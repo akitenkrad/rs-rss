@@ -16,6 +16,7 @@ sqlx = { workspace = true }
 uuid = { workspace = true }
 redis = { workspace = true }
 tracing = { workspace = true }
+openai-tools = { workspace = true }
 
 [dev-dependencies]
 test-log = { workspace = true }

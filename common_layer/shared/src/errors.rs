@@ -51,6 +51,10 @@ pub enum AppError {
     // from scrape errors
     #[error("Scrape Error: {0}")]
     ScrapeError(String),
+
+    // from openai-tools errors
+    #[error("OpenAI Tools Error: {0}")]
+    OpenAIToolError(#[from] openai_tools::common::OpenAIToolError),
 }
 
 fn app_error_to_status_code(error: &AppError) -> StatusCode {
@@ -71,6 +75,7 @@ fn app_error_to_status_code(error: &AppError) -> StatusCode {
         AppError::ParseError(_) => StatusCode::BAD_REQUEST,
         AppError::JsonParseError(_) => StatusCode::BAD_REQUEST,
         AppError::ScrapeError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        AppError::OpenAIToolError(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
 }
 

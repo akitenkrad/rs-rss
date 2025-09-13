@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use chrono::{NaiveDate, Utc};
+use chrono::{DateTime, Local, Utc};
 use derive_new::new;
 use garde::Validate;
 use kernel::models::{
@@ -71,9 +71,9 @@ pub struct AcademicPaperResponse {
     pub authors: Vec<AuthorResponse>,
     pub tasks: Vec<TaskResponse>,
     pub primary_category: String,
-    pub published_date: NaiveDate,
-    pub created_at: NaiveDate,
-    pub updated_at: NaiveDate,
+    pub published_date: DateTime<Local>,
+    pub created_at: DateTime<Local>,
+    pub updated_at: DateTime<Local>,
     pub journal: JournalResponse,
     pub text: String,
     pub url: String,
@@ -130,8 +130,8 @@ impl From<AcademicPaper> for AcademicPaperResponse {
             tasks: tasks.into_iter().map(TaskResponse::from).collect(),
             primary_category,
             published_date,
-            created_at: created_at.date_naive(),
-            updated_at: updated_at.date_naive(),
+            created_at,
+            updated_at,
             journal: JournalResponse::from(journal),
             text,
             url,
@@ -228,9 +228,9 @@ impl From<AcademicPaperCreateRequest> for AcademicPaper {
             authors: vec![],
             tasks: vec![],
             primary_category: String::new(),
-            published_date: chrono::Local::now().naive_local().date(),
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
+            published_date: Local::now(),
+            created_at: Local::now(),
+            updated_at: Local::now(),
             journal: Journal {
                 journal_id: JournalId::default(),
                 name: String::new(),

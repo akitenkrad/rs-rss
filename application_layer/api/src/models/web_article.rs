@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use chrono::NaiveDate;
+use chrono::{DateTime, Local};
 use derive_new::new;
 use garde::Validate;
 use kernel::models::{
@@ -82,7 +82,7 @@ pub struct WebArticleResponse {
     pub url: String,
     pub text: String,
     pub html: String,
-    pub timestamp: NaiveDate,
+    pub timestamp: DateTime<Local>,
     pub summary: String,
     pub is_new_technology_related: bool,
     pub is_new_academic_paper_related: bool,

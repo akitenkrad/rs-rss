@@ -111,7 +111,7 @@ const apiClient = new ApiClient();
 // ==========================================================================
 
 export const academicPapersApi = {
-    // Get all academic papers
+    // Get all academic papers (paginated)
     getAll: async (params = {}) => {
         return apiClient.get('/api/v1/academic-paper/all', params);
     },
@@ -119,26 +119,6 @@ export const academicPapersApi = {
     // Get academic paper by ID
     getById: async (id) => {
         return apiClient.get(`/api/v1/academic-paper/paper?paper_id=${id}`);
-    },
-
-    // Create new academic paper
-    create: async (paperData) => {
-        return apiClient.post('/api/v1/academic-paper/add', paperData);
-    },
-
-    // Update academic paper
-    update: async (id, paperData) => {
-        return apiClient.put(`/api/v1/academic-paper/${id}`, paperData);
-    },
-
-    // Delete academic paper
-    delete: async (id) => {
-        return apiClient.delete(`/api/v1/academic-paper/${id}`);
-    },
-
-    // Search academic papers
-    search: async (query, params = {}) => {
-        return apiClient.get('/api/v1/academic-paper/search', { q: query, ...params });
     },
 
     // Create academic paper with SSE (Server-Sent Events)
@@ -197,86 +177,57 @@ export const academicPapersApi = {
 };
 
 // ==========================================================================
-// Web Articles API
+// Paper Notes API
 // ==========================================================================
+
+export const paperNotesApi = {
+    // Get paper notes by paper ID
+    getByPaperId: async (paperId) => {
+        return apiClient.get('/api/v1/academic-paper/paper-note/select', { paper_id: paperId });
+    },
+
+    // Create new paper note
+    create: async (noteData) => {
+        return apiClient.post('/api/v1/academic-paper/paper-note/create', noteData);
+    },
+
+    // Update paper note
+    update: async (noteData) => {
+        return apiClient.put('/api/v1/academic-paper/paper-note/update', noteData);
+    },
+
+    // Delete paper note
+    delete: async (noteId) => {
+        return apiClient.request('/api/v1/academic-paper/paper-note/delete', {
+            method: 'DELETE',
+            body: JSON.stringify({ paper_note_id: noteId })
+        });
+    },
+
+    // Ask question to agent about paper note
+    askToAgent: async (paperNoteId, query) => {
+        return apiClient.post('/api/v1/academic-paper/paper-note/ask-to-agent', {
+            paper_note_id: paperNoteId,
+            query: query
+        });
+    }
+};
+
+// ==========================================================================
+// Web Sites and Articles API
+// ==========================================================================
+
+export const webSitesApi = {
+    // Get all web sites (paginated)
+    getAll: async (params = {}) => {
+        return apiClient.get('/api/v1/web_site/all_web_sites', params);
+    }
+};
 
 export const webArticlesApi = {
-    // Get all web articles
+    // Get all web articles (paginated)
     getAll: async (params = {}) => {
-        return apiClient.get('/api/web-articles', params);
-    },
-
-    // Get web article by ID
-    getById: async (id) => {
-        return apiClient.get(`/api/web-articles/${id}`);
-    },
-
-    // Create new web article
-    create: async (articleData) => {
-        return apiClient.post('/api/web-articles', articleData);
-    },
-
-    // Update web article
-    update: async (id, articleData) => {
-        return apiClient.put(`/api/web-articles/${id}`, articleData);
-    },
-
-    // Delete web article
-    delete: async (id) => {
-        return apiClient.delete(`/api/web-articles/${id}`);
-    },
-
-    // Search web articles
-    search: async (query, params = {}) => {
-        return apiClient.get('/api/web-articles/search', { q: query, ...params });
-    }
-};
-
-// ==========================================================================
-// Memos API
-// ==========================================================================
-
-export const memosApi = {
-    // Get memos for a paper
-    getByPaperId: async (paperId) => {
-        return apiClient.get(`/api/academic-papers/${paperId}/memos`);
-    },
-
-    // Create new memo
-    create: async (paperId, memoData) => {
-        return apiClient.post(`/api/academic-papers/${paperId}/memos`, memoData);
-    },
-
-    // Update memo
-    update: async (paperId, memoId, memoData) => {
-        return apiClient.put(`/api/academic-papers/${paperId}/memos/${memoId}`, memoData);
-    },
-
-    // Delete memo
-    delete: async (paperId, memoId) => {
-        return apiClient.delete(`/api/academic-papers/${paperId}/memos/${memoId}`);
-    }
-};
-
-// ==========================================================================
-// LLM/AI API
-// ==========================================================================
-
-export const llmApi = {
-    // Generate memo using LLM
-    generateMemo: async (paperData, userPrompt) => {
-        return apiClient.post('/api/llm/generate-memo', {
-            paper: paperData,
-            prompt: userPrompt
-        });
-    },
-
-    // Ask question about paper
-    askQuestion: async (paperData, question) => {
-        return apiClient.post('/api/llm/ask-question', {
-            paper: paperData,
-            question: question
-        });
+        return apiClient.get('/api/v1/web_site/all_web_articles', params);
     }
 };
 
@@ -285,9 +236,14 @@ export const llmApi = {
 // ==========================================================================
 
 export const healthApi = {
-    // Check API health
+    // Check API basic health
     check: async () => {
-        return apiClient.get('/api/health');
+        return apiClient.get('/api/v1/health/');
+    },
+
+    // Check database health
+    checkDb: async () => {
+        return apiClient.get('/api/v1/health/db');
     }
 };
 
