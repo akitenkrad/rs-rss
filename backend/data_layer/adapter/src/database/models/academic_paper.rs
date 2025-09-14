@@ -1,0 +1,239 @@
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone, Utc};
+use derive_new::new;
+use kernel::models::academic_paper::{AcademicPaper, Author, Journal, Status, Task};
+use shared::id::{AcademicPaperId, AuthorId, JournalId, TaskId};
+use sqlx::FromRow;
+use std::str::FromStr;
+
+#[derive(Debug, Clone, new, FromRow)]
+pub struct AuthorRecord {
+    pub author_id: AuthorId,
+    pub ss_id: String,
+    pub name: String,
+    pub h_index: i32,
+}
+
+impl From<Author> for AuthorRecord {
+    fn from(author: Author) -> Self {
+        let Author {
+            author_id,
+            ss_id,
+            name,
+            h_index,
+        } = author;
+        Self {
+            author_id,
+            ss_id,
+            name,
+            h_index,
+        }
+    }
+}
+
+impl From<AuthorRecord> for Author {
+    fn from(author_record: AuthorRecord) -> Self {
+        let AuthorRecord {
+            author_id,
+            ss_id,
+            name,
+            h_index,
+        } = author_record;
+        Self {
+            author_id,
+            ss_id,
+            name,
+            h_index,
+        }
+    }
+}
+
+#[derive(Debug, Clone, new, FromRow)]
+pub struct TaskRecord {
+    pub task_id: TaskId,
+    pub name: String,
+}
+
+impl From<Task> for TaskRecord {
+    fn from(task: Task) -> Self {
+        let Task { task_id, name } = task;
+        Self { task_id, name }
+    }
+}
+
+impl From<TaskRecord> for Task {
+    fn from(task_record: TaskRecord) -> Self {
+        let TaskRecord { task_id, name } = task_record;
+        Self { task_id, name }
+    }
+}
+
+#[derive(Debug, Clone, new, FromRow)]
+pub struct JournalRecord {
+    pub journal_id: JournalId,
+    pub name: String,
+}
+
+impl From<Journal> for JournalRecord {
+    fn from(journal: Journal) -> Self {
+        let Journal { journal_id, name } = journal;
+        Self { journal_id, name }
+    }
+}
+
+impl From<JournalRecord> for Journal {
+    fn from(journal_record: JournalRecord) -> Self {
+        let JournalRecord { journal_id, name } = journal_record;
+        Self { journal_id, name }
+    }
+}
+
+#[derive(Debug, Clone, new, FromRow)]
+pub struct AcademicPaperRecord {
+    pub paper_id: AcademicPaperId,
+    pub ss_id: String,
+    pub arxiv_id: String,
+    pub journal_id: JournalId,
+    pub title: String,
+    pub abstract_text: String,
+    pub abstract_text_ja: String,
+    pub text: String,
+    pub url: String,
+    pub doi: String,
+    pub published_date: NaiveDateTime,
+    pub created_at: Option<DateTime<Utc>>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub primary_category: String,
+    pub citations_count: i32,
+    pub references_count: i32,
+    pub influential_citation_count: i32,
+    pub bibtex: String,
+    pub summary: String,
+    pub background_and_purpose: String,
+    pub methodology: String,
+    pub dataset: String,
+    pub results: String,
+    pub advantages_limitations_and_future_work: String,
+    pub status: String,
+}
+
+impl From<AcademicPaper> for AcademicPaperRecord {
+    fn from(paper: AcademicPaper) -> Self {
+        let AcademicPaper {
+            paper_id,
+            ss_id,
+            arxiv_id,
+            title,
+            abstract_text,
+            abstract_text_ja,
+            text,
+            url,
+            doi,
+            journal,
+            tasks: _,
+            authors: _,
+            published_date,
+            created_at,
+            updated_at,
+            primary_category,
+            citations_count,
+            references_count,
+            influential_citation_count,
+            bibtex,
+            summary,
+            background_and_purpose,
+            methodology,
+            dataset,
+            results,
+            advantages_limitations_and_future_work,
+            status,
+        } = paper;
+        Self {
+            paper_id,
+            ss_id,
+            arxiv_id,
+            journal_id: journal.journal_id,
+            title,
+            abstract_text,
+            abstract_text_ja,
+            text,
+            url,
+            doi,
+            published_date: published_date.naive_local(),
+            created_at: Some(created_at.to_utc()),
+            updated_at: Some(updated_at.to_utc()),
+            primary_category,
+            citations_count,
+            references_count,
+            influential_citation_count,
+            bibtex,
+            summary,
+            background_and_purpose,
+            methodology,
+            dataset,
+            results,
+            advantages_limitations_and_future_work,
+            status: status.to_string(),
+        }
+    }
+}
+
+impl From<AcademicPaperRecord> for AcademicPaper {
+    fn from(paper_record: AcademicPaperRecord) -> Self {
+        let AcademicPaperRecord {
+            paper_id,
+            ss_id,
+            arxiv_id,
+            journal_id,
+            title,
+            abstract_text,
+            abstract_text_ja,
+            text,
+            url,
+            doi,
+            published_date,
+            created_at,
+            updated_at,
+            primary_category,
+            citations_count: citation_count,
+            references_count,
+            influential_citation_count,
+            bibtex,
+            summary,
+            background_and_purpose,
+            methodology,
+            dataset,
+            results,
+            advantages_limitations_and_future_work,
+            status,
+        } = paper_record;
+        Self {
+            paper_id,
+            ss_id,
+            arxiv_id,
+            journal: Journal::new(journal_id, String::new()),
+            authors: vec![],
+            tasks: vec![],
+            title,
+            abstract_text,
+            abstract_text_ja,
+            text,
+            url,
+            doi,
+            published_date: Local.from_local_datetime(&published_date).unwrap(),
+            created_at: Local.from_utc_datetime(&created_at.unwrap().naive_local()),
+            updated_at: Local.from_utc_datetime(&updated_at.unwrap().naive_local()),
+            primary_category,
+            citations_count: citation_count,
+            references_count,
+            influential_citation_count,
+            bibtex,
+            summary,
+            background_and_purpose,
+            methodology,
+            dataset,
+            results,
+            advantages_limitations_and_future_work,
+            status: Status::from_str(&status).expect("Invalid status value"),
+        }
+    }
+}

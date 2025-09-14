@@ -1,7 +1,7 @@
 services:
   server:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile.backend
       args:
         DATABASE_URL: ${DATABASE_URL}
@@ -15,7 +15,7 @@ services:
       - postgres
   front:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.frontend
     ports:
       - 80:80

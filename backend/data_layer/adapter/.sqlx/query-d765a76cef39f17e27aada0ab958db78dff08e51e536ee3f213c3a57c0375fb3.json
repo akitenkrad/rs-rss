@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE web_article SET\n                status = $1\n            WHERE article_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d765a76cef39f17e27aada0ab958db78dff08e51e536ee3f213c3a57c0375fb3"
+}

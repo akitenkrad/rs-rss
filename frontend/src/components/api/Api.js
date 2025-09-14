@@ -2,6 +2,12 @@
 // API Configuration and Client
 // ==========================================================================
 
+// Import model classes
+import { AcademicPaper, AcademicPaperListResponse } from './models/AcademicPaper';
+import { PaperNoteCreateResponse, PaperNoteSelectResponse, PaperNoteUpdateResponse } from './models/PaperNote';
+import { PaginatedWebArticleResponse } from './models/WebArticle';
+import { PaginatedWebSiteResponse } from './models/WebSite';
+
 // API Base Configuration
 const API_CONFIG = {
     baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080',
@@ -113,12 +119,14 @@ const apiClient = new ApiClient();
 export const academicPapersApi = {
     // Get all academic papers (paginated)
     getAll: async (params = {}) => {
-        return apiClient.get('/api/v1/academic-paper/all', params);
+        const data = await apiClient.get('/api/v1/academic-paper/all', params);
+        return new AcademicPaperListResponse(data);
     },
 
     // Get academic paper by ID
     getById: async (id) => {
-        return apiClient.get(`/api/v1/academic-paper/paper?paper_id=${id}`);
+        const data = await apiClient.get(`/api/v1/academic-paper/paper?paper_id=${id}`);
+        return new AcademicPaper(data);
     },
 
     // Create academic paper with SSE (Server-Sent Events)
@@ -139,10 +147,12 @@ export const academicPapersApi = {
                     // If progress is 100, consider it complete
                     if (data.progress === 100) {
                         eventSource.close();
+                        const academicPaper = data.paper ? new AcademicPaper(data.paper) : null;
+                        const completeData = { ...data, paper: academicPaper };
                         if (onComplete) {
-                            onComplete(data);
+                            onComplete(completeData);
                         }
-                        resolve(data);
+                        resolve(completeData);
                     } else {
                         // Only call onProgress for non-complete updates
                         if (onProgress) {
@@ -183,17 +193,20 @@ export const academicPapersApi = {
 export const paperNotesApi = {
     // Get paper notes by paper ID
     getByPaperId: async (paperId) => {
-        return apiClient.get('/api/v1/academic-paper/paper-note/select', { paper_id: paperId });
+        const data = await apiClient.get('/api/v1/academic-paper/paper-note/select', { paper_id: paperId });
+        return new PaperNoteSelectResponse(data);
     },
 
     // Create new paper note
     create: async (noteData) => {
-        return apiClient.post('/api/v1/academic-paper/paper-note/create', noteData);
+        const data = await apiClient.post('/api/v1/academic-paper/paper-note/create', noteData);
+        return new PaperNoteCreateResponse(data);
     },
 
     // Update paper note
     update: async (noteData) => {
-        return apiClient.put('/api/v1/academic-paper/paper-note/update', noteData);
+        const data = await apiClient.put('/api/v1/academic-paper/paper-note/update', noteData);
+        return new PaperNoteUpdateResponse(data);
     },
 
     // Delete paper note
@@ -220,14 +233,31 @@ export const paperNotesApi = {
 export const webSitesApi = {
     // Get all web sites (paginated)
     getAll: async (params = {}) => {
-        return apiClient.get('/api/v1/web_site/all_web_sites', params);
+        const data = await apiClient.get('/api/v1/web_site/select_all_web_sites', params);
+        return new PaginatedWebSiteResponse(data);
     }
 };
 
 export const webArticlesApi = {
     // Get all web articles (paginated)
     getAll: async (params = {}) => {
-        return apiClient.get('/api/v1/web_site/all_web_articles', params);
+        const data = await apiClient.get('/api/v1/web_site/select_all_web_articles', params);
+        return new PaginatedWebArticleResponse(data);
+    },
+
+    // Get filtered web articles
+    getFiltered: async (params = {}) => {
+        const data = await apiClient.get('/api/v1/web_site/select_filtered_web_articles', params);
+        return new PaginatedWebArticleResponse(data);
+    },
+
+    // Update web article status
+    updateStatus: async (articleId, newStatus) => {
+        const data = await apiClient.post('/api/v1/web_site/update_web_article_status', {
+            article_id: articleId,
+            new_status: newStatus
+        });
+        return data;
     }
 };
 

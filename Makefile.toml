@@ -34,7 +34,7 @@ script = '''
 #!/bin/bash
 export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 echo "DATABASE_URL=$DATABASE_URL"
-sqlx migrate run --source data_layer/adapter/migrations
+sqlx migrate run --source backend/data_layer/adapter/migrations
 '''
 
 [tasks.sqlx-prepare]
@@ -43,7 +43,7 @@ dependencies = ["migrate"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-cd data_layer/adapter
+cd backend/data_layer/adapter
 export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 cargo sqlx prepare
 '''
@@ -89,6 +89,7 @@ cargo fmt -- --emit files
 '''
 
 [tasks.migrate-revert]
+extend = "set-env"
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
@@ -180,7 +181,7 @@ script = "docker compose up -d"
 extend = "set-env"
 script = "docker compose down && docker volume rm -f rs-rss_pgdata"
 
-[tasks.collect-articles]
+[tasks.collect-web-articles]
 extend = "set-env"
 args = [
   "compose",

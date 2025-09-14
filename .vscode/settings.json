@@ -1,4 +1,7 @@
 {
+    "rust-analyzer.linkedProjects": [
+        "backend/Cargo.toml",
+    ],
     "rust-analyzer.cargo.extraEnv": {
         "DATABASE_URL": "postgresql://localhost:5432/rsrss?user=postgres&password=password",
     },

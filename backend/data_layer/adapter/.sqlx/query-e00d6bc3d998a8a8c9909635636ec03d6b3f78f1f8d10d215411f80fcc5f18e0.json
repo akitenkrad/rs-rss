@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE web_article SET\n                title = $1,\n                description = $2,\n                url = $3,\n                text = $4,\n                html = $5,\n                timestamp = DATE($6),\n                summary = $7,\n                is_new_technology_related = $8,\n                is_new_product_related = $9,\n                is_new_academic_paper_related = $10,\n                is_ai_related = $11,\n                is_security_related = $12,\n                is_it_related = $13,\n                status = $14\n            WHERE article_id = $15",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Varchar",
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Text",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e00d6bc3d998a8a8c9909635636ec03d6b3f78f1f8d10d215411f80fcc5f18e0"
+}

@@ -48,7 +48,7 @@ export const mockPaperDetail = {
     ],
     bibtex: `@inproceedings{vaswani2017attention,
   title={Attention is all you need},
-  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, Lukasz and Polosukhin, Illia},
   booktitle={Advances in neural information processing systems},
   pages={5998--6008},
   year={2017}
@@ -129,8 +129,7 @@ export const webArticles = [
         title: "Latest AI Developments in 2025",
         summary: "A comprehensive overview of the latest artificial intelligence developments and their impact on various industries.",
         url: "https://techcrunch.com/ai-developments-2025",
-        status_id: 1,
-        status_name: "Published"
+        status: "new"
     },
     {
         id: 2,
@@ -140,8 +139,7 @@ export const webArticles = [
         title: "Quantum Computing Breakthrough",
         summary: "Scientists achieve a major breakthrough in quantum computing that could revolutionize data processing.",
         url: "https://wired.com/quantum-computing-breakthrough",
-        status_id: 1,
-        status_name: "Published"
+        status: "archived"
     },
     {
         id: 3,
@@ -151,8 +149,7 @@ export const webArticles = [
         title: "Meta's New VR Headset",
         summary: "Meta announces their latest VR headset with improved resolution and tracking capabilities.",
         url: "https://theverge.com/meta-new-vr-headset",
-        status_id: 1,
-        status_name: "Published"
+        status: "new"
     },
     {
         id: 4,
@@ -162,8 +159,7 @@ export const webArticles = [
         title: "SpaceX Mars Mission Update",
         summary: "Latest updates on SpaceX's Mars colonization mission and technological developments.",
         url: "https://arstechnica.com/spacex-mars-mission-update",
-        status_id: 1,
-        status_name: "Published"
+        status: "new"
     },
     {
         id: 5,
@@ -173,8 +169,7 @@ export const webArticles = [
         title: "Gene Therapy Advances",
         summary: "New gene therapy treatments show promising results in clinical trials for genetic disorders.",
         url: "https://technologyreview.com/gene-therapy-advances",
-        status_id: 1,
-        status_name: "Published"
+        status: "archived"
     }
 ];
 
