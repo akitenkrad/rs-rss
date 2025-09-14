@@ -2,7 +2,7 @@ use std::vec;
 
 use anyhow::Result;
 use arxiv_tools::{ArXiv, Paper as ArxivPaper, QueryParams as ArXivQueryParams};
-use chrono::{DateTime, Local, TimeZone, Utc};
+use chrono::{DateTime, Local, TimeZone};
 use derive_new::new;
 use kernel::models::academic_paper::{AcademicPaper, Author, Journal, Status};
 use rsrpp::{config::ParserConfig, models::Section as RsrppSection, parser::parse};

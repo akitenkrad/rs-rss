@@ -94,17 +94,17 @@ install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help",
 script = '''
 #!/bin/bash
 export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
-migration=$(find data_layer/adapter/migrations -type f -name "*down.sql" | sort -r)
+migration=$(find backend/data_layer/adapter/migrations -type f -name "*down.sql" | sort -r)
 for m in ${migration[@]}; do
   echo "Reverting migrations for $m"
-  until sqlx migrate revert --source data_layer/adapter/migrations; do
+  until sqlx migrate revert --source backend/data_layer/adapter/migrations; do
     sleep 1
   done
 done
 '''
 
 [tasks.sqlx]
-args = ["${@}", "--source", "data_layer/adapter/migrations"]
+args = ["${@}", "--source", "backend/data_layer/adapter/migrations"]
 command = "sqlx"
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 
