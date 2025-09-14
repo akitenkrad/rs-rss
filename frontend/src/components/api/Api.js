@@ -119,13 +119,13 @@ const apiClient = new ApiClient();
 export const academicPapersApi = {
     // Get all academic papers (paginated)
     getAll: async (params = {}) => {
-        const data = await apiClient.get('/api/v1/academic-paper/all', params);
+        const data = await apiClient.get('/api/v1/academic-paper/select-all', params);
         return new AcademicPaperListResponse(data);
     },
 
     // Get academic paper by ID
     getById: async (id) => {
-        const data = await apiClient.get(`/api/v1/academic-paper/paper?paper_id=${id}`);
+        const data = await apiClient.get(`/api/v1/academic-paper/select-paper?paper_id=${id}`);
         return new AcademicPaper(data);
     },
 

@@ -27,7 +27,7 @@ services:
       - server
   postgres:
     image: postgres:latest
-    user: root
+    user: postgres
     env_file:
       - .env
     ports:
@@ -43,5 +43,8 @@ services:
     image: redis:latest
     ports:
       - 6379:6379
+    volumes:
+      - redisdata:/data
 volumes:
   pgdata:
+  redisdata:
