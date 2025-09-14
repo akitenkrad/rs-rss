@@ -351,16 +351,19 @@ export const handleApiError = (error) => {
         return error;
     }
 
-    if (error.message === 'Request timeout') {
+    // Ensure error.message exists before using string methods
+    const errorMessage = error?.message || '';
+
+    if (errorMessage === 'Request timeout') {
         return new ApiError('Request timed out. Please try again.', 408);
     }
 
-    if (error.message.includes('HTTP error!')) {
-        const status = parseInt(error.message.match(/status: (\d+)/)?.[1] || '500');
+    if (errorMessage.includes('HTTP error!')) {
+        const status = parseInt(errorMessage.match(/status: (\d+)/)?.[1] || '500');
         return new ApiError('API request failed', status);
     }
 
-    if (error.message.includes('Failed to fetch')) {
+    if (errorMessage.includes('Failed to fetch')) {
         return new ApiError('Network error. Please check your connection.', 0);
     }
 
