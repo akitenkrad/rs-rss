@@ -626,6 +626,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         Ok(())
     }
+
     async fn select_todays_articles(&self, tx: &mut T<'_, Pg>) -> AppResult<Vec<AcademicPaper>> {
         let current_date = chrono::Local::now();
         let papers = sqlx::query_as!(
@@ -673,6 +674,7 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         Ok(academic_papers)
     }
+
     async fn select_academic_paper_by_arxiv_id(&self, tx: &mut T<'_, Pg>, arxiv_id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
@@ -711,8 +713,10 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         let mut academic_paper = AcademicPaper::from(paper);
         self.fill_fields(tx, &mut academic_paper).await?;
+
         Ok(academic_paper)
     }
+
     async fn select_academic_paper_by_ss_id(&self, tx: &mut T<'_, Pg>, ss_id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
@@ -751,8 +755,10 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         let mut academic_paper = AcademicPaper::from(paper);
         self.fill_fields(tx, &mut academic_paper).await?;
+
         Ok(academic_paper)
     }
+
     async fn select_academic_paper_by_id(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<AcademicPaper> {
         let paper = sqlx::query_as!(
             AcademicPaperRecord,
@@ -791,8 +797,10 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
 
         let mut academic_paper = AcademicPaper::from(paper);
         self.fill_fields(tx, &mut academic_paper).await?;
+
         Ok(academic_paper)
     }
+
     async fn select_academic_paper_by_title(&self, tx: &mut T<'_, Pg>, title: &str) -> AppResult<Vec<AcademicPaper>> {
         let papers = sqlx::query_as!(
             AcademicPaperRecord,
@@ -836,6 +844,11 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
+
+        tracing::info!(
+            "select_academic_paper_by_title: fetched {} papers",
+            academic_papers.len()
+        );
 
         Ok(academic_papers)
     }
@@ -881,6 +894,8 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
+
+        tracing::info!("select_all_academic_papers: fetched {} papers", academic_papers.len());
 
         Ok(academic_papers)
     }
@@ -940,6 +955,11 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             self.fill_fields(tx, &mut academic_paper).await?;
             academic_papers.push(academic_paper);
         }
+
+        tracing::info!(
+            "select_paginated_academic_papers: fetched {} papers",
+            academic_papers.len()
+        );
 
         Ok(PaginatedList::<AcademicPaper>::new(
             total_count,

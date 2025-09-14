@@ -411,6 +411,7 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
+
     async fn select_web_article_by_url(&self, url: &str) -> AppResult<WebArticle> {
         let rows = sqlx::query_as!(
             WebArticleRecord,
@@ -507,6 +508,9 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
         .fetch_all(self.db.inner_ref())
         .await
         .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+        tracing::info!("select_all_web_articles: fetched {} web articles", rows.len());
+
         Ok(rows.into_iter().map(WebArticle::from).collect())
     }
 
@@ -552,6 +556,9 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
 
         let total = rows.len() as i64;
         let items = rows.into_iter().map(WebArticle::from).collect::<Vec<WebArticle>>();
+
+        tracing::info!("select_paginated_web_articles: fetched {} web articles", items.len());
+
         Ok(PaginatedList::<WebArticle>::new(total, limit, offset, items))
     }
 
@@ -619,6 +626,9 @@ impl WebArticleRepository for WebArticleRepositoryImpl {
 
         let total = rows.len() as i64;
         let items = rows.into_iter().map(WebArticle::from).collect::<Vec<WebArticle>>();
+
+        tracing::info!("select_filtered_web_articles: fetched {} web articles", items.len());
+
         Ok(PaginatedList::<WebArticle>::new(total, total, 0, items))
     }
 
