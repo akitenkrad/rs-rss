@@ -221,7 +221,7 @@ impl AcademicPaper {
             .temperature(1.0)
             .json_schema(json_schema);
 
-        let response = chat.chat().await.unwrap();
+        let response = chat.chat().await?;
         let mut max_retries = 5;
         while max_retries > 0 {
             match serde_json::from_str::<AcademicPaperSummary>(

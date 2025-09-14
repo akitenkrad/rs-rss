@@ -452,6 +452,140 @@ impl AcademicPaperRepository for AcademicPaperRepositoryImpl {
             })
         }
     }
+
+    async fn update_academic_paper(
+        &self,
+        tx: &mut T<'_, Pg>,
+        academic_paper: AcademicPaper,
+    ) -> AppResult<AcademicPaper> {
+        {
+            // If the academic paper does not exist, insert a new record
+            // Check if the authors exist, if not, create them
+            let mut authors: Vec<Author> = vec![];
+            for author in &academic_paper.authors {
+                let author = AuthorRepositoryImpl::new(self.db.clone())
+                    .create_author(tx, author.clone())
+                    .await?;
+                authors.push(author);
+            }
+
+            // Check if the journal exists, if not, create it
+            let journal = JournalRepositoryImpl::new(self.db.clone())
+                .create_journal(tx, academic_paper.journal.clone())
+                .await?;
+
+            // Check if the tasks exist, if not, create them
+            let mut tasks: Vec<Task> = vec![];
+            for task in &academic_paper.tasks {
+                let task = TaskRepositoryImpl::new(self.db.clone())
+                    .create_task(tx, task.clone())
+                    .await?;
+                tasks.push(task);
+            }
+
+            // Update the record
+            sqlx::query!(
+                r#"UPDATE academic_paper SET
+                arxiv_id = $1,
+                ss_id = $2,
+                title = $3,
+                abstract_text = $4,
+                abstract_text_ja = $5,
+                journal_id = $6,
+                primary_category = $7,
+                citations_count = $8,
+                influential_citation_count = $9,
+                references_count = $10,
+                published_date = $11,
+                url = $12,
+                text = $13,
+                bibtex = $14,
+                summary = $15,
+                background_and_purpose = $16,
+                methodology = $17,
+                dataset = $18,
+                results = $19,
+                advantages_limitations_and_future_work = $20,
+                status = $21,
+                updated_at = NOW()
+            WHERE paper_id = $22"#,
+                academic_paper.arxiv_id,
+                academic_paper.ss_id,
+                academic_paper.title,
+                academic_paper.abstract_text,
+                academic_paper.abstract_text_ja,
+                Uuid::from(journal.journal_id),
+                academic_paper.primary_category,
+                academic_paper.citations_count,
+                academic_paper.influential_citation_count,
+                academic_paper.references_count,
+                academic_paper.published_date.naive_utc().date(),
+                academic_paper.url,
+                academic_paper.text,
+                academic_paper.bibtex,
+                academic_paper.summary,
+                academic_paper.background_and_purpose,
+                academic_paper.methodology,
+                academic_paper.dataset,
+                academic_paper.results,
+                academic_paper.advantages_limitations_and_future_work,
+                academic_paper.status.to_string(),
+                Uuid::from(academic_paper.paper_id),
+            )
+            .execute(&mut **tx)
+            .await
+            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+            // Update authors and tasks in the join tables
+            // For simplicity, we will clear existing relations and re-insert them
+            sqlx::query!(
+                r#"DELETE FROM author_paper_relation WHERE paper_id = $1"#,
+                Uuid::from(academic_paper.paper_id)
+            )
+            .execute(&mut **tx)
+            .await
+            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+            for author in &academic_paper.authors {
+                let author = AuthorRepositoryImpl::new(self.db.clone())
+                    .create_author(tx, author.clone())
+                    .await?;
+                sqlx::query!(
+                    r#"INSERT INTO author_paper_relation (paper_id, author_id) VALUES ($1, $2)"#,
+                    Uuid::from(academic_paper.paper_id),
+                    Uuid::from(author.author_id)
+                )
+                .execute(&mut **tx)
+                .await
+                .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+            }
+            sqlx::query!(
+                r#"DELETE FROM task_paper_relation WHERE paper_id = $1"#,
+                Uuid::from(academic_paper.paper_id)
+            )
+            .execute(&mut **tx)
+            .await
+            .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+
+            // Re-insert tasks
+            for task in &academic_paper.tasks {
+                let task = TaskRepositoryImpl::new(self.db.clone())
+                    .create_task(tx, task.clone())
+                    .await?;
+                sqlx::query!(
+                    r#"INSERT INTO task_paper_relation (paper_id, task_id) VALUES ($1, $2)"#,
+                    Uuid::from(academic_paper.paper_id),
+                    Uuid::from(task.task_id)
+                )
+                .execute(&mut **tx)
+                .await
+                .map_err(|e| shared::errors::AppError::SqlxError(e))?;
+            }
+            Ok(self
+                .select_academic_paper_by_id(tx, &academic_paper.paper_id.to_string())
+                .await?)
+        }
+    }
+
     async fn fill_fields(&self, tx: &mut T<'_, Pg>, academic_paper: &mut AcademicPaper) -> AppResult<()> {
         // Fill authors
         let authors = sqlx::query_as!(

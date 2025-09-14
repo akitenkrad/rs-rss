@@ -82,6 +82,12 @@ body {
     border-bottom: 2px solid #2d3748;
     margin-top: 20px;
     display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.paper-header .title-row {
+    display: flex;
     justify-content: space-between;
     align-items: flex-end;
     gap: 20px;
@@ -94,6 +100,44 @@ body {
     margin-bottom: 15px;
     line-height: 1.2;
     flex: 1;
+}
+
+/* Update Progress Styles */
+.update-progress {
+    background: #2d3748;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 10px;
+    border-left: 4px solid #3182ce;
+}
+
+.progress-message {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.progress-bar {
+    background: #1a202c;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #3182ce, #63b3ed);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-percentage {
+    color: #a0aec0;
+    font-size: 0.85rem;
+    text-align: right;
+    font-weight: 600;
 }
 
 .update-button {
@@ -519,6 +563,10 @@ body {
     
     .paper-header {
         margin-top: 20px;
+        gap: 15px;
+    }
+    
+    .paper-header .title-row {
         flex-direction: column;
         align-items: stretch;
         gap: 15px;
@@ -586,6 +634,10 @@ body {
     
     .paper-header {
         margin-top: 20px;
+        gap: 10px;
+    }
+    
+    .paper-header .title-row {
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
@@ -597,8 +649,6 @@ body {
     }
     
     .update-button {
-        align-self: flex-end;
-        margin-top: 0;
         padding: 10px 20px;
         font-size: 0.8rem;
         min-width: 110px;

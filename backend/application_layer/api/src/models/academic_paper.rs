@@ -3,7 +3,7 @@ use chrono::{DateTime, Local};
 use derive_new::new;
 use garde::Validate;
 use kernel::models::{
-    academic_paper::{AcademicPaper, AcademicPaperListOptions, Author, Journal, Status, Task},
+    academic_paper::{AcademicPaper, AcademicPaperListOptions, Author, Journal, Task},
     list::PaginatedList,
 };
 use serde::{Deserialize, Serialize};
@@ -218,40 +218,7 @@ pub struct AcademicPaperCreateRequest {
     pub pdf_url: String,
 }
 
-impl From<AcademicPaperCreateRequest> for AcademicPaper {
-    fn from(request: AcademicPaperCreateRequest) -> Self {
-        let AcademicPaperCreateRequest { title, pdf_url } = request;
-        Self {
-            paper_id: AcademicPaperId::default(),
-            ss_id: String::new(),
-            arxiv_id: String::new(),
-            title,
-            abstract_text: String::new(),
-            abstract_text_ja: String::new(),
-            authors: vec![],
-            tasks: vec![],
-            primary_category: String::new(),
-            published_date: Local::now(),
-            created_at: Local::now(),
-            updated_at: Local::now(),
-            journal: Journal {
-                journal_id: JournalId::default(),
-                name: String::new(),
-            },
-            text: String::new(),
-            url: pdf_url,
-            doi: String::new(),
-            citations_count: 0,
-            references_count: 0,
-            influential_citation_count: 0,
-            bibtex: String::new(),
-            summary: String::new(),
-            background_and_purpose: String::new(),
-            methodology: String::new(),
-            dataset: String::new(),
-            results: String::new(),
-            advantages_limitations_and_future_work: String::new(),
-            status: Status::New,
-        }
-    }
+#[derive(Debug, Clone, Deserialize, Serialize, new)]
+pub struct AcademicPaperUpdateRequest {
+    pub paper_id: String,
 }

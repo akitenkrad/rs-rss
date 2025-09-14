@@ -183,6 +183,61 @@ export const academicPapersApi = {
                 eventSource.close();
             };
         });
+    },
+
+    // Update academic paper with SSE (Server-Sent Events)
+    updateWithSSE: (paperId, onProgress, onError, onComplete) => {
+        const url = `${API_CONFIG.baseURL}/api/v1/academic-paper/update-sse`;
+        
+        return new Promise((resolve, reject) => {
+            const eventSource = new EventSource(url + '?' + new URLSearchParams({
+                paper_id: paperId
+            }));
+
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('SSE update data received:', data);
+                    
+                    // If progress is 100, consider it complete
+                    if (data.progress === 100) {
+                        eventSource.close();
+                        const academicPaper = data.paper ? new AcademicPaper(data.paper) : null;
+                        const completeData = { ...data, paper: academicPaper };
+                        if (onComplete) {
+                            onComplete(completeData);
+                        }
+                        resolve(completeData);
+                    } else {
+                        // Only call onProgress for non-complete updates
+                        if (onProgress) {
+                            onProgress(data);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error parsing SSE update data:', error);
+                    eventSource.close();
+                    if (onError) {
+                        onError(error);
+                    }
+                    reject(error);
+                }
+            };
+
+            eventSource.onerror = (error) => {
+                console.error('SSE update connection error:', error);
+                eventSource.close();
+                if (onError) {
+                    onError(error);
+                }
+                reject(error);
+            };
+
+            // Return a cleanup function
+            return () => {
+                eventSource.close();
+            };
+        });
     }
 };
 

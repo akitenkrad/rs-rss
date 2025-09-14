@@ -62,5 +62,10 @@ pub trait AcademicPaperRepository: Send + Sync {
         tx: &mut T<'_, Pg>,
         academic_paper: AcademicPaper,
     ) -> AppResult<AcademicPaper>;
+    async fn update_academic_paper(
+        &self,
+        tx: &mut T<'_, Pg>,
+        academic_paper: AcademicPaper,
+    ) -> AppResult<AcademicPaper>;
     async fn delete_academic_paper(&self, tx: &mut T<'_, Pg>, id: &str) -> AppResult<()>;
 }

@@ -19,6 +19,11 @@ const AcademicPaperDetail = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [memos, setMemos] = useState([]);
     
+    // 論文更新の進捗状態
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateProgress, setUpdateProgress] = useState(0);
+    const [updateMessage, setUpdateMessage] = useState('');
+    
     // 本文の折りたたみ状態
     const [isFullTextExpanded, setIsFullTextExpanded] = useState(false);
 
@@ -149,22 +154,72 @@ const AcademicPaperDetail = () => {
 
     const handleUpdatePaper = async () => {
         try {
-            setLoading(true);
+            setIsUpdating(true);
+            setUpdateProgress(0);
+            setUpdateMessage('論文の更新を開始しています...');
             setError(null);
             
             if (process.env.NODE_ENV === 'development') {
+                // 開発環境でのモック更新
+                setUpdateMessage('論文情報を取得中...');
+                setUpdateProgress(20);
                 await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                setUpdateMessage('AIによる分析を実行中...');
+                setUpdateProgress(60);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                setUpdateMessage('更新を完了しています...');
+                setUpdateProgress(90);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                setUpdateProgress(100);
+                setUpdateMessage('更新が完了しました');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
                 await fetchPaperDetail(paper_id);
             } else {
-                const updatedPaper = await academicPapersApi.update(paper_id);
-                setPaper(updatedPaper);
+                // 本番環境でのSSE更新
+                await academicPapersApi.updateWithSSE(
+                    paper_id,
+                    // onProgress
+                    (progressData) => {
+                        setUpdateProgress(progressData.progress);
+                        setUpdateMessage(progressData.message);
+                    },
+                    // onError
+                    (error) => {
+                        console.error('論文更新エラー:', error);
+                        const apiError = handleApiError(error);
+                        setError(apiError.message || '論文の更新に失敗しました');
+                        setIsUpdating(false);
+                        setUpdateProgress(0);
+                        setUpdateMessage('');
+                    },
+                    // onComplete
+                    (completeData) => {
+                        if (completeData.paper) {
+                            setPaper(completeData.paper);
+                        }
+                        setUpdateMessage('更新が完了しました');
+                        setTimeout(() => {
+                            setIsUpdating(false);
+                            setUpdateProgress(0);
+                            setUpdateMessage('');
+                        }, 2000); // 2秒後に進捗を非表示
+                    }
+                );
             }
         } catch (err) {
             console.error('論文更新エラー:', err);
             const apiError = handleApiError(err);
             setError(apiError.message || '論文の更新に失敗しました');
         } finally {
-            setLoading(false);
+            if (process.env.NODE_ENV === 'development') {
+                setIsUpdating(false);
+                setUpdateProgress(0);
+                setUpdateMessage('');
+            }
         }
     };
 
@@ -249,14 +304,30 @@ const AcademicPaperDetail = () => {
             </div>
 
             <div className="paper-header">
-                <h1 className="paper-title">{paper.title}</h1>
-                <button 
-                    onClick={handleUpdatePaper} 
-                    className="update-button"
-                    disabled={loading}
-                >
-                    {loading ? 'UPDATING...' : 'UPDATE PAPER'}
-                </button>
+                <div className="title-row">
+                    <h1 className="paper-title">{paper.title}</h1>
+                    <button 
+                        onClick={handleUpdatePaper} 
+                        className="update-button"
+                        disabled={loading || isUpdating}
+                    >
+                        {isUpdating ? 'UPDATING...' : 'UPDATE PAPER'}
+                    </button>
+                </div>
+                
+                {/* 進捗表示 */}
+                {isUpdating && (
+                    <div className="update-progress">
+                        <div className="progress-message">{updateMessage}</div>
+                        <div className="progress-bar">
+                            <div 
+                                className="progress-fill" 
+                                style={{ width: `${updateProgress}%` }}
+                            ></div>
+                        </div>
+                        <div className="progress-percentage">{updateProgress}%</div>
+                    </div>
+                )}
             </div>
 
             <div className="paper-content">
